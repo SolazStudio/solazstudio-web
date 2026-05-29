@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solaz Studio — Fotografía & Video Comercial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Neue+Haas+Grotesk+Display+Pro:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black: #0a0a0a;
+      --black-soft: #111111;
+      --black-mid: #1a1a1a;
+      --white: #f5f3ef;
+      --white-pure: #ffffff;
+      --grey-light: #888580;
+      --grey-mid: #444240;
+      --grey-dark: #222220;
+      --accent: #c8b99a;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-serif: 'DM Serif Display', serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* ── CUSTOM CURSOR ── */
+    .cursor {
+      width: 8px; height: 8px;
+      background: var(--white);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      mix-blend-mode: difference;
+    }
+    .cursor-ring {
+      width: 36px; height: 36px;
+      border: 1px solid rgba(245,243,239,0.4);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transition: all 0.25s ease;
+      mix-blend-mode: difference;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 48px;
+      mix-blend-mode: normal;
+    }
+
+    nav::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(10,10,10,0.9) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .nav-logo {
+      position: relative;
+      z-index: 1;
+    }
+
+    .nav-logo svg {
+      height: 28px;
+      width: auto;
+      fill: var(--white);
+    }
+
+    .nav-links {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--white);
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .nav-links a:hover { opacity: 1; }
+
+    .nav-cta {
+      position: relative;
+      z-index: 1;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--black);
+      background: var(--white);
+      padding: 10px 22px;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .nav-cta:hover {
+      background: var(--accent);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      height: 100vh;
+      min-height: 700px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 48px 72px;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to top, rgba(10,10,10,1) 0%, rgba(10,10,10,0.4) 40%, rgba(10,10,10,0.2) 100%),
+        linear-gradient(105deg, #1a1612 0%, #0f0e0c 50%, #151310 100%);
+    }
+
+    /* Grain texture */
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.6;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+
+    /* Abstract mountain shape in background */
+    .hero-mountain {
+      position: absolute;
+      right: -5%;
+      top: 0;
+      height: 100%;
+      width: 60%;
+      opacity: 0.04;
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      position: relative;
+      z-index: 2;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .hero-headline {
+      position: relative;
+      z-index: 2;
+      font-family: var(--font-display);
+      font-size: clamp(72px, 10vw, 148px);
+      line-height: 0.92;
+      letter-spacing: -0.01em;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+
+    .hero-headline .line-2 {
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(245,243,239,0.35);
+    }
+
+    .hero-sub {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-top: 40px;
+      gap: 40px;
+    }
+
+    .hero-descriptor {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--grey-light);
+      line-height: 1.7;
+      max-width: 340px;
+    }
+
+    .hero-descriptor strong {
+      color: var(--white);
+      font-weight: 400;
+    }
+
+    .hero-scroll {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--grey-light);
+      opacity: 0.6;
+    }
+
+    .hero-scroll-line {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.4; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(1.1); }
+    }
+
+    /* Ticker */
+    .hero-ticker {
+      position: absolute;
+      bottom: 0;
+      left: 0; right: 0;
+      z-index: 3;
+      height: 36px;
+      background: var(--accent);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+    }
+
+    .ticker-track {
+      display: flex;
+      animation: ticker 20s linear infinite;
+      white-space: nowrap;
+    }
+
+    .ticker-item {
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--black);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .ticker-dot {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--black);
+      opacity: 0.4;
+      flex-shrink: 0;
+    }
+
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ── STATEMENT ── */
+    .statement {
+      padding: 120px 48px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      border-bottom: 1px solid var(--grey-dark);
+    }
+
+    .statement-label {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .statement-label::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .statement-text {
+      font-family: var(--font-serif);
+      font-size: clamp(28px, 3.5vw, 48px);
+      line-height: 1.2;
+      color: var(--white);
+      font-style: italic;
+    }
+
+    .statement-text em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .statement-right {
+      padding-top: 8px;
+    }
+
+    .statement-body {
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--grey-light);
+      line-height: 1.9;
+      margin-bottom: 40px;
+    }
+
+    .statement-body strong {
+      color: var(--white);
+      font-weight: 400;
+    }
+
+    .clients-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .client-tag {
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--grey-mid);
+      border: 1px solid var(--grey-dark);
+      padding: 5px 12px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .client-tag:hover {
+      color: var(--white);
+      border-color: var(--grey-mid);
+    }
+
+    /* ── WORK GRID ── */
+    .work {
+      padding: 80px 48px 120px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 48px;
+      border-bottom: 1px solid var(--grey-dark);
+      padding-bottom: 20px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 0.2em;
+      color: var(--white);
+    }
+
+    .section-action {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--grey-light);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.2s;
+    }
+
+    .section-action::after {
+      content: '→';
+      transition: transform 0.2s;
+    }
+
+    .section-action:hover { color: var(--white); }
+    .section-action:hover::after { transform: translateX(4px); }
+
+    .work-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: auto;
+      gap: 3px;
+    }
+
+    .work-item {
+      position: relative;
+      overflow: hidden;
+      background: var(--black-mid);
+      cursor: pointer;
+    }
+
+    .work-item:nth-child(1) { grid-column: span 7; aspect-ratio: 16/10; }
+    .work-item:nth-child(2) { grid-column: span 5; aspect-ratio: unset; }
+    .work-item:nth-child(3) { grid-column: span 4; aspect-ratio: 4/5; }
+    .work-item:nth-child(4) { grid-column: span 4; aspect-ratio: 4/5; }
+    .work-item:nth-child(5) { grid-column: span 4; aspect-ratio: 4/5; }
+
+    .work-img-placeholder {
+      width: 100%;
+      height: 100%;
+      min-height: 280px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .work-img-placeholder::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+    }
+
+    /* Color palettes for placeholders based on portfolio work */
+    .work-item:nth-child(1) .work-img-placeholder::before {
+      background: linear-gradient(135deg, #1a1208 0%, #2d1f0e 40%, #3d2a15 100%);
+    }
+    .work-item:nth-child(2) .work-img-placeholder::before {
+      background: linear-gradient(135deg, #0e1520 0%, #192030 100%);
+    }
+    .work-item:nth-child(3) .work-img-placeholder::before {
+      background: linear-gradient(160deg, #1c1008 0%, #2a1a0c 100%);
+    }
+    .work-item:nth-child(4) .work-img-placeholder::before {
+      background: linear-gradient(160deg, #0a0f0a 0%, #121a12 100%);
+    }
+    .work-item:nth-child(5) .work-img-placeholder::before {
+      background: linear-gradient(160deg, #1a1510 0%, #251e16 100%);
+    }
+
+    /* Photo category labels inside placeholders */
+    .work-photo-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--font-display);
+      font-size: clamp(18px, 2.5vw, 36px);
+      letter-spacing: 0.1em;
+      color: rgba(245,243,239,0.08);
+      text-align: center;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .work-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(10,10,10,0.9) 0%, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 28px;
+    }
+
+    .work-item:hover .work-overlay { opacity: 1; }
+
+    .work-meta {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .work-rubro {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .work-client {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--white);
+      margin-top: 4px;
+    }
+
+    .work-arrow {
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(245,243,239,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 14px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .work-item:hover .work-arrow {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── RUBROS ── */
+    .rubros {
+      padding: 80px 48px 120px;
+      border-top: 1px solid var(--grey-dark);
+    }
+
+    .rubros-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 3px;
+      margin-top: 48px;
+    }
+
+    .rubro-item {
+      position: relative;
+      padding: 48px 36px;
+      background: var(--black-mid);
+      cursor: pointer;
+      overflow: hidden;
+      transition: background 0.3s;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .rubro-item::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+
+    .rubro-item:hover::before { transform: scaleX(1); }
+    .rubro-item:hover { background: #161614; }
+
+    .rubro-num {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--grey-mid);
+      font-weight: 300;
+    }
+
+    .rubro-name {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 3vw, 40px);
+      letter-spacing: 0.04em;
+      color: var(--white);
+      line-height: 1;
+      margin: auto 0;
+    }
+
+    .rubro-name span {
+      display: block;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(245,243,239,0.25);
+      font-size: 0.7em;
+    }
+
+    .rubro-desc {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--grey-light);
+      line-height: 1.6;
+      margin-top: 20px;
+    }
+
+    .rubro-arrow {
+      font-size: 20px;
+      color: var(--grey-mid);
+      transition: color 0.3s, transform 0.3s;
+      align-self: flex-end;
+    }
+
+    .rubro-item:hover .rubro-arrow {
+      color: var(--accent);
+      transform: translate(4px, -4px);
+    }
+
+    /* ── CÓMO TRABAJAMOS ── */
+    .proceso {
+      padding: 120px 48px;
+      background: var(--black-soft);
+      border-top: 1px solid var(--grey-dark);
+      border-bottom: 1px solid var(--grey-dark);
+    }
+
+    .proceso-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 80px;
+      align-items: start;
+      margin-top: 60px;
+    }
+
+    .proceso-intro {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-style: italic;
+      color: var(--white);
+      line-height: 1.5;
+      position: sticky;
+      top: 120px;
+    }
+
+    .proceso-intro em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .proceso-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .proceso-step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 32px;
+      padding: 40px 0;
+      border-bottom: 1px solid var(--grey-dark);
+      align-items: start;
+    }
+
+    .proceso-step:last-child { border-bottom: none; }
+
+    .step-num {
+      font-family: var(--font-display);
+      font-size: 48px;
+      color: var(--grey-dark);
+      line-height: 1;
+      padding-top: 4px;
+    }
+
+    .step-content {}
+
+    .step-title {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--white);
+      margin-bottom: 12px;
+    }
+
+    .step-desc {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--grey-light);
+      line-height: 1.8;
+    }
+
+    /* ── EQUIPO / SOBRE NOSOTROS ── */
+    .sobre {
+      padding: 120px 48px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .sobre-visual {
+      position: relative;
+      aspect-ratio: 3/4;
+      background: var(--black-mid);
+      overflow: hidden;
+    }
+
+    .sobre-visual::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #151210 0%, #1e1a14 100%);
+    }
+
+    .sobre-visual-logo {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sobre-visual-logo svg {
+      width: 60%;
+      opacity: 0.06;
+      fill: var(--white);
+    }
+
+    .sobre-visual-tag {
+      position: absolute;
+      bottom: 32px;
+      left: 32px;
+      right: 32px;
+      border: 1px solid rgba(245,243,239,0.1);
+      padding: 20px 24px;
+      background: rgba(10,10,10,0.7);
+      backdrop-filter: blur(8px);
+    }
+
+    .sobre-visual-tag p {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--grey-light);
+      line-height: 1.6;
+    }
+
+    .sobre-visual-tag strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+
+    .sobre-content {}
+
+    .sobre-headline {
+      font-family: var(--font-serif);
+      font-size: clamp(32px, 3.5vw, 48px);
+      line-height: 1.15;
+      color: var(--white);
+      margin-bottom: 32px;
+      margin-top: 20px;
+    }
+
+    .sobre-body {
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--grey-light);
+      line-height: 1.9;
+      margin-bottom: 48px;
+    }
+
+    .sobre-body strong {
+      color: var(--white);
+      font-weight: 400;
+    }
+
+    .sobre-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      padding-top: 40px;
+      border-top: 1px solid var(--grey-dark);
+    }
+
+    .stat {}
+
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 40px;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--grey-light);
+      letter-spacing: 0.08em;
+      margin-top: 6px;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      padding: 120px 48px;
+      background: var(--black-mid);
+      border-top: 1px solid var(--grey-dark);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .cta-headline {
+      font-family: var(--font-display);
+      font-size: clamp(52px, 7vw, 96px);
+      line-height: 0.95;
+      letter-spacing: -0.01em;
+    }
+
+    .cta-headline .outline {
+      display: block;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(245,243,239,0.3);
+    }
+
+    .cta-right {}
+
+    .cta-body {
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--grey-light);
+      line-height: 1.9;
+      margin-bottom: 40px;
+    }
+
+    .cta-body strong {
+      color: var(--white);
+      font-weight: 400;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--white);
+      color: var(--black);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 16px 32px;
+      transition: background 0.2s, gap 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent);
+      gap: 20px;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--white);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--grey-mid);
+      margin-left: 24px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--white);
+    }
+
+    .cta-contact-info {
+      margin-top: 40px;
+      padding-top: 32px;
+      border-top: 1px solid var(--grey-dark);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .cta-contact-info a {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--grey-light);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      transition: color 0.2s;
+    }
+
+    .cta-contact-info a:hover { color: var(--white); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 40px 48px;
+      border-top: 1px solid var(--grey-dark);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo svg {
+      height: 22px;
+      fill: var(--white);
+      opacity: 0.5;
+    }
+
+    .footer-copy {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--grey-mid);
+      letter-spacing: 0.05em;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--grey-mid);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--white); }
+
+    /* ── ANIMATIONS ── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .fade-up:nth-child(2) { transition-delay: 0.1s; }
+    .fade-up:nth-child(3) { transition-delay: 0.2s; }
+    .fade-up:nth-child(4) { transition-delay: 0.3s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      nav { padding: 24px 32px; }
+      .nav-links { display: none; }
+      .hero { padding: 0 32px 60px; }
+      .statement { padding: 80px 32px; grid-template-columns: 1fr; gap: 40px; }
+      .work { padding: 60px 32px 80px; }
+      .work-grid { grid-template-columns: 1fr 1fr; gap: 3px; }
+      .work-item:nth-child(1) { grid-column: span 2; }
+      .work-item:nth-child(2) { grid-column: span 2; }
+      .work-item:nth-child(3), .work-item:nth-child(4), .work-item:nth-child(5) { grid-column: span 1; }
+      .rubros { padding: 60px 32px 80px; }
+      .rubros-grid { grid-template-columns: 1fr 1fr; }
+      .proceso { padding: 80px 32px; }
+      .proceso-grid { grid-template-columns: 1fr; gap: 40px; }
+      .proceso-intro { position: static; }
+      .sobre { padding: 80px 32px; grid-template-columns: 1fr; }
+      .sobre-visual { aspect-ratio: 16/9; }
+      .cta-section { padding: 80px 32px; grid-template-columns: 1fr; }
+      footer { padding: 32px; flex-wrap: wrap; gap: 16px; }
+    }
+
+    @media (max-width: 640px) {
+      .hero-headline { font-size: 56px; }
+      .rubros-grid { grid-template-columns: 1fr; }
+      .sobre-stats { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">
+      <svg viewBox="0 0 200 48" xmlns="http://www.w3.org/2000/svg">
+        <!-- Solaz logotype SVG approximation -->
+        <text x="0" y="38" font-family="serif" font-size="44" font-weight="700" letter-spacing="-2">solaz</text>
+      </svg>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#trabajo">Trabajo</a></li>
+      <li><a href="#servicios">Servicios</a></li>
+      <li><a href="#estudio">Estudio</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+    <a href="#contacto" class="nav-cta">Hablemos</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+
+    <!-- Mountain shape background -->
+    <svg class="hero-mountain" viewBox="0 0 600 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <circle cx="400" cy="200" r="380" fill="white" opacity="1"/>
+      <polygon points="150,750 400,200 650,750" fill="#0a0a0a" opacity="1"/>
+      <polygon points="300,750 450,350 600,750" fill="#0a0a0a" opacity="0.7"/>
+    </svg>
+
+    <div class="hero-eyebrow">
+      Studio Fotográfico & Audiovisual — Santiago, Chile
+    </div>
+
+    <h1 class="hero-headline">
+      <div>FOTOGRAFÍA</div>
+      <div class="line-2">& VIDEO</div>
+      <div>COMERCIAL_</div>
+    </h1>
+
+    <div class="hero-sub">
+      <p class="hero-descriptor">
+        <strong>Más de 12 años</strong> creando contenido visual para marcas en Chile. 
+        Fotografía, video y dirección de arte con un solo objetivo: 
+        que tu producto se vea como lo que vale — y venda más.
+      </p>
+      <div class="hero-scroll">
+        <div class="hero-scroll-line"></div>
+        <span>Scroll</span>
+      </div>
+    </div>
+
+    <!-- Ticker -->
+    <div class="hero-ticker">
+      <div class="ticker-track">
+        <span class="ticker-item">Gastronomía <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Producto <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Corporativo <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Industrial <span class="ticker-dot"></span></span>
+        <span class="ticker-item">E-Commerce <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Video <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Joyería <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Campañas <span class="ticker-dot"></span></span>
+        <!-- duplicate for seamless loop -->
+        <span class="ticker-item">Gastronomía <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Producto <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Corporativo <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Industrial <span class="ticker-dot"></span></span>
+        <span class="ticker-item">E-Commerce <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Video <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Joyería <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Campañas <span class="ticker-dot"></span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATEMENT -->
+  <section class="statement" id="estudio">
+    <div>
+      <div class="statement-label">Nuestra postura</div>
+      <p class="statement-text">
+        Las imágenes no son un gasto.<br>
+        Son la primera razón por la que <em>alguien compra</em> —<br>
+        o no lo hace.
+      </p>
+    </div>
+    <div class="statement-right fade-up">
+      <p class="statement-body">
+        Muchas marcas invierten en producto pero no en cómo mostrarlo. 
+        El resultado es contenido que no trabaja para vender. 
+        <strong>Eso es lo que cambiamos.</strong>
+      </p>
+      <p class="statement-body">
+        En Solaz Studio cada producción parte con una conversación sobre tu marca, 
+        tu cliente y lo que queremos provocar. No solo hacemos fotos bonitas — 
+        construimos <strong>imágenes que tienen un propósito</strong>.
+      </p>
+      <div class="clients-strip">
+        <span class="client-tag">Pullman Hotels</span>
+        <span class="client-tag">Ariztía</span>
+        <span class="client-tag">WEG Chile</span>
+        <span class="client-tag">Aramark</span>
+        <span class="client-tag">Johnny Rockets</span>
+        <span class="client-tag">Starbucks Chile</span>
+        <span class="client-tag">Montina</span>
+        <span class="client-tag">Veggie Deli</span>
+        <span class="client-tag">Maturana Wines</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORK GRID -->
+  <section class="work" id="trabajo">
+    <div class="section-header">
+      <span class="section-title">TRABAJO RECIENTE</span>
+      <a href="#" class="section-action">Ver portafolio completo</a>
+    </div>
+
+    <div class="work-grid">
+      <!-- Item 1 - Large feature -->
+      <div class="work-item fade-up">
+        <div class="work-img-placeholder">
+          <div class="work-photo-label">GASTRONOMÍA</div>
+        </div>
+        <div class="work-meta">
+          <div>
+            <div class="work-rubro">Fotografía Gastronómica</div>
+            <div class="work-client">Pullman Hotels · Carta 2024</div>
+          </div>
+          <div class="work-arrow">↗</div>
+        </div>
+        <div class="work-overlay"></div>
+      </div>
+
+      <!-- Item 2 -->
+      <div class="work-item fade-up">
+        <div class="work-img-placeholder">
+          <div class="work-photo-label">INDUSTRIAL</div>
+        </div>
+        <div class="work-meta">
+          <div>
+            <div class="work-rubro">Video Corporativo</div>
+            <div class="work-client">WEG Chile · Plan de Emergencia</div>
+          </div>
+          <div class="work-arrow">↗</div>
+        </div>
+        <div class="work-overlay"></div>
+      </div>
+
+      <!-- Item 3 -->
+      <div class="work-item fade-up">
+        <div class="work-img-placeholder">
+          <div class="work-photo-label">PRODUCTO</div>
+        </div>
+        <div class="work-meta">
+          <div>
+            <div class="work-rubro">Fotografía de Producto</div>
+            <div class="work-client">Ariztía · Campaña 2025</div>
+          </div>
+          <div class="work-arrow">↗</div>
+        </div>
+        <div class="work-overlay"></div>
+      </div>
+
+      <!-- Item 4 -->
+      <div class="work-item fade-up">
+        <div class="work-img-placeholder">
+          <div class="work-photo-label">E-COMMERCE</div>
+        </div>
+        <div class="work-meta">
+          <div>
+            <div class="work-rubro">E-Commerce</div>
+            <div class="work-client">Veggie Deli · Catálogo</div>
+          </div>
+          <div class="work-arrow">↗</div>
+        </div>
+        <div class="work-overlay"></div>
+      </div>
+
+      <!-- Item 5 -->
+      <div class="work-item fade-up">
+        <div class="work-img-placeholder">
+          <div class="work-photo-label">CORPORATIVO</div>
+        </div>
+        <div class="work-meta">
+          <div>
+            <div class="work-rubro">Retratos Corporativos</div>
+            <div class="work-client">Eximius Chile · Equipo</div>
+          </div>
+          <div class="work-arrow">↗</div>
+        </div>
+        <div class="work-overlay"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RUBROS -->
+  <section class="rubros" id="servicios">
+    <div class="section-header">
+      <span class="section-title">LO QUE HACEMOS</span>
+      <a href="#" class="section-action">Ver todos los servicios</a>
+    </div>
+
+    <div class="rubros-grid">
+      <div class="rubro-item fade-up">
+        <div class="rubro-num">01</div>
+        <div>
+          <div class="rubro-name">
+            Gastronomía
+            <span>& Producto</span>
+          </div>
+          <div class="rubro-desc">
+            Fotografía culinaria, catálogos, e-commerce y bodegones creativos. 
+            Desde cafeterías y restaurantes hasta grandes marcas del sector alimentario.
+          </div>
+        </div>
+        <div class="rubro-arrow">↗</div>
+      </div>
+
+      <div class="rubro-item fade-up">
+        <div class="rubro-num">02</div>
+        <div>
+          <div class="rubro-name">
+            Corporativo
+            <span>& Empresas</span>
+          </div>
+          <div class="rubro-desc">
+            Retratos de equipo, fotografía institucional y contenido para comunicación interna 
+            o presencia digital de la empresa.
+          </div>
+        </div>
+        <div class="rubro-arrow">↗</div>
+      </div>
+
+      <div class="rubro-item fade-up">
+        <div class="rubro-num">03</div>
+        <div>
+          <div class="rubro-name">
+            Industrial
+            <span>& Infraestructura</span>
+          </div>
+          <div class="rubro-desc">
+            Fotografía y video en terreno para empresas industriales, minería, 
+            construcción y servicios técnicos.
+          </div>
+        </div>
+        <div class="rubro-arrow">↗</div>
+      </div>
+
+      <div class="rubro-item fade-up">
+        <div class="rubro-num">04</div>
+        <div>
+          <div class="rubro-name">
+            Video
+            <span>& Audiovisual</span>
+          </div>
+          <div class="rubro-desc">
+            Videos corporativos, spots, motion graphics, reels y contenido para campañas. 
+            Con guion, storyboard y producción completa.
+          </div>
+        </div>
+        <div class="rubro-arrow">↗</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESO -->
+  <section class="proceso">
+    <div class="section-header">
+      <span class="section-title">CÓMO TRABAJAMOS</span>
+    </div>
+
+    <div class="proceso-grid">
+      <div class="proceso-intro">
+        Trabajas directamente con quien produce.<br>
+        <em>Sin intermediarios.</em><br>
+        Sin pérdida de criterio.
+      </div>
+
+      <div class="proceso-steps">
+        <div class="proceso-step fade-up">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <div class="step-title">Conversación inicial</div>
+            <p class="step-desc">
+              Antes de cualquier sesión entendemos tu marca, tu producto y lo que quieres comunicar. 
+              No partimos con una cámara — partimos con las preguntas correctas.
+            </p>
+          </div>
+        </div>
+
+        <div class="proceso-step fade-up">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <div class="step-title">Planificación y dirección de arte</div>
+            <p class="step-desc">
+              Definimos referencias, estética, props, ubicaciones y timing. 
+              Cada jornada está planificada antes de llegar, para que el día de producción sea eficiente y predecible.
+            </p>
+          </div>
+        </div>
+
+        <div class="proceso-step fade-up">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <div class="step-title">Producción</div>
+            <p class="step-desc">
+              Sesión con equipo profesional — fotografía, iluminación controlada, captura tethered. 
+              Puedes estar presente y ver las imágenes en tiempo real.
+            </p>
+          </div>
+        </div>
+
+        <div class="proceso-step fade-up">
+          <div class="step-num">04</div>
+          <div class="step-content">
+            <div class="step-title">Entrega lista para usar</div>
+            <p class="step-desc">
+              Postproducción, retoque y entrega en formatos optimizados para web, redes sociales y piezas gráficas. 
+              Material listo para publicar, no para editar.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOBRE NOSOTROS -->
+  <section class="sobre">
+    <div class="sobre-visual">
+      <div></div>
+      <div class="sobre-visual-logo">
+        <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="150" cy="150" r="140" fill="white"/>
+          <polygon points="30,270 150,60 270,270" fill="#0a0a0a"/>
+          <polygon points="90,270 160,130 230,270" fill="#0a0a0a" opacity="0.6"/>
+        </svg>
+      </div>
+      <div class="sobre-visual-tag">
+        <strong>Seba Ogalde + Ignacio Flores</strong>
+        <p>Fotografía, dirección de arte y producción audiovisual. 
+        Dos personas, una metodología clara, más de una década de trabajo real.</p>
+      </div>
+    </div>
+
+    <div class="sobre-content fade-up">
+      <div class="statement-label">Sobre Solaz Studio</div>
+      <h2 class="sobre-headline">
+        No somos una agencia.<br>
+        Somos los que<br>
+        hacen el trabajo.
+      </h2>
+      <p class="sobre-body">
+        Solaz Studio nace de más de 12 años de experiencia en fotografía publicitaria. 
+        Trabajamos como <strong>estructura flexible</strong> — un equipo que se articula según 
+        la escala de cada proyecto, sin capas de intermediarios.
+      </p>
+      <p class="sobre-body">
+        Cuando nos contratas, trabajas directamente con quien decide la luz, 
+        el encuadre y la dirección de arte. Eso tiene un nombre: 
+        <strong>consistencia visual</strong>. Y es lo que hace que las marcas vuelvan.
+      </p>
+
+      <div class="sobre-stats">
+        <div class="stat">
+          <div class="stat-num">+12</div>
+          <div class="stat-label">Años de experiencia</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">+50</div>
+          <div class="stat-label">Marcas trabajadas</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">+500</div>
+          <div class="stat-label">Producciones</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section" id="contacto">
+    <div>
+      <h2 class="cta-headline">
+        <span>HABLEMOS</span>
+        <span class="outline">DE TU</span>
+        <span>PROYECTO_</span>
+      </h2>
+    </div>
+    <div class="cta-right fade-up">
+      <p class="cta-body">
+        Cuéntanos en qué estás trabajando. 
+        <strong>No necesitamos un brief perfecto</strong> — solo necesitamos 
+        entender tu marca y lo que quieres lograr.
+      </p>
+      <p class="cta-body">
+        Respondemos dentro de 24 horas hábiles y podemos agendar 
+        una llamada corta sin compromiso.
+      </p>
+      <div>
+        <a href="mailto:hola@solazstudio.cl" class="btn-primary">
+          Escribir ahora →
+        </a>
+        <a href="https://wa.me/56984212617" class="btn-secondary">
+          WhatsApp
+        </a>
+      </div>
+      <div class="cta-contact-info">
+        <a href="mailto:hola@solazstudio.cl">hola@solazstudio.cl</a>
+        <a href="tel:+56984212617">+56 9 8421 2617</a>
+        <a href="#">Instagram @solazstudio</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">
+      <svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="32" font-family="serif" font-size="36" font-weight="700" letter-spacing="-1" fill="white">solaz</text>
+      </svg>
+    </div>
+    <span class="footer-copy">© 2026 Solaz Studio SpA — Santiago, Chile</span>
+    <div class="footer-links">
+      <a href="#">Instagram</a>
+      <a href="#">Trabajo</a>
+      <a href="#">Contacto</a>
+    </div>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mouseX = 0, mouseY = 0;
+    let ringX = 0, ringY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      cursor.style.left = mouseX - 4 + 'px';
+      cursor.style.top = mouseY - 4 + 'px';
+    });
+
+    function animateRing() {
+      ringX += (mouseX - ringX - 18) * 0.12;
+      ringY += (mouseY - ringY - 18) * 0.12;
+      ring.style.left = ringX + 'px';
+      ring.style.top = ringY + 'px';
+      requestAnimationFrame(animateRing);
+    }
+    animateRing();
+
+    // Hover effects on interactive elements
+    const interactives = document.querySelectorAll('a, button, .work-item, .rubro-item, .client-tag');
+    interactives.forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.transform = 'scale(3)';
+        ring.style.transform = 'scale(1.5)';
+        ring.style.borderColor = 'rgba(200,185,154,0.6)';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.transform = 'scale(1)';
+        ring.style.transform = 'scale(1)';
+        ring.style.borderColor = 'rgba(245,243,239,0.4)';
+      });
+    });
+
+    // Scroll fade-up
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    // Nav scroll behavior
+    const nav = document.querySelector('nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 80) {
+        nav.style.background = 'rgba(10,10,10,0.95)';
+        nav.style.backdropFilter = 'blur(12px)';
+      } else {
+        nav.style.background = '';
+        nav.style.backdropFilter = '';
+      }
+    });
+  </script>
+</body>
+</html>
