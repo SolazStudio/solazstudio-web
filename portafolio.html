@@ -50,7 +50,7 @@
       pointer-events: none;
       z-index: 9999;
       transition: transform 0.15s ease;
-      mix-blend-mode: difference;
+      
     }
     .cursor-ring {
       width: 36px; height: 36px;
@@ -60,11 +60,11 @@
       pointer-events: none;
       z-index: 9998;
       transition: all 0.25s ease;
-      mix-blend-mode: difference;
+      
     }
 
     /* ── NAV ── */
-    nav {
+    .main-nav {
       position: fixed;
       top: 0; left: 0; right: 0;
       z-index: 100;
@@ -110,6 +110,8 @@
       transition: background 0.2s;
     }
     .nav-cta:hover { background: var(--accent); }
+    .nav-instagram { font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--white); text-decoration: none; opacity: 0.6; transition: opacity 0.2s; padding: 4px 0; }
+    .nav-instagram:hover { opacity: 1; }
 
     /* ── PAGE HEADER ── */
     .page-header {
@@ -414,7 +416,7 @@
     }
     .lightbox-close:hover { border-color: var(--accent); color: var(--accent); }
 
-    .lightbox-nav {
+    .lightbox-.main-nav {
       position: fixed;
       top: 50%;
       transform: translateY(-50%);
@@ -530,7 +532,6 @@
     }
     @media (max-width: 768px) {
       nav { padding: 20px 24px; }
-      .nav-links { display: none; }
       .page-header { padding: 110px 24px 40px; flex-direction: column; align-items: flex-start; gap: 20px; }
       .page-meta { text-align: left; }
       .filters { padding: 16px 24px; top: 69px; overflow-x: auto; }
@@ -541,6 +542,102 @@
       footer { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 20px; }
       .lightbox-nav { display: none; }
     }
+  
+    /* ── HAMBURGER & MOBILE MENU ── */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      z-index: 101;
+      position: relative;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 22px;
+      height: 1.5px;
+      background: var(--white);
+      transition: all 0.3s ease;
+      transform-origin: center;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    .mobile-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 98;
+      background: var(--black);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 100px 48px 64px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    .mobile-menu.open { opacity: 1; pointer-events: all; }
+    .mobile-menu-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: 48px;
+    }
+    .mobile-menu-links a {
+      font-family: var(--font-display);
+      font-size: clamp(44px, 12vw, 72px);
+      line-height: 1.05;
+      color: var(--white);
+      text-decoration: none;
+      opacity: 0.45;
+      transition: opacity 0.2s;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(68,66,64,0.3);
+    }
+    .mobile-menu-links a:first-child { border-top: 1px solid rgba(68,66,64,0.3); }
+    .mobile-menu-links a:hover { opacity: 1; }
+    .mobile-menu-links a.active { opacity: 1; color: var(--accent); }
+    .mobile-menu-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .mobile-menu-cta {
+      display: inline-block;
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--black);
+      background: var(--white);
+      padding: 14px 32px;
+      text-decoration: none;
+      transition: background 0.2s;
+      width: fit-content;
+    }
+    .mobile-menu-cta:hover { background: var(--accent); }
+    .mobile-menu-instagram {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--grey-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .mobile-menu-instagram:hover { color: var(--white); }
+
+    @media (max-width: 640px) {
+      .nav-hamburger { display: flex; }
+      .nav-instagram { display: none !important; }
+    }
+
   </style>
 </head>
 <body>
@@ -549,15 +646,32 @@
   <div class="cursor-ring" id="cursorRing"></div>
 
   <!-- NAV -->
-  <nav aria-label="Navegación principal">
-    <a href="index.html" class="nav-logo">Solaz</a>
+  <nav class="main-nav" aria-label="Navegación principal">
+    <a href="index.html" class="nav-logo">solaz</a>
     <ul class="nav-links">
       <li><a href="portafolio.html" class="active">Proyectos</a></li>
       <li><a href="servicios.html">Servicios</a></li>
       <li><a href="nosotros.html">Nosotros</a></li>
     </ul>
-    <a href="mailto:hola@solazstudio.cl" class="nav-cta">Contacto</a>
+    <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Solaz Studio en Instagram">IG</a>
+    <a href="contacto.html" class="nav-cta">Contacto</a>
+  
+    <button class="nav-hamburger" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
+
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-menu-links">
+      <a href="portafolio.html" class="active">Proyectos</a>
+      <a href="servicios.html">Servicios</a>
+      <a href="nosotros.html">Nosotros</a>
+    </div>
+    <div class="mobile-menu-bottom">
+      <a href="contacto.html" class="mobile-menu-cta">Contacto →</a>
+      <a href="https://www.instagram.com/solazstudio/" class="mobile-menu-instagram" target="_blank" rel="noopener">Instagram ↗</a>
+    </div>
+  </div>
 
   <!-- PAGE HEADER -->
   <header class="page-header fade-up">
@@ -805,11 +919,11 @@
   <footer>
     <div class="footer-logo">solaz</div>
     <span class="footer-copy">© 2026 Solaz Studio — Chile</span>
-    <nav class="footer-links">
+    <div class="footer-links">
       <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">Instagram</a>
       <a href="servicios.html">Servicios</a>
-      <a href="mailto:hola@solazstudio.cl">Contacto</a>
-    </nav>
+      <a href="contacto.html">Contacto</a>
+    </div>
   </footer>
 
   <script>
@@ -944,6 +1058,27 @@
       entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
     }, { threshold: 0.08 });
     document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  
+    // Mobile menu
+    const navToggle = document.getElementById('navToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (navToggle && mobileMenu) {
+      navToggle.addEventListener('click', () => {
+        const isOpen = mobileMenu.classList.toggle('open');
+        navToggle.classList.toggle('open');
+        mobileMenu.setAttribute('aria-hidden', String(!isOpen));
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+      });
+      mobileMenu.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          mobileMenu.classList.remove('open');
+          navToggle.classList.remove('open');
+          mobileMenu.setAttribute('aria-hidden', 'true');
+          document.body.style.overflow = '';
+        });
+      });
+    }
+
   </script>
 </body>
 </html>

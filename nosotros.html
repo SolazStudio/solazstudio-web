@@ -29,16 +29,18 @@
     html { scroll-behavior: smooth; }
     body { background: var(--black); color: var(--white); font-family: var(--font-body); overflow-x: hidden; }
 
-    .cursor { width: 8px; height: 8px; background: var(--white); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: transform 0.15s ease; mix-blend-mode: difference; }
-    .cursor-ring { width: 36px; height: 36px; border: 1px solid rgba(245,243,239,0.4); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transition: all 0.25s ease; mix-blend-mode: difference; }
+    .cursor { width: 8px; height: 8px; background: var(--white); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: transform 0.15s ease;  }
+    .cursor-ring { width: 36px; height: 36px; border: 1px solid rgba(245,243,239,0.4); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transition: all 0.25s ease;  }
 
-    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; background: rgba(10,10,10,0.96); backdrop-filter: blur(12px); }
+    .main-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; background: rgba(10,10,10,0.96); backdrop-filter: blur(12px); }
     .nav-logo { font-family: var(--font-serif); font-size: 22px; color: var(--white); letter-spacing: -0.02em; text-decoration: none; }
     .nav-links { display: flex; gap: 40px; list-style: none; }
     .nav-links a { color: var(--white); text-decoration: none; font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.7; transition: opacity 0.2s; }
     .nav-links a:hover, .nav-links a.active { opacity: 1; }
     .nav-cta { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--black); background: var(--white); padding: 10px 22px; text-decoration: none; transition: background 0.2s; }
     .nav-cta:hover { background: var(--accent); }
+    .nav-instagram { font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--white); text-decoration: none; opacity: 0.6; transition: opacity 0.2s; padding: 4px 0; }
+    .nav-instagram:hover { opacity: 1; }
 
     .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
     .fade-up.visible { opacity: 1; transform: none; }
@@ -172,17 +174,15 @@
     .clientes-header { padding: 40px 48px 32px; border-bottom: 1px solid var(--grey-dark); display: flex; align-items: center; gap: 24px; }
     .clientes-header h2 { font-family: var(--font-display); font-size: clamp(28px, 3vw, 40px); line-height: 1; }
     .clientes-header span { font-size: 10px; font-weight: 300; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey-mid); }
-    .ticker-wrap { padding: 28px 0; overflow: hidden; position: relative; }
-    .ticker-wrap::before, .ticker-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 80px; z-index: 2; }
-    .ticker-wrap::before { left: 0; background: linear-gradient(to right, var(--black), transparent); }
-    .ticker-wrap::after { right: 0; background: linear-gradient(to left, var(--black), transparent); }
-    .ticker-track { display: flex; width: max-content; animation: ticker 55s linear infinite; }
+    .ticker-wrap { overflow: hidden; position: relative; background: var(--accent); height: 48px; display: flex; align-items: center; }
+    .ticker-wrap::before, .ticker-wrap::after { display: none; }
+    .ticker-track { display: flex; width: max-content; animation: ticker 55s linear infinite; align-items: center; height: 100%; }
     .ticker-track:hover { animation-play-state: paused; }
     @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-    .ticker-item { display: flex; align-items: center; gap: 40px; padding: 0 40px; white-space: nowrap; }
-    .cliente-logo { font-family: var(--font-display); font-size: 22px; letter-spacing: 0.06em; color: var(--white); opacity: 0.55; transition: opacity 0.3s; user-select: none; }
+    .ticker-item { display: flex; align-items: center; gap: 32px; padding: 0 32px; white-space: nowrap; height: 100%; }
+    .cliente-logo { font-family: var(--font-display); font-size: 13px; letter-spacing: 0.12em; color: var(--black); opacity: 0.7; transition: opacity 0.3s; user-select: none; }
     .cliente-logo:hover { opacity: 1; }
-    .ticker-sep { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: 0.4; flex-shrink: 0; }
+    .ticker-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--black); opacity: 0.3; flex-shrink: 0; }
 
     /* CTA */
     .cta-section { padding: 140px 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
@@ -215,7 +215,6 @@
     }
     @media (max-width: 768px) {
       nav { padding: 20px 24px; }
-      .nav-links { display: none; }
       .page-header { padding: 120px 24px 60px; grid-template-columns: 1fr; gap: 40px; }
       .manifesto-section, .distincion-section { padding: 64px 24px; }
       .significado-left, .significado-right { padding: 56px 24px; }
@@ -227,6 +226,102 @@
       .cta-section { padding: 80px 24px; grid-template-columns: 1fr; gap: 48px; }
       footer { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 20px; }
     }
+  
+    /* ── HAMBURGER & MOBILE MENU ── */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      z-index: 101;
+      position: relative;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 22px;
+      height: 1.5px;
+      background: var(--white);
+      transition: all 0.3s ease;
+      transform-origin: center;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    .mobile-menu {
+      position: fixed;
+      inset: 0;
+      z-index: 98;
+      background: var(--black);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 100px 48px 64px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    .mobile-menu.open { opacity: 1; pointer-events: all; }
+    .mobile-menu-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: 48px;
+    }
+    .mobile-menu-links a {
+      font-family: var(--font-display);
+      font-size: clamp(44px, 12vw, 72px);
+      line-height: 1.05;
+      color: var(--white);
+      text-decoration: none;
+      opacity: 0.45;
+      transition: opacity 0.2s;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(68,66,64,0.3);
+    }
+    .mobile-menu-links a:first-child { border-top: 1px solid rgba(68,66,64,0.3); }
+    .mobile-menu-links a:hover { opacity: 1; }
+    .mobile-menu-links a.active { opacity: 1; color: var(--accent); }
+    .mobile-menu-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .mobile-menu-cta {
+      display: inline-block;
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--black);
+      background: var(--white);
+      padding: 14px 32px;
+      text-decoration: none;
+      transition: background 0.2s;
+      width: fit-content;
+    }
+    .mobile-menu-cta:hover { background: var(--accent); }
+    .mobile-menu-instagram {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--grey-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .mobile-menu-instagram:hover { color: var(--white); }
+
+    @media (max-width: 640px) {
+      .nav-hamburger { display: flex; }
+      .nav-instagram { display: none !important; }
+    }
+
   </style>
 </head>
 <body>
@@ -234,22 +329,39 @@
   <div class="cursor" id="cursor"></div>
   <div class="cursor-ring" id="cursorRing"></div>
 
-  <nav aria-label="Navegación principal">
-    <a href="index.html" class="nav-logo">Solaz</a>
+  <nav class="main-nav" aria-label="Navegación principal">
+    <a href="index.html" class="nav-logo">solaz</a>
     <ul class="nav-links">
       <li><a href="portafolio.html">Proyectos</a></li>
       <li><a href="servicios.html">Servicios</a></li>
       <li><a href="nosotros.html" class="active">Nosotros</a></li>
     </ul>
-    <a href="mailto:hola@solazstudio.cl" class="nav-cta">Contacto</a>
+    <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Solaz Studio en Instagram">IG</a>
+    <a href="contacto.html" class="nav-cta">Contacto</a>
+  
+    <button class="nav-hamburger" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
+
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-menu-links">
+      <a href="portafolio.html">Proyectos</a>
+      <a href="servicios.html">Servicios</a>
+      <a href="nosotros.html" class="active">Nosotros</a>
+    </div>
+    <div class="mobile-menu-bottom">
+      <a href="contacto.html" class="mobile-menu-cta">Contacto →</a>
+      <a href="https://www.instagram.com/solazstudio/" class="mobile-menu-instagram" target="_blank" rel="noopener">Instagram ↗</a>
+    </div>
+  </div>
 
   <!-- PAGE HEADER -->
   <header class="page-header">
     <div>
       <div class="page-eyebrow">Nosotros</div>
       <h1 class="page-title">
-        SO<span class="outline">LA</span>Z_
+        so<span class="outline">la</span>z_
       </h1>
     </div>
     <div class="fade-up">
@@ -484,11 +596,11 @@
   <footer>
     <div class="footer-logo">solaz</div>
     <span class="footer-copy">© 2026 Solaz Studio — Chile</span>
-    <nav class="footer-links">
+    <div class="footer-links">
       <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">Instagram</a>
       <a href="portafolio.html">Proyectos</a>
-      <a href="mailto:hola@solazstudio.cl">Contacto</a>
-    </nav>
+      <a href="contacto.html">Contacto</a>
+    </div>
   </footer>
 
   <script>
@@ -515,6 +627,27 @@
       entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
     }, { threshold: 0.08 });
     document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  
+    // Mobile menu
+    const navToggle = document.getElementById('navToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (navToggle && mobileMenu) {
+      navToggle.addEventListener('click', () => {
+        const isOpen = mobileMenu.classList.toggle('open');
+        navToggle.classList.toggle('open');
+        mobileMenu.setAttribute('aria-hidden', String(!isOpen));
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+      });
+      mobileMenu.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          mobileMenu.classList.remove('open');
+          navToggle.classList.remove('open');
+          mobileMenu.setAttribute('aria-hidden', 'true');
+          document.body.style.overflow = '';
+        });
+      });
+    }
+
   </script>
 </body>
 </html>
