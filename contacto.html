@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contacto — Solaz Studio | Fotografía Comercial y Producción Audiovisual Chile</title>
+  <meta name="description" content="Cuéntanos qué necesitas. Te respondemos en menos de 24 horas. Sin compromiso — solo una conversación.">
+  <link rel="canonical" href="https://www.solazstudio.cl/contacto">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Contacto — Solaz Studio">
+  <meta property="og:image" content="https://www.solazstudio.cl/og-image.jpg">
+  <meta property="og:locale" content="es_CL">
+  <meta property="og:site_name" content="Solaz Studio">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --black: #0a0a0a; --black-soft: #111111; --black-mid: #1a1a1a;
+      --white: #f5f3ef; --grey-light: #888580; --grey-mid: #444240;
+      --grey-dark: #222220; --accent: #c8b99a;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-serif: 'DM Serif Display', serif;
+      --font-body: 'Inter', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: var(--font-body); overflow-x: hidden; }
+
+    /* CURSOR */
+    .cursor { width: 8px; height: 8px; background: var(--white); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: transform 0.15s ease; mix-blend-mode: difference; }
+    .cursor-ring { width: 36px; height: 36px; border: 1px solid rgba(245,243,239,0.4); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transition: all 0.25s ease; mix-blend-mode: difference; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; background: rgba(10,10,10,0.96); backdrop-filter: blur(12px); }
+    .nav-logo { font-family: var(--font-serif); font-size: 22px; color: var(--white); letter-spacing: -0.02em; text-decoration: none; }
+    .nav-links { display: flex; gap: 40px; list-style: none; }
+    .nav-links a { color: var(--white); text-decoration: none; font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.7; transition: opacity 0.2s; }
+    .nav-links a:hover, .nav-links a.active { opacity: 1; }
+    .nav-cta { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--black); background: var(--white); padding: 10px 22px; text-decoration: none; transition: background 0.2s; }
+    .nav-cta:hover { background: var(--accent); }
+
+    /* FADE */
+    .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-up.visible { opacity: 1; transform: none; }
+
+    /* PAGE LAYOUT */
+    .contact-page {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "top form"
+        "bottom form";
+      grid-template-rows: auto 1fr;
+    }
+
+    /* TOP LEFT — Headline */
+    .contact-top {
+      grid-area: top;
+      padding: 160px 56px 48px 48px;
+      border-right: 1px solid var(--grey-dark);
+    }
+
+    /* BOTTOM LEFT — Trust + contact */
+    .contact-bottom {
+      grid-area: bottom;
+      padding: 48px 56px 80px 48px;
+      border-right: 1px solid var(--grey-dark);
+      border-top: 1px solid var(--grey-dark);
+    }
+
+    .contact-eyebrow {
+      font-size: 10px; font-weight: 400; letter-spacing: 0.25em;
+      text-transform: uppercase; color: var(--accent);
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 32px;
+    }
+    .contact-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--accent); }
+
+    .contact-headline {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: clamp(48px, 7vw, 96px);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--white);
+      margin-bottom: 24px;
+    }
+    .contact-headline .outline {
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(245,243,239,0.3);
+    }
+
+    .contact-subheadline {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: clamp(16px, 1.8vw, 22px);
+      line-height: 1.5;
+      color: var(--white);
+      margin-bottom: 48px;
+      max-width: 400px;
+    }
+
+    /* Trust signals */
+    .trust-list { list-style: none; margin-bottom: 48px; }
+    .trust-list li {
+      font-size: 13px; font-weight: 300; color: var(--grey-light);
+      padding: 12px 0; border-bottom: 1px solid var(--grey-dark);
+      display: flex; align-items: flex-start; gap: 12px; line-height: 1.6;
+    }
+    .trust-list li:first-child { border-top: 1px solid var(--grey-dark); }
+    .trust-arrow { color: var(--accent); font-size: 11px; flex-shrink: 0; margin-top: 2px; }
+
+    /* Direct contact */
+    .direct-contact {}
+    .direct-label { font-size: 9px; font-weight: 400; letter-spacing: 0.22em; text-transform: uppercase; color: var(--grey-mid); margin-bottom: 16px; }
+    .direct-links { display: flex; flex-direction: column; gap: 8px; }
+    .direct-links a { font-size: 13px; font-weight: 300; color: var(--grey-light); text-decoration: none; transition: color 0.2s; letter-spacing: 0.02em; }
+    .direct-links a:hover { color: var(--white); }
+
+    /* Mountain watermark */
+    .contact-mountain {
+      position: absolute;
+      right: -80px; bottom: -60px;
+      width: 380px; opacity: 0.03;
+      pointer-events: none;
+    }
+
+    /* RIGHT — Form */
+    .contact-right {
+      grid-area: form;
+      padding: 140px 48px 80px 56px;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--grey-dark);
+    }
+
+    /* Tabs */
+    .form-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 48px;
+      border-bottom: 1px solid var(--grey-dark);
+    }
+    .tab-btn {
+      font-family: var(--font-body);
+      font-size: 11px; font-weight: 400; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--grey-light);
+      background: none; border: none; border-bottom: 2px solid transparent;
+      padding: 0 0 16px; margin-bottom: -1px;
+      cursor: pointer; transition: all 0.2s;
+      margin-right: 32px;
+    }
+    .tab-btn:hover { color: var(--white); }
+    .tab-btn.active { color: var(--white); border-bottom-color: var(--accent); }
+
+    /* Forms */
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+    .form-label {
+      display: block; font-size: 10px; font-weight: 400;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--grey-mid); margin-bottom: 10px;
+    }
+    .form-label .required { color: var(--accent); margin-left: 2px; }
+
+    .form-input,
+    .form-textarea {
+      width: 100%; background: var(--black-soft);
+      border: 1px solid var(--grey-dark); color: var(--white);
+      font-family: var(--font-body); font-size: 14px; font-weight: 300;
+      padding: 14px 16px; outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--grey-mid); }
+    .form-input:focus, .form-textarea:focus { border-color: var(--accent); }
+    .form-textarea { resize: vertical; min-height: 120px; line-height: 1.7; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* Availability checkboxes */
+    .check-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .check-item { position: relative; }
+    .check-item input[type="checkbox"],
+    .check-item input[type="radio"] {
+      position: absolute; opacity: 0; width: 0; height: 0;
+    }
+    .check-item label {
+      display: block; font-size: 11px; font-weight: 300;
+      letter-spacing: 0.06em; color: var(--grey-light);
+      border: 1px solid var(--grey-dark); padding: 8px 16px;
+      cursor: pointer; transition: all 0.2s; user-select: none;
+    }
+    .check-item input:checked + label {
+      border-color: var(--accent); color: var(--white);
+      background: rgba(200,185,154,0.08);
+    }
+    .check-item label:hover { border-color: var(--grey-mid); color: var(--white); }
+
+    .form-note {
+      font-size: 12px; font-weight: 300; color: var(--grey-mid);
+      line-height: 1.7; margin-bottom: 24px;
+    }
+
+    .form-submit {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-body); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--black); background: var(--white);
+      border: none; padding: 16px 36px; cursor: pointer;
+      transition: background 0.2s; margin-top: 8px;
+    }
+    .form-submit:hover { background: var(--accent); }
+    .form-submit-arrow { transition: transform 0.2s; }
+    .form-submit:hover .form-submit-arrow { transform: translateX(4px); }
+
+    /* Success message */
+    .form-success {
+      display: none;
+      padding: 32px;
+      border: 1px solid var(--grey-dark);
+      background: var(--black-soft);
+      text-align: center;
+    }
+    .form-success.visible { display: block; }
+    .form-success h3 { font-family: var(--font-display); font-size: 32px; margin-bottom: 12px; }
+    .form-success p { font-size: 13px; font-weight: 300; color: var(--grey-light); line-height: 1.7; }
+
+    /* Calendly placeholder */
+    .calendly-placeholder {
+      border: 1px solid var(--grey-dark);
+      background: var(--black-soft);
+      padding: 48px 32px;
+      text-align: center;
+    }
+    .calendly-icon { font-size: 32px; margin-bottom: 16px; opacity: 0.3; }
+    .calendly-title { font-family: var(--font-display); font-size: 24px; margin-bottom: 12px; }
+    .calendly-note { font-size: 12px; font-weight: 300; color: var(--grey-mid); line-height: 1.7; max-width: 320px; margin: 0 auto 24px; }
+    .calendly-link { display: inline-block; font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--black); background: var(--white); padding: 12px 28px; text-decoration: none; transition: background 0.2s; }
+    .calendly-link:hover { background: var(--accent); }
+
+    /* FOOTER */
+    footer { padding: 40px 48px; border-top: 1px solid var(--grey-dark); display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+    .footer-logo { font-family: var(--font-serif); font-size: 20px; color: var(--white); }
+    .footer-copy { font-size: 11px; font-weight: 300; color: var(--grey-mid); letter-spacing: 0.06em; }
+    .footer-links { display: flex; gap: 32px; }
+    .footer-links a { font-size: 11px; font-weight: 300; color: var(--grey-mid); text-decoration: none; letter-spacing: 0.08em; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--white); }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .contact-page {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "top"
+          "form"
+          "bottom";
+      }
+      .contact-top { padding: 120px 48px 40px; border-right: none; border-bottom: 1px solid var(--grey-dark); }
+      .contact-right { border-left: none; border-bottom: 1px solid var(--grey-dark); padding: 56px 48px; }
+      .contact-bottom { border-right: none; padding: 48px 48px 72px; }
+    }
+    @media (max-width: 768px) {
+      nav { padding: 20px 24px; }
+      .nav-links { display: none; }
+      .contact-top { padding: 110px 24px 36px; }
+      .contact-right { padding: 48px 24px; }
+      .contact-bottom { padding: 40px 24px 64px; }
+      .form-row { grid-template-columns: 1fr; }
+      footer { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav aria-label="Navegación principal">
+    <a href="index.html" class="nav-logo">Solaz</a>
+    <ul class="nav-links">
+      <li><a href="portafolio.html">Proyectos</a></li>
+      <li><a href="servicios.html">Servicios</a></li>
+      <li><a href="nosotros.html">Nosotros</a></li>
+    </ul>
+    <a href="mailto:hola@solazstudio.cl" class="nav-cta active">Contacto</a>
+  </nav>
+
+  <div class="contact-page">
+
+    <!-- TOP LEFT: Headline + subtitle -->
+    <div class="contact-top fade-up">
+
+      <svg class="contact-mountain" viewBox="0 0 856.45 856.46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
+      </svg>
+
+      <div class="contact-eyebrow">Contacto</div>
+
+      <h1 class="contact-headline">
+        Hablemos.
+      </h1>
+
+      <p class="contact-subheadline">
+        Cuéntanos qué necesitas. Nosotros nos encargamos del resto.
+        Quítate la carga — somos Solaz.
+      </p>
+
+    </div>
+
+    <!-- BOTTOM LEFT: Trust signals + contact -->
+    <div class="contact-bottom">
+
+      <ul class="trust-list">
+        <li><span class="trust-arrow">→</span> Revisamos cada mensaje personalmente</li>
+        <li><span class="trust-arrow">→</span> Te respondemos en menos de 24 horas hábiles</li>
+        <li><span class="trust-arrow">→</span> Sin compromiso — una conversación no te obliga a nada</li>
+        <li><span class="trust-arrow">→</span> Con lo que nos cuentes podemos prepararte una propuesta inicial</li>
+      </ul>
+
+      <div class="direct-contact">
+        <p class="direct-label">Contacto directo</p>
+        <div class="direct-links">
+          <a href="mailto:hola@solazstudio.cl">hola@solazstudio.cl</a>
+          <a href="tel:+56984212617">+56 9 8421 2617</a>
+          <a href="https://wa.me/56984212617" target="_blank" rel="noopener">WhatsApp</a>
+          <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">@solazstudio</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div class="contact-right">
+
+      <!-- Tabs -->
+      <div class="form-tabs" role="tablist">
+        <button class="tab-btn active" data-tab="mensaje" role="tab" aria-selected="true">Escríbenos</button>
+        <button class="tab-btn" data-tab="reunion" role="tab" aria-selected="false">Agenda tu reunión</button>
+      </div>
+
+      <!-- TAB 1: Formulario de contacto -->
+      <!--
+        INTEGRACIÓN DE FORMULARIO:
+        Para activar el envío real, regístrate en formspree.io,
+        crea un formulario y reemplaza "YOUR_FORM_ID" en el action con tu ID.
+        Ejemplo: action="https://formspree.io/f/abcdefgh"
+      -->
+      <div class="form-panel active" id="tab-mensaje" role="tabpanel">
+        <form id="formMensaje" action="https://api.web3forms.com/submit" method="POST">
+          <input type="hidden" name="access_key" value="e2f133c1-ad94-45ad-b922-b354f4ce2f52">
+          <input type="hidden" name="subject" value="Nuevo mensaje — Solaz Studio">
+          <input type="checkbox" name="botcheck" style="display:none">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="nombre">Nombre<span class="required">*</span></label>
+              <input class="form-input" type="text" id="nombre" name="nombre" placeholder="Tu nombre" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="empresa">Empresa / Emprendimiento</label>
+              <input class="form-input" type="text" id="empresa" name="empresa" placeholder="Nombre de tu marca">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="email">Correo<span class="required">*</span></label>
+              <input class="form-input" type="email" id="email" name="email" placeholder="tu@correo.cl" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="telefono">Teléfono<span class="required">*</span></label>
+              <input class="form-input" type="tel" id="telefono" name="telefono" placeholder="+56 9 XXXX XXXX" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="mensaje">¿En qué podemos ayudarte?<span class="required">*</span></label>
+            <textarea class="form-textarea" id="mensaje" name="mensaje" placeholder="Cuéntanos sobre tu proyecto, qué necesitas y cuándo lo necesitas…" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="presupuesto">Presupuesto disponible <span style="color:var(--grey-mid);font-size:9px;letter-spacing:0.15em;">(opcional)</span></label>
+            <input class="form-input" type="text" id="presupuesto" name="presupuesto" placeholder="Si tienes algo en mente, puedes dejarlo acá…">
+          </div>
+
+          <button type="submit" class="form-submit">
+            Enviar mensaje
+            <span class="form-submit-arrow">→</span>
+          </button>
+        </form>
+        <div class="form-success" id="successMensaje">
+          <h3>MENSAJE ENVIADO_</h3>
+          <p>Recibimos tu mensaje. Te contactamos en menos de 24 horas hábiles.</p>
+        </div>
+      </div>
+
+      <!-- TAB 2: Agenda reunión -->
+      <div class="form-panel" id="tab-reunion" role="tabpanel">
+
+        <p class="form-note">
+          Una videollamada de 15 minutos, sin compromiso. Cuéntanos en qué estás y evaluamos juntos cómo podemos ayudarte. Déjanos tu disponibilidad y te confirmamos horario en menos de 24 horas.
+        </p>
+
+        <form id="formReunion" action="https://api.web3forms.com/submit" method="POST">
+          <input type="hidden" name="access_key" value="e2f133c1-ad94-45ad-b922-b354f4ce2f52">
+          <input type="hidden" name="subject" value="Solicitud de reunión — Solaz Studio">
+          <input type="checkbox" name="botcheck" style="display:none">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="r-nombre">Nombre<span class="required">*</span></label>
+              <input class="form-input" type="text" id="r-nombre" name="nombre" placeholder="Tu nombre" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="r-empresa">Empresa / Emprendimiento</label>
+              <input class="form-input" type="text" id="r-empresa" name="empresa" placeholder="Tu marca">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="r-email">Correo<span class="required">*</span></label>
+              <input class="form-input" type="email" id="r-email" name="email" placeholder="tu@correo.cl" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="r-telefono">Teléfono<span class="required">*</span></label>
+              <input class="form-input" type="tel" id="r-telefono" name="telefono" placeholder="+56 9 XXXX XXXX" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">¿Qué días te acomodan?</label>
+            <div class="check-group">
+              <div class="check-item"><input type="checkbox" id="lunes" name="dias[]" value="Lunes"><label for="lunes">Lunes</label></div>
+              <div class="check-item"><input type="checkbox" id="martes" name="dias[]" value="Martes"><label for="martes">Martes</label></div>
+              <div class="check-item"><input type="checkbox" id="miercoles" name="dias[]" value="Miércoles"><label for="miercoles">Miércoles</label></div>
+              <div class="check-item"><input type="checkbox" id="jueves" name="dias[]" value="Jueves"><label for="jueves">Jueves</label></div>
+              <div class="check-item"><input type="checkbox" id="viernes" name="dias[]" value="Viernes"><label for="viernes">Viernes</label></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">¿En qué horario prefieres?</label>
+            <div class="check-group">
+              <div class="check-item"><input type="radio" id="manana" name="horario" value="Mañana (9:00 – 13:00)"><label for="manana">Mañana · 9:00 – 13:00</label></div>
+              <div class="check-item"><input type="radio" id="tarde" name="horario" value="Tarde (14:00 – 18:00)"><label for="tarde">Tarde · 14:00 – 18:00</label></div>
+            </div>
+          </div>
+
+          <button type="submit" class="form-submit">
+            Confirmar disponibilidad
+            <span class="form-submit-arrow">→</span>
+          </button>
+        </form>
+
+        <div class="form-success" id="successReunion">
+          <h3>RECIBIDO_</h3>
+          <p>Confirmamos tu reunión en menos de 24 horas hábiles.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">solaz</div>
+    <span class="footer-copy">© 2026 Solaz Studio — Chile</span>
+    <nav class="footer-links">
+      <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">Instagram</a>
+      <a href="portafolio.html">Proyectos</a>
+      <a href="servicios.html">Servicios</a>
+    </nav>
+  </footer>
+
+  <script>
+    // Cursor
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+    document.addEventListener('mousemove', e => {
+      mouseX = e.clientX; mouseY = e.clientY;
+      cursor.style.left = mouseX - 4 + 'px';
+      cursor.style.top = mouseY - 4 + 'px';
+    });
+    (function loop() {
+      ringX += (mouseX - ringX - 18) * 0.12;
+      ringY += (mouseY - ringY - 18) * 0.12;
+      ring.style.left = ringX + 'px';
+      ring.style.top = ringY + 'px';
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('a, button, .form-input, .form-textarea, label').forEach(el => {
+      el.addEventListener('mouseenter', () => { cursor.style.transform = 'scale(3)'; ring.style.transform = 'scale(1.5)'; ring.style.borderColor = 'rgba(200,185,154,0.6)'; });
+      el.addEventListener('mouseleave', () => { cursor.style.transform = 'scale(1)'; ring.style.transform = 'scale(1)'; ring.style.borderColor = 'rgba(245,243,239,0.4)'; });
+    });
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+        document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Form submission (Formspree async)
+    function handleForm(formId, successId) {
+      const form = document.getElementById(formId);
+      const success = document.getElementById(successId);
+      if (!form) return;
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = form.querySelector('.form-submit');
+        btn.textContent = 'Enviando…';
+        btn.disabled = true;
+        try {
+          const res = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'Accept': 'application/json' }
+          });
+          if (res.ok) {
+            form.style.display = 'none';
+            success.classList.add('visible');
+          } else {
+            btn.textContent = 'Error al enviar. Intenta de nuevo.';
+            btn.disabled = false;
+          }
+        } catch {
+          btn.textContent = 'Error al enviar. Intenta de nuevo.';
+          btn.disabled = false;
+        }
+      });
+    }
+    handleForm('formMensaje', 'successMensaje');
+    handleForm('formReunion', 'successReunion');
+
+    // Fade up
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

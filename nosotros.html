@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nosotros — Solaz Studio | Fotografía Comercial y Producción Audiovisual Chile</title>
+  <meta name="description" content="Solaz Studio. Fotografía comercial y producción audiovisual con visión estratégica. Basados en Chile, trabajamos con marcas en todo el país.">
+  <link rel="canonical" href="https://www.solazstudio.cl/nosotros">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Nosotros — Solaz Studio">
+  <meta property="og:image" content="https://www.solazstudio.cl/og-image.jpg">
+  <meta property="og:locale" content="es_CL">
+  <meta property="og:site_name" content="Solaz Studio">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --black: #0a0a0a; --black-soft: #111111; --black-mid: #1a1a1a;
+      --white: #f5f3ef; --grey-light: #888580; --grey-mid: #444240;
+      --grey-dark: #222220; --accent: #c8b99a;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-serif: 'DM Serif Display', serif;
+      --font-body: 'Inter', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: var(--font-body); overflow-x: hidden; }
+
+    .cursor { width: 8px; height: 8px; background: var(--white); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: transform 0.15s ease; mix-blend-mode: difference; }
+    .cursor-ring { width: 36px; height: 36px; border: 1px solid rgba(245,243,239,0.4); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transition: all 0.25s ease; mix-blend-mode: difference; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; background: rgba(10,10,10,0.96); backdrop-filter: blur(12px); }
+    .nav-logo { font-family: var(--font-serif); font-size: 22px; color: var(--white); letter-spacing: -0.02em; text-decoration: none; }
+    .nav-links { display: flex; gap: 40px; list-style: none; }
+    .nav-links a { color: var(--white); text-decoration: none; font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.7; transition: opacity 0.2s; }
+    .nav-links a:hover, .nav-links a.active { opacity: 1; }
+    .nav-cta { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--black); background: var(--white); padding: 10px 22px; text-decoration: none; transition: background 0.2s; }
+    .nav-cta:hover { background: var(--accent); }
+
+    .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-up.visible { opacity: 1; transform: none; }
+
+    /* PAGE HEADER */
+    .page-header {
+      padding: 160px 48px 80px;
+      border-bottom: 1px solid var(--grey-dark);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: end;
+    }
+    .page-eyebrow { font-size: 10px; font-weight: 400; letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent); margin-bottom: 24px; display: flex; align-items: center; gap: 16px; }
+    .page-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--accent); }
+    .page-title { font-family: var(--font-display); font-size: clamp(64px, 8vw, 120px); line-height: 0.92; letter-spacing: -0.01em; }
+    .page-title .outline { color: transparent; -webkit-text-stroke: 1px rgba(245,243,239,0.3); }
+    .page-intro { font-family: var(--font-serif); font-style: italic; font-size: clamp(17px, 2vw, 24px); line-height: 1.55; color: var(--white); margin-bottom: 24px; }
+    .page-intro-body { font-size: 14px; font-weight: 300; color: var(--grey-light); line-height: 1.85; max-width: 480px; }
+    .page-intro-body + .page-intro-body { margin-top: 16px; }
+
+    /* MANIFIESTO */
+    .manifesto-section { padding: 100px 48px; display: grid; grid-template-columns: 1fr 2fr; gap: 80px; align-items: start; border-bottom: 1px solid var(--grey-dark); }
+    .section-label { font-size: 10px; font-weight: 400; letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent); padding-top: 6px; }
+    .manifesto-pull { font-family: var(--font-serif); font-style: italic; font-size: clamp(22px, 3vw, 36px); line-height: 1.4; color: var(--white); margin-bottom: 36px; }
+    .manifesto-text { font-size: 15px; font-weight: 300; color: var(--grey-light); line-height: 1.9; max-width: 640px; }
+    .manifesto-text + .manifesto-text { margin-top: 20px; }
+    .manifesto-text strong { color: var(--white); font-weight: 400; }
+
+    /* SIGNIFICADO */
+    .significado-section { border-bottom: 1px solid var(--grey-dark); display: grid; grid-template-columns: 1fr 1fr; min-height: 460px; }
+    .significado-left { padding: 80px 56px; border-right: 1px solid var(--grey-dark); display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+    .significado-mountain { position: absolute; right: -60px; bottom: -40px; width: 300px; opacity: 0.04; }
+    .sig-word { font-family: var(--font-serif); font-style: italic; font-size: clamp(56px, 7vw, 96px); line-height: 1; color: var(--white); margin-bottom: 16px; }
+    .sig-etymology { font-size: 10px; font-weight: 300; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey-mid); margin-bottom: 20px; }
+    .sig-definition { font-size: 15px; font-weight: 300; color: var(--grey-light); line-height: 1.7; max-width: 360px; }
+    .sig-definition em { color: var(--white); font-style: italic; }
+
+    .significado-right { padding: 80px 56px; display: flex; flex-direction: column; justify-content: center; background: var(--black-soft); }
+    .sig-story-label { font-size: 9px; font-weight: 400; letter-spacing: 0.25em; text-transform: uppercase; color: var(--accent); margin-bottom: 28px; }
+    .sig-story { font-size: 15px; font-weight: 300; color: var(--grey-light); line-height: 1.9; max-width: 480px; }
+    .sig-story + .sig-story { margin-top: 20px; }
+    .sig-story strong { color: var(--white); font-weight: 400; }
+    .sig-story em { font-style: italic; color: var(--white); }
+
+    /* EQUIPO */
+    .equipo-section { border-bottom: 1px solid var(--grey-dark); }
+    .equipo-header { padding: 56px 48px 40px; border-bottom: 1px solid var(--grey-dark); display: flex; align-items: baseline; gap: 20px; }
+    .equipo-header h2 { font-family: var(--font-display); font-size: clamp(32px, 4vw, 52px); line-height: 1; }
+    .equipo-header span { font-size: 10px; font-weight: 300; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey-mid); }
+
+    .equipo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .persona {
+      display: flex;
+      flex-direction: column;
+      cursor: default;
+    }
+    .persona:first-child { border-right: 1px solid var(--grey-dark); }
+
+    .persona-image {
+      position: relative;
+      width: 200px;
+      aspect-ratio: 3/4;
+      background: var(--black-mid);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    /* Dark overlay */
+    .persona-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(10,10,10,0.45);
+      transition: opacity 0.4s ease;
+      z-index: 1;
+    }
+    .persona:hover .persona-image::after { opacity: 0; }
+
+    .persona-image img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: top;
+      transition: transform 0.6s ease;
+    }
+    .persona:hover .persona-image img { transform: scale(1.03); }
+
+    .persona-img-placeholder {
+      position: absolute; inset: 0;
+      background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.012) 20px, rgba(255,255,255,0.012) 21px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+      z-index: 0;
+    }
+    .persona-img-placeholder svg { width: 28px; height: 28px; stroke: var(--grey-dark); fill: none; stroke-width: 1; }
+    .persona-img-placeholder span { font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey-dark); }
+
+    .persona-info {
+      padding: 36px 48px 48px;
+      border-top: 1px solid var(--grey-dark);
+    }
+    .persona-num { font-family: var(--font-display); font-size: 48px; line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--grey-dark); margin-bottom: 16px; user-select: none; }
+    .persona-name { font-family: var(--font-display); font-size: clamp(28px, 3vw, 44px); line-height: 0.95; letter-spacing: 0.01em; margin-bottom: 20px; }
+    .persona-roles { list-style: none; }
+    .persona-roles li { font-size: 12px; font-weight: 300; color: var(--grey-light); padding: 9px 0; border-top: 1px solid var(--grey-dark); letter-spacing: 0.02em; line-height: 1.5; }
+    .persona-roles li:last-child { border-bottom: 1px solid var(--grey-dark); }
+
+    /* DISTINCIÓN */
+    .distincion-section {
+      padding: 100px 48px;
+      border-bottom: 1px solid var(--grey-dark);
+    }
+    .distincion-eyebrow {
+      font-size: 10px; font-weight: 400; letter-spacing: 0.25em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 40px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .distincion-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--accent); }
+    .distincion-table { border: 1px solid var(--grey-dark); overflow: hidden; width: 100%; }
+    .distincion-table { border: 1px solid var(--grey-dark); overflow: hidden; }
+    .distincion-row { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--grey-dark); }
+    .distincion-row:last-child { border-bottom: none; }
+    .distincion-row.header-row .distincion-col-header { padding: 16px 28px; font-size: 9px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; }
+    .distincion-col-header.ellos { color: var(--grey-mid); background: var(--black-soft); border-right: 1px solid var(--grey-dark); }
+    .distincion-col-header.nosotros { color: var(--accent); background: rgba(200,185,154,0.04); }
+    .distincion-item { padding: 16px 28px; font-size: 13px; font-weight: 300; line-height: 1.65; }
+    .distincion-item.ellos { color: var(--grey-mid); background: var(--black-soft); border-right: 1px solid var(--grey-dark); }
+    .distincion-item.nosotros { color: var(--white); }
+    .distincion-item.nosotros::before { content: '→ '; color: var(--accent); font-weight: 400; }
+
+    /* CLIENTES */
+    .clientes-section { border-bottom: 1px solid var(--grey-dark); overflow: hidden; }
+    .clientes-header { padding: 40px 48px 32px; border-bottom: 1px solid var(--grey-dark); display: flex; align-items: center; gap: 24px; }
+    .clientes-header h2 { font-family: var(--font-display); font-size: clamp(28px, 3vw, 40px); line-height: 1; }
+    .clientes-header span { font-size: 10px; font-weight: 300; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey-mid); }
+    .ticker-wrap { padding: 28px 0; overflow: hidden; position: relative; }
+    .ticker-wrap::before, .ticker-wrap::after { content: ''; position: absolute; top: 0; bottom: 0; width: 80px; z-index: 2; }
+    .ticker-wrap::before { left: 0; background: linear-gradient(to right, var(--black), transparent); }
+    .ticker-wrap::after { right: 0; background: linear-gradient(to left, var(--black), transparent); }
+    .ticker-track { display: flex; width: max-content; animation: ticker 55s linear infinite; }
+    .ticker-track:hover { animation-play-state: paused; }
+    @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .ticker-item { display: flex; align-items: center; gap: 40px; padding: 0 40px; white-space: nowrap; }
+    .cliente-logo { font-family: var(--font-display); font-size: 22px; letter-spacing: 0.06em; color: var(--white); opacity: 0.55; transition: opacity 0.3s; user-select: none; }
+    .cliente-logo:hover { opacity: 1; }
+    .ticker-sep { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: 0.4; flex-shrink: 0; }
+
+    /* CTA */
+    .cta-section { padding: 140px 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .cta-headline { font-family: var(--font-display); font-size: clamp(56px, 7vw, 100px); line-height: 0.92; letter-spacing: -0.01em; }
+    .cta-headline .outline { color: transparent; -webkit-text-stroke: 1px rgba(245,243,239,0.3); }
+    .cta-body { font-size: 14px; font-weight: 300; color: var(--grey-light); line-height: 1.85; margin-bottom: 20px; }
+    .cta-body strong { color: var(--white); font-weight: 400; }
+    .cta-buttons { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 40px; }
+    .btn-primary { display: inline-block; font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--black); background: var(--white); padding: 14px 32px; text-decoration: none; transition: background 0.2s; }
+    .btn-primary:hover { background: var(--accent); }
+    .btn-secondary { display: inline-block; font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--white); border: 1px solid rgba(245,243,239,0.25); padding: 14px 32px; text-decoration: none; transition: border-color 0.2s, color 0.2s; }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .cta-contact-info { margin-top: 32px; display: flex; gap: 32px; flex-wrap: wrap; }
+    .cta-contact-info a { font-size: 12px; font-weight: 300; color: var(--grey-light); text-decoration: none; transition: color 0.2s; letter-spacing: 0.04em; }
+    .cta-contact-info a:hover { color: var(--white); }
+
+    footer { padding: 40px 48px; border-top: 1px solid var(--grey-dark); display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+    .footer-logo { font-family: var(--font-serif); font-size: 20px; color: var(--white); }
+    .footer-copy { font-size: 11px; font-weight: 300; color: var(--grey-mid); letter-spacing: 0.06em; }
+    .footer-links { display: flex; gap: 32px; }
+    .footer-links a { font-size: 11px; font-weight: 300; color: var(--grey-mid); text-decoration: none; letter-spacing: 0.08em; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--white); }
+
+    @media (max-width: 1024px) {
+      .significado-section { grid-template-columns: 1fr; }
+      .significado-left { border-right: none; border-bottom: 1px solid var(--grey-dark); }
+      .manifesto-section, .distincion-section { grid-template-columns: 1fr; gap: 32px; }
+      .equipo-grid { grid-template-columns: 1fr; }
+      .persona:first-child { border-right: none; border-bottom: 1px solid var(--grey-dark); }
+    }
+    @media (max-width: 768px) {
+      nav { padding: 20px 24px; }
+      .nav-links { display: none; }
+      .page-header { padding: 120px 24px 60px; grid-template-columns: 1fr; gap: 40px; }
+      .manifesto-section, .distincion-section { padding: 64px 24px; }
+      .significado-left, .significado-right { padding: 56px 24px; }
+      .equipo-header { padding: 40px 24px 28px; }
+      .persona-info { padding: 24px 24px 36px; }
+      .distincion-row { grid-template-columns: 1fr; }
+      .distincion-item.ellos, .distincion-col-header.ellos { border-right: none; border-bottom: 1px solid var(--grey-dark); }
+      .clientes-header { padding: 28px 24px; }
+      .cta-section { padding: 80px 24px; grid-template-columns: 1fr; gap: 48px; }
+      footer { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <nav aria-label="Navegación principal">
+    <a href="index.html" class="nav-logo">Solaz</a>
+    <ul class="nav-links">
+      <li><a href="portafolio.html">Proyectos</a></li>
+      <li><a href="servicios.html">Servicios</a></li>
+      <li><a href="nosotros.html" class="active">Nosotros</a></li>
+    </ul>
+    <a href="mailto:hola@solazstudio.cl" class="nav-cta">Contacto</a>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div>
+      <div class="page-eyebrow">Nosotros</div>
+      <h1 class="page-title">
+        SO<span class="outline">LA</span>Z_
+      </h1>
+    </div>
+    <div class="fade-up">
+      <p class="page-intro">Fotografía comercial y video con visión estratégica.</p>
+      <p class="page-intro-body">
+        Con base en Chile, trabajamos con marcas y empresas en todo el país.
+        Cada proyecto tiene un objetivo — y lo trabajamos desde ahí, sin intermediarios.
+      </p>
+    </div>
+  </header>
+
+  <!-- MANIFIESTO -->
+  <section class="manifesto-section fade-up" aria-label="Quiénes somos">
+    <div class="section-label">Quiénes somos</div>
+    <div>
+      <p class="manifesto-pull">
+        No somos una agencia.<br>No somos una productora.<br>Somos Solaz.
+      </p>
+      <p class="manifesto-text">
+        En Solaz somos expertos en fotografía comercial y producción audiovisual para marcas.
+        Lo que nos diferencia no es el nombre — es que <strong>el trabajo lo hacemos nosotros</strong>.
+        El equipo que te responde es el mismo que llega al set, dirige la producción y entrega el resultado.
+        Sin capas intermediarias. Sin pasar tu proyecto a terceros cuando nadie está mirando.
+      </p>
+      <p class="manifesto-text">
+        Trabajamos con propósito. Cada imagen, cada video, cada pieza de contenido tiene un objetivo claro:
+        <strong>comunicar lo que tu marca es y mover a quien la ve.</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- SIGNIFICADO -->
+  <section class="significado-section" aria-label="El significado de Solaz">
+    <div class="significado-left fade-up">
+      <svg class="significado-mountain" viewBox="0 0 856.45 856.46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
+      </svg>
+      <p class="sig-etymology">Del occit. ant. solatz, y este del lat. solacium</p>
+      <h2 class="sig-word">solaz</h2>
+      <p class="sig-definition">
+        1. m. <em>Consuelo, placer, alivio de los trabajos.</em>
+      </p>
+    </div>
+    <div class="significado-right fade-up">
+      <p class="sig-story-label">¿Por qué solaz?</p>
+      <p class="sig-story">
+        Solaz representa lo que buscamos que logre nuestro trabajo.
+        Ese peso visual que muchas marcas cargan — no saber a quién confiarle algo tan importante,
+        cómo comunicarlo, por dónde empezar — es exactamente lo que nosotros asumimos.
+        <strong>Quitarle esa carga al cliente. Ser ese alivio.</strong>
+      </p>
+      <p class="sig-story">
+        Dejar todo en nuestras manos no es una frase.
+        Es la forma en que trabajamos.
+      </p>
+    </div>
+  </section>
+
+  <!-- EQUIPO -->
+  <section class="equipo-section" aria-label="Equipo Solaz Studio">
+    <div class="equipo-header">
+      <h2>EL EQUIPO</h2>
+      <span>Las personas detrás del trabajo</span>
+    </div>
+    <div class="equipo-grid">
+      <div class="persona fade-up">
+        <div class="persona-image">
+          <!-- <img src="img/seba-ogalde.jpg" alt="Sebastián Ogalde — Fotógrafo, Solaz Studio"> -->
+          <div class="persona-img-placeholder">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Foto Seba</span>
+          </div>
+        </div>
+        <div class="persona-info">
+          <div class="persona-num">01</div>
+          <h2 class="persona-name">SEBASTIÁN<br>OGALDE</h2>
+          <ul class="persona-roles">
+            <li>Fotógrafo publicitario</li>
+            <li>Más de 12 años de experiencia</li>
+            <li>Fundador — Solaz Studio</li>
+          </ul>
+        </div>
+      </div>
+      <div class="persona fade-up">
+        <div class="persona-image">
+          <!-- <img src="img/ignacio-flores.jpg" alt="Ignacio Flores — Filmmaker, Solaz Studio"> -->
+          <div class="persona-img-placeholder">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Foto Nacho</span>
+          </div>
+        </div>
+        <div class="persona-info">
+          <div class="persona-num">02</div>
+          <h2 class="persona-name">IGNACIO<br>FLORES</h2>
+          <ul class="persona-roles">
+            <li>Filmmaker</li>
+            <li>Más de 6 años de experiencia</li>
+            <li>Piloto de dron</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DISTINCIÓN -->
+  <section class="distincion-section fade-up" aria-label="Lo que nos distingue">
+    <div class="distincion-eyebrow">Lo que nos distingue</div>
+    <div class="distincion-table">
+      <div class="distincion-row header-row">
+        <div class="distincion-col-header ellos">Cómo trabajan los demás</div>
+        <div class="distincion-col-header nosotros">Cómo trabajamos nosotros</div>
+      </div>
+      <div class="distincion-row">
+        <div class="distincion-item ellos">Una agencia gestiona, otro ejecuta</div>
+        <div class="distincion-item nosotros">Nosotros te atendemos, nos encargamos de la producción. Nosotros ejecutamos</div>
+      </div>
+      <div class="distincion-row">
+        <div class="distincion-item ellos">El brief pasa por varias manos antes de llegar a producción</div>
+        <div class="distincion-item nosotros">Tu brief directo a quienes lo ejecutan. Si no lo tienes, nosotros lo creamos y ejecutamos</div>
+      </div>
+      <div class="distincion-row">
+        <div class="distincion-item ellos">Rotan el equipo según disponibilidad</div>
+        <div class="distincion-item nosotros">El mismo equipo de principio a fin, en cada proyecto</div>
+      </div>
+      <div class="distincion-row">
+        <div class="distincion-item ellos">Llegan con el equipamiento que tengan disponible</div>
+        <div class="distincion-item nosotros">El equipamiento que el proyecto requiere, no el más conveniente</div>
+      </div>
+      <div class="distincion-row">
+        <div class="distincion-item ellos">Tarifas fijas que no se ajustan a tu proyecto</div>
+        <div class="distincion-item nosotros">Presupuesto personalizado según tu proyecto</div>
+      </div>
+      <div class="distincion-row">
+        <div class="distincion-item ellos">Ejecutan lo que pides, sin más</div>
+        <div class="distincion-item nosotros">Aportamos criterio creativo — no solo ejecutamos</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLIENTES -->
+  <section class="clientes-section fade-up" aria-label="Clientes de Solaz Studio">
+    <div class="clientes-header">
+      <h2>HAN CONFIADO EN NOSOTROS</h2>
+      <span>Marcas con las que hemos trabajado</span>
+    </div>
+    <div class="ticker-wrap">
+      <div class="ticker-track">
+        <div class="ticker-item">
+          <span class="cliente-logo">DROPI</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">ASIATI</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">JOHNNY ROCKETS</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">PULLMAN HOTELS</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">ARIZTÍA</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">VEGGIE DELI</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">PUERTO ROLLS</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">WEG CHILE</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">ARAMARK</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">UNIVERSIDAD DE O'HIGGINS</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">CARABINEROS DE CHILE</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">MALL PLAZA</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">UNIVERSIDAD ANDRÉS BELLO</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">EN FUSIÓN</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">KIFIT</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">RED BULL</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">COPEC FLUX</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">MATURANA WINES</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">NOOK</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">AISTANA</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">TECNOVOA</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">ELIGE EDUCAR</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">SALCOBRAND</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">ENGIE</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">PATERSON & COOKE</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">COLGATE</span><span class="ticker-sep"></span>
+        </div>
+        <div class="ticker-item" aria-hidden="true">
+          <span class="cliente-logo">DROPI</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">ASIATI</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">JOHNNY ROCKETS</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">PULLMAN HOTELS</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">ARIZTÍA</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">VEGGIE DELI</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">PUERTO ROLLS</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">WEG CHILE</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">ARAMARK</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">UNIVERSIDAD DE O'HIGGINS</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">CARABINEROS DE CHILE</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">MALL PLAZA</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">UNIVERSIDAD ANDRÉS BELLO</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">EN FUSIÓN</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">KIFIT</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">RED BULL</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">COPEC FLUX</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">MATURANA WINES</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">NOOK</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">AISTANA</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">TECNOVOA</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">ELIGE EDUCAR</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">SALCOBRAND</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">ENGIE</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">PATERSON & COOKE</span><span class="ticker-sep"></span>
+          <span class="cliente-logo">COLGATE</span><span class="ticker-sep"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section" aria-label="Contacto">
+    <div>
+      <h2 class="cta-headline">
+        HABLEMOS<br>
+        <span class="outline">DE TU</span><br>
+        PROYECTO_
+      </h2>
+    </div>
+    <div class="fade-up">
+      <p class="cta-body">No necesitamos un brief perfecto para empezar a conversar. <strong>Solo necesitamos entender tu marca, tu objetivo y lo que quieres lograr.</strong></p>
+      <p class="cta-body">Respondemos dentro de 24 horas hábiles.</p>
+      <div class="cta-buttons">
+        <a href="mailto:hola@solazstudio.cl" class="btn-primary">Escribir ahora →</a>
+        <a href="https://wa.me/56984212617" class="btn-secondary" target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+      <div class="cta-contact-info">
+        <a href="mailto:hola@solazstudio.cl">hola@solazstudio.cl</a>
+        <a href="tel:+56984212617">+56 9 8421 2617</a>
+        <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">@solazstudio</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo">solaz</div>
+    <span class="footer-copy">© 2026 Solaz Studio — Chile</span>
+    <nav class="footer-links">
+      <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">Instagram</a>
+      <a href="portafolio.html">Proyectos</a>
+      <a href="mailto:hola@solazstudio.cl">Contacto</a>
+    </nav>
+  </footer>
+
+  <script>
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursorRing');
+    let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+    document.addEventListener('mousemove', e => {
+      mouseX = e.clientX; mouseY = e.clientY;
+      cursor.style.left = mouseX - 4 + 'px';
+      cursor.style.top = mouseY - 4 + 'px';
+    });
+    (function loop() {
+      ringX += (mouseX - ringX - 18) * 0.12;
+      ringY += (mouseY - ringY - 18) * 0.12;
+      ring.style.left = ringX + 'px';
+      ring.style.top = ringY + 'px';
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => { cursor.style.transform = 'scale(3)'; ring.style.transform = 'scale(1.5)'; ring.style.borderColor = 'rgba(200,185,154,0.6)'; });
+      el.addEventListener('mouseleave', () => { cursor.style.transform = 'scale(1)'; ring.style.transform = 'scale(1)'; ring.style.borderColor = 'rgba(245,243,239,0.4)'; });
+    });
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

@@ -3,17 +3,71 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Solaz Studio — Fotografía & Video Comercial</title>
+
+  <!-- SEO: Título principal -->
+  <title>Solaz Studio — Fotografía Comercial y Producción Audiovisual Chile</title>
+
+  <!-- SEO: Descripción -->
+  <meta name="description" content="Solaz Studio es un estudio creativo especializado en fotografía comercial, producción audiovisual y contenido visual para marcas y empresas en Chile. Más de 12 años creando contenido que vende.">
+
+  <!-- SEO: Keywords -->
+  <meta name="keywords" content="fotografía comercial Chile, producción audiovisual Chile, video corporativo Chile, fotografía gastronómica Chile, fotografía de producto Chile, contenido para marcas Chile, fotografía industrial Chile, fotografía corporativa Chile, reels para marcas Chile, contenido visual empresas Chile, estudio creativo audiovisual Chile">
+
+  <!-- SEO: Canonical -->
+  <link rel="canonical" href="https://www.solazstudio.cl/">
+
+  <!-- SEO: Robots -->
+  <meta name="robots" content="index, follow">
+
+  <!-- SEO: Open Graph para redes sociales -->
+  <meta property="og:title" content="Solaz Studio — Fotografía Comercial y Producción Audiovisual Chile">
+  <meta property="og:description" content="Más de 12 años creando contenido visual para marcas en Chile. Fotografía comercial, video corporativo, producción audiovisual y contenido para redes sociales.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.solazstudio.cl/">
+  <meta property="og:image" content="https://www.solazstudio.cl/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="es_CL">
+  <meta property="og:site_name" content="Solaz Studio">
+
+  <!-- SEO: Twitter/X Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Solaz Studio — Fotografía Comercial y Producción Audiovisual Chile">
+  <meta name="twitter:description" content="Estudio creativo especializado en fotografía comercial, video y contenido audiovisual para marcas en Chile.">
+  <meta name="twitter:image" content="https://www.solazstudio.cl/og-image.jpg">
+
+  <!-- SEO: Datos estructurados -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "name": "Solaz Studio",
+    "description": "Estudio creativo especializado en fotografía comercial, producción audiovisual y contenido visual para marcas y empresas en Chile.",
+    "url": "https://www.solazstudio.cl",
+    "telephone": "+56984212617",
+    "email": "hola@solazstudio.cl",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Santiago",
+      "addressRegion": "Región Metropolitana",
+      "addressCountry": "CL"
+    },
+    "areaServed": "Chile",
+    "sameAs": ["https://www.instagram.com/solazstudio/"],
+    "serviceType": ["Fotografía Comercial", "Producción Audiovisual", "Video Corporativo", "Fotografía Gastronómica", "Fotografía de Producto", "Contenido para Redes Sociales", "Dirección de Arte"]
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Neue+Haas+Grotesk+Display+Pro:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
   <style>
     :root {
       --black: #0a0a0a;
       --black-soft: #111111;
       --black-mid: #1a1a1a;
       --white: #f5f3ef;
-      --white-pure: #ffffff;
       --grey-light: #888580;
       --grey-mid: #444240;
       --grey-dark: #222220;
@@ -24,7 +78,6 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { scroll-behavior: smooth; }
 
     body {
@@ -37,7 +90,7 @@
       cursor: default;
     }
 
-    /* ── CUSTOM CURSOR ── */
+    /* ── CURSOR ── */
     .cursor {
       width: 8px; height: 8px;
       background: var(--white);
@@ -45,7 +98,7 @@
       position: fixed;
       pointer-events: none;
       z-index: 9999;
-      transition: transform 0.15s ease, opacity 0.15s ease;
+      transition: transform 0.15s ease;
       mix-blend-mode: difference;
     }
     .cursor-ring {
@@ -68,9 +121,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 28px 48px;
-      mix-blend-mode: normal;
     }
-
     nav::before {
       content: '';
       position: absolute;
@@ -78,18 +129,15 @@
       background: linear-gradient(to bottom, rgba(10,10,10,0.9) 0%, transparent 100%);
       pointer-events: none;
     }
-
     .nav-logo {
       position: relative;
       z-index: 1;
+      font-family: var(--font-serif);
+      font-size: 22px;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      text-decoration: none;
     }
-
-    .nav-logo svg {
-      height: 28px;
-      width: auto;
-      fill: var(--white);
-    }
-
     .nav-links {
       position: relative;
       z-index: 1;
@@ -97,7 +145,6 @@
       gap: 40px;
       list-style: none;
     }
-
     .nav-links a {
       color: var(--white);
       text-decoration: none;
@@ -108,25 +155,21 @@
       opacity: 0.7;
       transition: opacity 0.2s;
     }
-
     .nav-links a:hover { opacity: 1; }
-
     .nav-cta {
       position: relative;
       z-index: 1;
       font-size: 11px;
-      font-weight: 400;
+      font-weight: 500;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--black);
       background: var(--white);
       padding: 10px 22px;
       text-decoration: none;
-      transition: background 0.2s, color 0.2s;
+      transition: background 0.2s;
     }
-    .nav-cta:hover {
-      background: var(--accent);
-    }
+    .nav-cta:hover { background: var(--accent); }
 
     /* ── HERO ── */
     .hero {
@@ -139,37 +182,21 @@
       padding: 0 48px 72px;
       overflow: hidden;
     }
-
     .hero-bg {
       position: absolute;
       inset: 0;
-      background:
-        linear-gradient(to top, rgba(10,10,10,1) 0%, rgba(10,10,10,0.4) 40%, rgba(10,10,10,0.2) 100%),
-        linear-gradient(105deg, #1a1612 0%, #0f0e0c 50%, #151310 100%);
+      background: linear-gradient(to top, rgba(10,10,10,1) 0%, rgba(10,10,10,0.4) 40%, rgba(10,10,10,0.15) 100%),
+                  linear-gradient(105deg, #1a1612 0%, #0f0e0c 50%, #151310 100%);
     }
-
-    /* Grain texture */
-    .hero-bg::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      opacity: 0.6;
-      mix-blend-mode: overlay;
-      pointer-events: none;
-    }
-
-    /* Abstract mountain shape in background */
     .hero-mountain {
       position: absolute;
       right: -5%;
       top: 0;
       height: 100%;
       width: 60%;
-      opacity: 0.04;
+      opacity: 0.045;
       pointer-events: none;
     }
-
     .hero-eyebrow {
       position: relative;
       z-index: 2;
@@ -183,7 +210,6 @@
       align-items: center;
       gap: 16px;
     }
-
     .hero-eyebrow::before {
       content: '';
       display: block;
@@ -192,6 +218,7 @@
       background: var(--accent);
     }
 
+    /* H1 principal — contiene palabras clave SEO */
     .hero-headline {
       position: relative;
       z-index: 2;
@@ -202,12 +229,10 @@
       color: var(--white);
       margin-bottom: 8px;
     }
-
     .hero-headline .line-2 {
       color: transparent;
       -webkit-text-stroke: 1px rgba(245,243,239,0.35);
     }
-
     .hero-sub {
       position: relative;
       z-index: 2;
@@ -217,20 +242,14 @@
       margin-top: 40px;
       gap: 40px;
     }
-
     .hero-descriptor {
       font-size: 13px;
       font-weight: 300;
       color: var(--grey-light);
       line-height: 1.7;
-      max-width: 340px;
+      max-width: 360px;
     }
-
-    .hero-descriptor strong {
-      color: var(--white);
-      font-weight: 400;
-    }
-
+    .hero-descriptor strong { color: var(--white); font-weight: 400; }
     .hero-scroll {
       display: flex;
       flex-direction: column;
@@ -242,24 +261,20 @@
       color: var(--grey-light);
       opacity: 0.6;
     }
-
     .hero-scroll-line {
-      width: 1px;
-      height: 48px;
+      width: 1px; height: 48px;
       background: linear-gradient(to bottom, var(--accent), transparent);
       animation: scrollPulse 2s ease-in-out infinite;
     }
-
     @keyframes scrollPulse {
-      0%, 100% { opacity: 0.4; transform: scaleY(1); }
-      50% { opacity: 1; transform: scaleY(1.1); }
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
     }
 
-    /* Ticker */
+    /* Ticker — terminología profesional */
     .hero-ticker {
       position: absolute;
-      bottom: 0;
-      left: 0; right: 0;
+      bottom: 0; left: 0; right: 0;
       z-index: 3;
       height: 36px;
       background: var(--accent);
@@ -267,13 +282,11 @@
       display: flex;
       align-items: center;
     }
-
     .ticker-track {
       display: flex;
-      animation: ticker 20s linear infinite;
+      animation: ticker 28s linear infinite;
       white-space: nowrap;
     }
-
     .ticker-item {
       font-size: 10px;
       font-weight: 400;
@@ -285,16 +298,13 @@
       align-items: center;
       gap: 32px;
     }
-
     .ticker-dot {
-      width: 3px;
-      height: 3px;
+      width: 3px; height: 3px;
       border-radius: 50%;
       background: var(--black);
       opacity: 0.4;
       flex-shrink: 0;
     }
-
     @keyframes ticker {
       0% { transform: translateX(0); }
       100% { transform: translateX(-50%); }
@@ -309,8 +319,7 @@
       align-items: center;
       border-bottom: 1px solid var(--grey-dark);
     }
-
-    .statement-label {
+    .section-label {
       font-size: 10px;
       letter-spacing: 0.2em;
       text-transform: uppercase;
@@ -320,49 +329,36 @@
       align-items: center;
       gap: 12px;
     }
-    .statement-label::before {
+    .section-label::before {
       content: '';
-      width: 24px;
-      height: 1px;
+      width: 24px; height: 1px;
       background: var(--accent);
     }
-
     .statement-text {
       font-family: var(--font-serif);
-      font-size: clamp(28px, 3.5vw, 48px);
+      font-size: clamp(28px, 3.5vw, 46px);
       line-height: 1.2;
       color: var(--white);
       font-style: italic;
     }
-
     .statement-text em {
       font-style: normal;
       color: var(--accent);
     }
-
-    .statement-right {
-      padding-top: 8px;
-    }
-
     .statement-body {
       font-size: 14px;
       font-weight: 300;
       color: var(--grey-light);
       line-height: 1.9;
-      margin-bottom: 40px;
+      margin-bottom: 32px;
     }
-
-    .statement-body strong {
-      color: var(--white);
-      font-weight: 400;
-    }
-
+    .statement-body strong { color: var(--white); font-weight: 400; }
     .clients-strip {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      margin-top: 8px;
     }
-
     .client-tag {
       font-size: 9px;
       letter-spacing: 0.15em;
@@ -372,17 +368,12 @@
       padding: 5px 12px;
       transition: color 0.2s, border-color 0.2s;
     }
+    .client-tag:hover { color: var(--white); border-color: var(--grey-mid); }
 
-    .client-tag:hover {
-      color: var(--white);
-      border-color: var(--grey-mid);
-    }
-
-    /* ── WORK GRID ── */
-    .work {
+    /* ── PROYECTOS ── */
+    .proyectos {
       padding: 80px 48px 120px;
     }
-
     .section-header {
       display: flex;
       align-items: baseline;
@@ -391,14 +382,12 @@
       border-bottom: 1px solid var(--grey-dark);
       padding-bottom: 20px;
     }
-
     .section-title {
       font-family: var(--font-display);
       font-size: 13px;
       letter-spacing: 0.2em;
       color: var(--white);
     }
-
     .section-action {
       font-size: 11px;
       letter-spacing: 0.12em;
@@ -410,95 +399,59 @@
       gap: 8px;
       transition: color 0.2s;
     }
-
-    .section-action::after {
-      content: '→';
-      transition: transform 0.2s;
-    }
-
+    .section-action::after { content: '→'; transition: transform 0.2s; }
     .section-action:hover { color: var(--white); }
     .section-action:hover::after { transform: translateX(4px); }
 
     .work-grid {
       display: grid;
       grid-template-columns: repeat(12, 1fr);
-      grid-template-rows: auto;
       gap: 3px;
     }
-
     .work-item {
       position: relative;
       overflow: hidden;
       background: var(--black-mid);
       cursor: pointer;
     }
-
     .work-item:nth-child(1) { grid-column: span 7; aspect-ratio: 16/10; }
-    .work-item:nth-child(2) { grid-column: span 5; aspect-ratio: unset; }
+    .work-item:nth-child(2) { grid-column: span 5; }
     .work-item:nth-child(3) { grid-column: span 4; aspect-ratio: 4/5; }
     .work-item:nth-child(4) { grid-column: span 4; aspect-ratio: 4/5; }
     .work-item:nth-child(5) { grid-column: span 4; aspect-ratio: 4/5; }
 
     .work-img-placeholder {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       min-height: 280px;
       position: relative;
       overflow: hidden;
     }
+    .work-item:nth-child(1) .work-img-placeholder::before { content:''; position:absolute; inset:0; background: linear-gradient(135deg, #1a1208 0%, #2d1f0e 40%, #3d2a15 100%); }
+    .work-item:nth-child(2) .work-img-placeholder::before { content:''; position:absolute; inset:0; background: linear-gradient(135deg, #0e1520 0%, #192030 100%); }
+    .work-item:nth-child(3) .work-img-placeholder::before { content:''; position:absolute; inset:0; background: linear-gradient(160deg, #1c1008 0%, #2a1a0c 100%); }
+    .work-item:nth-child(4) .work-img-placeholder::before { content:''; position:absolute; inset:0; background: linear-gradient(160deg, #0a0f0a 0%, #121a12 100%); }
+    .work-item:nth-child(5) .work-img-placeholder::before { content:''; position:absolute; inset:0; background: linear-gradient(160deg, #1a1510 0%, #251e16 100%); }
 
-    .work-img-placeholder::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-    }
-
-    /* Color palettes for placeholders based on portfolio work */
-    .work-item:nth-child(1) .work-img-placeholder::before {
-      background: linear-gradient(135deg, #1a1208 0%, #2d1f0e 40%, #3d2a15 100%);
-    }
-    .work-item:nth-child(2) .work-img-placeholder::before {
-      background: linear-gradient(135deg, #0e1520 0%, #192030 100%);
-    }
-    .work-item:nth-child(3) .work-img-placeholder::before {
-      background: linear-gradient(160deg, #1c1008 0%, #2a1a0c 100%);
-    }
-    .work-item:nth-child(4) .work-img-placeholder::before {
-      background: linear-gradient(160deg, #0a0f0a 0%, #121a12 100%);
-    }
-    .work-item:nth-child(5) .work-img-placeholder::before {
-      background: linear-gradient(160deg, #1a1510 0%, #251e16 100%);
-    }
-
-    /* Photo category labels inside placeholders */
     .work-photo-label {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       font-family: var(--font-display);
-      font-size: clamp(18px, 2.5vw, 36px);
+      font-size: clamp(16px, 2vw, 30px);
       letter-spacing: 0.1em;
-      color: rgba(245,243,239,0.08);
+      color: rgba(245,243,239,0.07);
       text-align: center;
       pointer-events: none;
       white-space: nowrap;
     }
-
     .work-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(10,10,10,0.9) 0%, transparent 50%);
+      background: linear-gradient(to top, rgba(10,10,10,0.92) 0%, transparent 55%);
       opacity: 0;
       transition: opacity 0.4s ease;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 28px;
     }
-
     .work-item:hover .work-overlay { opacity: 1; }
-
     .work-meta {
       position: absolute;
       bottom: 0; left: 0; right: 0;
@@ -507,24 +460,20 @@
       justify-content: space-between;
       align-items: flex-end;
     }
-
     .work-rubro {
       font-size: 9px;
       letter-spacing: 0.2em;
       text-transform: uppercase;
       color: var(--accent);
     }
-
     .work-client {
       font-size: 13px;
       font-weight: 300;
       color: var(--white);
       margin-top: 4px;
     }
-
     .work-arrow {
-      width: 32px;
-      height: 32px;
+      width: 32px; height: 32px;
       border: 1px solid rgba(245,243,239,0.3);
       display: flex;
       align-items: center;
@@ -535,25 +484,19 @@
       transform: translateY(8px);
       transition: opacity 0.3s, transform 0.3s;
     }
+    .work-item:hover .work-arrow { opacity: 1; transform: translateY(0); }
 
-    .work-item:hover .work-arrow {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* ── RUBROS ── */
-    .rubros {
+    /* ── SERVICIOS ── */
+    .servicios {
       padding: 80px 48px 120px;
       border-top: 1px solid var(--grey-dark);
     }
-
     .rubros-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 3px;
       margin-top: 48px;
     }
-
     .rubro-item {
       position: relative;
       padding: 48px 36px;
@@ -566,45 +509,38 @@
       flex-direction: column;
       justify-content: space-between;
     }
-
     .rubro-item::before {
       content: '';
       position: absolute;
       top: 0; left: 0;
-      width: 100%;
-      height: 2px;
+      width: 100%; height: 2px;
       background: var(--accent);
       transform: scaleX(0);
       transform-origin: left;
       transition: transform 0.4s ease;
     }
-
     .rubro-item:hover::before { transform: scaleX(1); }
     .rubro-item:hover { background: #161614; }
-
     .rubro-num {
       font-size: 10px;
       letter-spacing: 0.2em;
       color: var(--grey-mid);
       font-weight: 300;
     }
-
     .rubro-name {
       font-family: var(--font-display);
-      font-size: clamp(28px, 3vw, 40px);
+      font-size: clamp(24px, 2.5vw, 36px);
       letter-spacing: 0.04em;
       color: var(--white);
-      line-height: 1;
+      line-height: 1.05;
       margin: auto 0;
     }
-
     .rubro-name span {
       display: block;
       color: transparent;
       -webkit-text-stroke: 1px rgba(245,243,239,0.25);
-      font-size: 0.7em;
+      font-size: 0.75em;
     }
-
     .rubro-desc {
       font-size: 12px;
       font-weight: 300;
@@ -612,27 +548,21 @@
       line-height: 1.6;
       margin-top: 20px;
     }
-
     .rubro-arrow {
       font-size: 20px;
       color: var(--grey-mid);
       transition: color 0.3s, transform 0.3s;
       align-self: flex-end;
     }
+    .rubro-item:hover .rubro-arrow { color: var(--accent); transform: translate(4px, -4px); }
 
-    .rubro-item:hover .rubro-arrow {
-      color: var(--accent);
-      transform: translate(4px, -4px);
-    }
-
-    /* ── CÓMO TRABAJAMOS ── */
+    /* ── PROCESO ── */
     .proceso {
       padding: 120px 48px;
       background: var(--black-soft);
       border-top: 1px solid var(--grey-dark);
       border-bottom: 1px solid var(--grey-dark);
     }
-
     .proceso-grid {
       display: grid;
       grid-template-columns: 1fr 2fr;
@@ -640,7 +570,6 @@
       align-items: start;
       margin-top: 60px;
     }
-
     .proceso-intro {
       font-family: var(--font-serif);
       font-size: 22px;
@@ -650,18 +579,8 @@
       position: sticky;
       top: 120px;
     }
-
-    .proceso-intro em {
-      font-style: normal;
-      color: var(--accent);
-    }
-
-    .proceso-steps {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
+    .proceso-intro em { font-style: normal; color: var(--accent); }
+    .proceso-steps { display: flex; flex-direction: column; }
     .proceso-step {
       display: grid;
       grid-template-columns: 48px 1fr;
@@ -670,19 +589,13 @@
       border-bottom: 1px solid var(--grey-dark);
       align-items: start;
     }
-
     .proceso-step:last-child { border-bottom: none; }
-
     .step-num {
       font-family: var(--font-display);
       font-size: 48px;
       color: var(--grey-dark);
       line-height: 1;
-      padding-top: 4px;
     }
-
-    .step-content {}
-
     .step-title {
       font-size: 14px;
       font-weight: 500;
@@ -691,7 +604,6 @@
       color: var(--white);
       margin-bottom: 12px;
     }
-
     .step-desc {
       font-size: 13px;
       font-weight: 300;
@@ -699,7 +611,7 @@
       line-height: 1.8;
     }
 
-    /* ── EQUIPO / SOBRE NOSOTROS ── */
+    /* ── SOBRE ── */
     .sobre {
       padding: 120px 48px;
       display: grid;
@@ -707,21 +619,18 @@
       gap: 80px;
       align-items: center;
     }
-
     .sobre-visual {
       position: relative;
       aspect-ratio: 3/4;
       background: var(--black-mid);
       overflow: hidden;
     }
-
     .sobre-visual::before {
       content: '';
       position: absolute;
       inset: 0;
       background: linear-gradient(135deg, #151210 0%, #1e1a14 100%);
     }
-
     .sobre-visual-logo {
       position: absolute;
       inset: 0;
@@ -729,31 +638,15 @@
       align-items: center;
       justify-content: center;
     }
-
-    .sobre-visual-logo svg {
-      width: 60%;
-      opacity: 0.06;
-      fill: var(--white);
-    }
-
+    .sobre-visual-logo svg { width: 60%; opacity: 0.06; fill: var(--white); }
     .sobre-visual-tag {
       position: absolute;
-      bottom: 32px;
-      left: 32px;
-      right: 32px;
+      bottom: 32px; left: 32px; right: 32px;
       border: 1px solid rgba(245,243,239,0.1);
       padding: 20px 24px;
       background: rgba(10,10,10,0.7);
       backdrop-filter: blur(8px);
     }
-
-    .sobre-visual-tag p {
-      font-size: 11px;
-      font-weight: 300;
-      color: var(--grey-light);
-      line-height: 1.6;
-    }
-
     .sobre-visual-tag strong {
       display: block;
       font-size: 13px;
@@ -761,9 +654,12 @@
       color: var(--white);
       margin-bottom: 4px;
     }
-
-    .sobre-content {}
-
+    .sobre-visual-tag p {
+      font-size: 11px;
+      font-weight: 300;
+      color: var(--grey-light);
+      line-height: 1.6;
+    }
     .sobre-headline {
       font-family: var(--font-serif);
       font-size: clamp(32px, 3.5vw, 48px);
@@ -772,20 +668,14 @@
       margin-bottom: 32px;
       margin-top: 20px;
     }
-
     .sobre-body {
       font-size: 14px;
       font-weight: 300;
       color: var(--grey-light);
       line-height: 1.9;
-      margin-bottom: 48px;
+      margin-bottom: 28px;
     }
-
-    .sobre-body strong {
-      color: var(--white);
-      font-weight: 400;
-    }
-
+    .sobre-body strong { color: var(--white); font-weight: 400; }
     .sobre-stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -793,16 +683,12 @@
       padding-top: 40px;
       border-top: 1px solid var(--grey-dark);
     }
-
-    .stat {}
-
     .stat-num {
       font-family: var(--font-display);
       font-size: 40px;
       color: var(--white);
       line-height: 1;
     }
-
     .stat-label {
       font-size: 11px;
       font-weight: 300;
@@ -821,35 +707,25 @@
       gap: 80px;
       align-items: center;
     }
-
     .cta-headline {
       font-family: var(--font-display);
       font-size: clamp(52px, 7vw, 96px);
       line-height: 0.95;
       letter-spacing: -0.01em;
     }
-
     .cta-headline .outline {
       display: block;
       color: transparent;
       -webkit-text-stroke: 1px rgba(245,243,239,0.3);
     }
-
-    .cta-right {}
-
     .cta-body {
       font-size: 14px;
       font-weight: 300;
       color: var(--grey-light);
       line-height: 1.9;
-      margin-bottom: 40px;
+      margin-bottom: 32px;
     }
-
-    .cta-body strong {
-      color: var(--white);
-      font-weight: 400;
-    }
-
+    .cta-body strong { color: var(--white); font-weight: 400; }
     .btn-primary {
       display: inline-flex;
       align-items: center;
@@ -864,12 +740,7 @@
       padding: 16px 32px;
       transition: background 0.2s, gap 0.2s;
     }
-
-    .btn-primary:hover {
-      background: var(--accent);
-      gap: 20px;
-    }
-
+    .btn-primary:hover { background: var(--accent); gap: 20px; }
     .btn-secondary {
       display: inline-flex;
       align-items: center;
@@ -883,13 +754,9 @@
       padding: 16px 0;
       border-bottom: 1px solid var(--grey-mid);
       margin-left: 24px;
-      transition: border-color 0.2s, color 0.2s;
+      transition: border-color 0.2s;
     }
-
-    .btn-secondary:hover {
-      border-color: var(--white);
-    }
-
+    .btn-secondary:hover { border-color: var(--white); }
     .cta-contact-info {
       margin-top: 40px;
       padding-top: 32px;
@@ -898,7 +765,6 @@
       flex-direction: column;
       gap: 6px;
     }
-
     .cta-contact-info a {
       font-size: 12px;
       font-weight: 300;
@@ -907,7 +773,6 @@
       letter-spacing: 0.05em;
       transition: color 0.2s;
     }
-
     .cta-contact-info a:hover { color: var(--white); }
 
     /* ── FOOTER ── */
@@ -918,25 +783,20 @@
       align-items: center;
       justify-content: space-between;
     }
-
-    .footer-logo svg {
-      height: 22px;
-      fill: var(--white);
-      opacity: 0.5;
+    .footer-logo {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      color: var(--white);
+      opacity: 0.4;
+      letter-spacing: -0.02em;
     }
-
     .footer-copy {
       font-size: 11px;
       font-weight: 300;
       color: var(--grey-mid);
       letter-spacing: 0.05em;
     }
-
-    .footer-links {
-      display: flex;
-      gap: 24px;
-    }
-
+    .footer-links { display: flex; gap: 24px; }
     .footer-links a {
       font-size: 11px;
       font-weight: 300;
@@ -945,21 +805,15 @@
       letter-spacing: 0.05em;
       transition: color 0.2s;
     }
-
     .footer-links a:hover { color: var(--white); }
 
-    /* ── ANIMATIONS ── */
+    /* ── ANIMACIONES ── */
     .fade-up {
       opacity: 0;
       transform: translateY(32px);
       transition: opacity 0.8s ease, transform 0.8s ease;
     }
-
-    .fade-up.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
     .fade-up:nth-child(2) { transition-delay: 0.1s; }
     .fade-up:nth-child(3) { transition-delay: 0.2s; }
     .fade-up:nth-child(4) { transition-delay: 0.3s; }
@@ -970,12 +824,11 @@
       .nav-links { display: none; }
       .hero { padding: 0 32px 60px; }
       .statement { padding: 80px 32px; grid-template-columns: 1fr; gap: 40px; }
-      .work { padding: 60px 32px 80px; }
-      .work-grid { grid-template-columns: 1fr 1fr; gap: 3px; }
-      .work-item:nth-child(1) { grid-column: span 2; }
-      .work-item:nth-child(2) { grid-column: span 2; }
+      .proyectos { padding: 60px 32px 80px; }
+      .work-grid { grid-template-columns: 1fr 1fr; }
+      .work-item:nth-child(1), .work-item:nth-child(2) { grid-column: span 2; }
       .work-item:nth-child(3), .work-item:nth-child(4), .work-item:nth-child(5) { grid-column: span 1; }
-      .rubros { padding: 60px 32px 80px; }
+      .servicios { padding: 60px 32px 80px; }
       .rubros-grid { grid-template-columns: 1fr 1fr; }
       .proceso { padding: 80px 32px; }
       .proceso-grid { grid-template-columns: 1fr; gap: 40px; }
@@ -985,31 +838,23 @@
       .cta-section { padding: 80px 32px; grid-template-columns: 1fr; }
       footer { padding: 32px; flex-wrap: wrap; gap: 16px; }
     }
-
     @media (max-width: 640px) {
       .hero-headline { font-size: 56px; }
       .rubros-grid { grid-template-columns: 1fr; }
-      .sobre-stats { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
 </head>
 <body>
 
-  <!-- Cursor -->
   <div class="cursor" id="cursor"></div>
   <div class="cursor-ring" id="cursorRing"></div>
 
   <!-- NAV -->
-  <nav>
-    <div class="nav-logo">
-      <svg viewBox="0 0 200 48" xmlns="http://www.w3.org/2000/svg">
-        <!-- Solaz logotype SVG approximation -->
-        <text x="0" y="38" font-family="serif" font-size="44" font-weight="700" letter-spacing="-2">solaz</text>
-      </svg>
-    </div>
+  <nav aria-label="Navegación principal">
+    <a href="/" class="nav-logo" aria-label="Solaz Studio — Inicio">solaz</a>
     <ul class="nav-links">
-      <li><a href="#trabajo">Trabajo</a></li>
-      <li><a href="#servicios">Servicios</a></li>
+      <li><a href="#proyectos">Proyectos</a></li>
+      <li><a href="servicios.html">Servicios</a></li>
       <li><a href="#estudio">Estudio</a></li>
       <li><a href="#contacto">Contacto</a></li>
     </ul>
@@ -1017,58 +862,60 @@
   </nav>
 
   <!-- HERO -->
-  <section class="hero">
+  <section class="hero" aria-label="Solaz Studio — Producción audiovisual y fotografía comercial para marcas en Chile">
+
     <div class="hero-bg"></div>
 
-    <!-- Mountain shape background -->
-    <svg class="hero-mountain" viewBox="0 0 600 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      <circle cx="400" cy="200" r="380" fill="white" opacity="1"/>
-      <polygon points="150,750 400,200 650,750" fill="#0a0a0a" opacity="1"/>
-      <polygon points="300,750 450,350 600,750" fill="#0a0a0a" opacity="0.7"/>
+    <!-- Isotipo Solaz Studio -->
+    <svg class="hero-mountain" viewBox="0 0 856.45 856.46" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+      <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
     </svg>
 
     <div class="hero-eyebrow">
-      Studio Fotográfico & Audiovisual — Santiago, Chile
+      Studio Fotográfico & Audiovisual — Chile
     </div>
 
+    <!-- H1 optimizado para SEO -->
     <h1 class="hero-headline">
-      <div>FOTOGRAFÍA</div>
-      <div class="line-2">& VIDEO</div>
-      <div>COMERCIAL_</div>
+      <div>PRODUCCIÓN</div>
+      <div class="line-2">VISUAL &</div>
+      <div>AUDIOVISUAL_</div>
     </h1>
 
     <div class="hero-sub">
       <p class="hero-descriptor">
-        <strong>Más de 12 años</strong> creando contenido visual para marcas en Chile. 
-        Fotografía, video y dirección de arte con un solo objetivo: 
-        que tu producto se vea como lo que vale — y venda más.
+        <strong>Más de 12 años</strong> creando contenido para marcas en Chile.
+        Fotografía comercial, video, dirección de arte y producción audiovisual
+        con un solo propósito: que tu marca se vea como lo que vale — y venda más.
       </p>
-      <div class="hero-scroll">
+      <div class="hero-scroll" aria-hidden="true">
         <div class="hero-scroll-line"></div>
         <span>Scroll</span>
       </div>
     </div>
 
-    <!-- Ticker -->
-    <div class="hero-ticker">
+    <!-- Ticker con terminología profesional -->
+    <div class="hero-ticker" aria-hidden="true">
       <div class="ticker-track">
-        <span class="ticker-item">Gastronomía <span class="ticker-dot"></span></span>
-        <span class="ticker-item">Producto <span class="ticker-dot"></span></span>
-        <span class="ticker-item">Corporativo <span class="ticker-dot"></span></span>
-        <span class="ticker-item">Industrial <span class="ticker-dot"></span></span>
-        <span class="ticker-item">E-Commerce <span class="ticker-dot"></span></span>
-        <span class="ticker-item">Video <span class="ticker-dot"></span></span>
-        <span class="ticker-item">Joyería <span class="ticker-dot"></span></span>
-        <span class="ticker-item">Campañas <span class="ticker-dot"></span></span>
-        <!-- duplicate for seamless loop -->
-        <span class="ticker-item">Gastronomía <span class="ticker-dot"></span></span>
-        <span class="ticker-item">Producto <span class="ticker-dot"></span></span>
-        <span class="ticker-item">Corporativo <span class="ticker-dot"></span></span>
-        <span class="ticker-item">Industrial <span class="ticker-dot"></span></span>
-        <span class="ticker-item">E-Commerce <span class="ticker-dot"></span></span>
-        <span class="ticker-item">Video <span class="ticker-dot"></span></span>
-        <span class="ticker-item">Joyería <span class="ticker-dot"></span></span>
-        <span class="ticker-item">Campañas <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Fotografía Publicitaria <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Producción Audiovisual <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Video Corporativo <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Fotografía Gastronómica <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Fotografía de Producto <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Contenido para Marcas <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Dirección de Arte <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Fotografía E-Commerce <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Spots & Campañas <span class="ticker-dot"></span></span>
+        <!-- Duplicado para loop continuo -->
+        <span class="ticker-item">Fotografía Publicitaria <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Producción Audiovisual <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Video Corporativo <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Fotografía Gastronómica <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Fotografía de Producto <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Contenido para Marcas <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Dirección de Arte <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Fotografía E-Commerce <span class="ticker-dot"></span></span>
+        <span class="ticker-item">Spots & Campañas <span class="ticker-dot"></span></span>
       </div>
     </div>
   </section>
@@ -1076,25 +923,27 @@
   <!-- STATEMENT -->
   <section class="statement" id="estudio">
     <div>
-      <div class="statement-label">Nuestra postura</div>
-      <p class="statement-text">
-        Las imágenes no son un gasto.<br>
-        Son la primera razón por la que <em>alguien compra</em> —<br>
+      <div class="section-label">Nuestra postura</div>
+      <!-- H2 con keyword natural -->
+      <h2 class="statement-text">
+        El contenido visual no es un gasto.<br>
+        Es la primera razón por la que <em>alguien compra</em> —<br>
         o no lo hace.
-      </p>
+      </h2>
     </div>
-    <div class="statement-right fade-up">
+    <div class="fade-up">
       <p class="statement-body">
-        Muchas marcas invierten en producto pero no en cómo mostrarlo. 
-        El resultado es contenido que no trabaja para vender. 
-        <strong>Eso es lo que cambiamos.</strong>
+        Muchas marcas invierten en su producto pero no en cómo lo presentan.
+        El resultado es contenido que no trabaja para vender.
+        <strong>Eso es exactamente lo que cambiamos.</strong>
       </p>
       <p class="statement-body">
-        En Solaz Studio cada producción parte con una conversación sobre tu marca, 
-        tu cliente y lo que queremos provocar. No solo hacemos fotos bonitas — 
-        construimos <strong>imágenes que tienen un propósito</strong>.
+        En Solaz Studio cada proyecto parte con una conversación sobre tu marca,
+        tu cliente y lo que queremos provocar. No producimos contenido genérico —
+        construimos piezas visuales y audiovisuales <strong>con un propósito concreto</strong>.
       </p>
-      <div class="clients-strip">
+      <!-- Clientes como prueba social y SEO -->
+      <div class="clients-strip" aria-label="Marcas con las que hemos trabajado">
         <span class="client-tag">Pullman Hotels</span>
         <span class="client-tag">Ariztía</span>
         <span class="client-tag">WEG Chile</span>
@@ -1108,215 +957,219 @@
     </div>
   </section>
 
-  <!-- WORK GRID -->
-  <section class="work" id="trabajo">
+  <!-- PROYECTOS (no "trabajos recientes") -->
+  <section class="proyectos" id="proyectos">
     <div class="section-header">
-      <span class="section-title">TRABAJO RECIENTE</span>
+      <h2 class="section-title">PROYECTOS</h2>
       <a href="#" class="section-action">Ver portafolio completo</a>
     </div>
 
     <div class="work-grid">
-      <!-- Item 1 - Large feature -->
-      <div class="work-item fade-up">
+      <article class="work-item fade-up">
         <div class="work-img-placeholder">
-          <div class="work-photo-label">GASTRONOMÍA</div>
+          <div class="work-photo-label" aria-hidden="true">FOTOGRAFÍA GASTRONÓMICA</div>
         </div>
         <div class="work-meta">
           <div>
             <div class="work-rubro">Fotografía Gastronómica</div>
-            <div class="work-client">Pullman Hotels · Carta 2024</div>
+            <div class="work-client">Pullman Hotels · Nueva carta 2024</div>
           </div>
-          <div class="work-arrow">↗</div>
+          <div class="work-arrow" aria-hidden="true">↗</div>
         </div>
         <div class="work-overlay"></div>
-      </div>
+      </article>
 
-      <!-- Item 2 -->
-      <div class="work-item fade-up">
+      <article class="work-item fade-up">
         <div class="work-img-placeholder">
-          <div class="work-photo-label">INDUSTRIAL</div>
+          <div class="work-photo-label" aria-hidden="true">PRODUCCIÓN AUDIOVISUAL</div>
         </div>
         <div class="work-meta">
           <div>
-            <div class="work-rubro">Video Corporativo</div>
-            <div class="work-client">WEG Chile · Plan de Emergencia</div>
+            <div class="work-rubro">Producción Audiovisual</div>
+            <div class="work-client">WEG Chile · Video Corporativo</div>
           </div>
-          <div class="work-arrow">↗</div>
+          <div class="work-arrow" aria-hidden="true">↗</div>
         </div>
         <div class="work-overlay"></div>
-      </div>
+      </article>
 
-      <!-- Item 3 -->
-      <div class="work-item fade-up">
+      <article class="work-item fade-up">
         <div class="work-img-placeholder">
-          <div class="work-photo-label">PRODUCTO</div>
+          <div class="work-photo-label" aria-hidden="true">FOTOGRAFÍA DE PRODUCTO</div>
         </div>
         <div class="work-meta">
           <div>
             <div class="work-rubro">Fotografía de Producto</div>
             <div class="work-client">Ariztía · Campaña 2025</div>
           </div>
-          <div class="work-arrow">↗</div>
+          <div class="work-arrow" aria-hidden="true">↗</div>
         </div>
         <div class="work-overlay"></div>
-      </div>
+      </article>
 
-      <!-- Item 4 -->
-      <div class="work-item fade-up">
+      <article class="work-item fade-up">
         <div class="work-img-placeholder">
-          <div class="work-photo-label">E-COMMERCE</div>
+          <div class="work-photo-label" aria-hidden="true">FOTOGRAFÍA E-COMMERCE</div>
         </div>
         <div class="work-meta">
           <div>
-            <div class="work-rubro">E-Commerce</div>
+            <div class="work-rubro">Fotografía E-Commerce</div>
             <div class="work-client">Veggie Deli · Catálogo</div>
           </div>
-          <div class="work-arrow">↗</div>
+          <div class="work-arrow" aria-hidden="true">↗</div>
         </div>
         <div class="work-overlay"></div>
-      </div>
+      </article>
 
-      <!-- Item 5 -->
-      <div class="work-item fade-up">
+      <article class="work-item fade-up">
         <div class="work-img-placeholder">
-          <div class="work-photo-label">CORPORATIVO</div>
+          <div class="work-photo-label" aria-hidden="true">FOTOGRAFÍA CORPORATIVA</div>
         </div>
         <div class="work-meta">
           <div>
-            <div class="work-rubro">Retratos Corporativos</div>
-            <div class="work-client">Eximius Chile · Equipo</div>
+            <div class="work-rubro">Fotografía Corporativa</div>
+            <div class="work-client">Eximius Chile · Equipo directivo</div>
           </div>
-          <div class="work-arrow">↗</div>
+          <div class="work-arrow" aria-hidden="true">↗</div>
         </div>
         <div class="work-overlay"></div>
-      </div>
+      </article>
     </div>
   </section>
 
-  <!-- RUBROS -->
-  <section class="rubros" id="servicios">
+  <!-- SERVICIOS -->
+  <section class="servicios" id="servicios">
     <div class="section-header">
-      <span class="section-title">LO QUE HACEMOS</span>
-      <a href="#" class="section-action">Ver todos los servicios</a>
+      <h2 class="section-title">SERVICIOS</h2>
+      <a href="#contacto" class="section-action">Cotizar proyecto</a>
     </div>
 
     <div class="rubros-grid">
-      <div class="rubro-item fade-up">
+      <article class="rubro-item fade-up">
         <div class="rubro-num">01</div>
         <div>
-          <div class="rubro-name">
-            Gastronomía
-            <span>& Producto</span>
-          </div>
-          <div class="rubro-desc">
-            Fotografía culinaria, catálogos, e-commerce y bodegones creativos. 
-            Desde cafeterías y restaurantes hasta grandes marcas del sector alimentario.
-          </div>
+          <h3 class="rubro-name">
+            Fotografía
+            <span>Comercial & Publicitaria</span>
+          </h3>
+          <p class="rubro-desc">
+            Fotografía gastronómica, de producto, e-commerce, joyería y campañas.
+            Dirección de arte, estilismo y producción completa para marcas que
+            saben lo que quieren comunicar.
+          </p>
         </div>
-        <div class="rubro-arrow">↗</div>
-      </div>
+        <div class="rubro-arrow" aria-hidden="true">↗</div>
+      </article>
 
-      <div class="rubro-item fade-up">
+      <article class="rubro-item fade-up">
         <div class="rubro-num">02</div>
         <div>
-          <div class="rubro-name">
-            Corporativo
-            <span>& Empresas</span>
-          </div>
-          <div class="rubro-desc">
-            Retratos de equipo, fotografía institucional y contenido para comunicación interna 
-            o presencia digital de la empresa.
-          </div>
+          <h3 class="rubro-name">
+            Producción
+            <span>Audiovisual & Video</span>
+          </h3>
+          <p class="rubro-desc">
+            Videos corporativos, spots publicitarios, motion graphics y contenido
+            audiovisual para campañas. Con guion, storyboard, filmación y
+            postproducción completa.
+          </p>
         </div>
-        <div class="rubro-arrow">↗</div>
-      </div>
+        <div class="rubro-arrow" aria-hidden="true">↗</div>
+      </article>
 
-      <div class="rubro-item fade-up">
+      <article class="rubro-item fade-up">
         <div class="rubro-num">03</div>
         <div>
-          <div class="rubro-name">
-            Industrial
-            <span>& Infraestructura</span>
-          </div>
-          <div class="rubro-desc">
-            Fotografía y video en terreno para empresas industriales, minería, 
-            construcción y servicios técnicos.
-          </div>
+          <h3 class="rubro-name">
+            Contenido
+            <span>para Marcas & RRSS</span>
+          </h3>
+          <p class="rubro-desc">
+            Producción de contenido visual y audiovisual orientado a redes sociales.
+            Reels, stories y piezas pensadas para generar impacto, coherencia
+            de marca y conversión.
+          </p>
         </div>
-        <div class="rubro-arrow">↗</div>
-      </div>
+        <div class="rubro-arrow" aria-hidden="true">↗</div>
+      </article>
 
-      <div class="rubro-item fade-up">
+      <article class="rubro-item fade-up">
         <div class="rubro-num">04</div>
         <div>
-          <div class="rubro-name">
-            Video
-            <span>& Audiovisual</span>
-          </div>
-          <div class="rubro-desc">
-            Videos corporativos, spots, motion graphics, reels y contenido para campañas. 
-            Con guion, storyboard y producción completa.
-          </div>
+          <h3 class="rubro-name">
+            Fotografía
+            <span>Corporativa & Empresas</span>
+          </h3>
+          <p class="rubro-desc">
+            Retratos de equipo, fotografía institucional y contenido visual
+            para la comunicación interna o externa de empresas de todos los rubros
+            e industrias.
+          </p>
         </div>
-        <div class="rubro-arrow">↗</div>
-      </div>
+        <div class="rubro-arrow" aria-hidden="true">↗</div>
+      </article>
     </div>
   </section>
 
   <!-- PROCESO -->
   <section class="proceso">
     <div class="section-header">
-      <span class="section-title">CÓMO TRABAJAMOS</span>
+      <h2 class="section-title">CÓMO TRABAJAMOS</h2>
     </div>
 
     <div class="proceso-grid">
       <div class="proceso-intro">
-        Trabajas directamente con quien produce.<br>
+        Trabajas directamente<br>
+        con quien produce.<br>
         <em>Sin intermediarios.</em><br>
         Sin pérdida de criterio.
       </div>
 
       <div class="proceso-steps">
         <div class="proceso-step fade-up">
-          <div class="step-num">01</div>
-          <div class="step-content">
-            <div class="step-title">Conversación inicial</div>
+          <div class="step-num" aria-hidden="true">01</div>
+          <div>
+            <h3 class="step-title">Conversación inicial</h3>
             <p class="step-desc">
-              Antes de cualquier sesión entendemos tu marca, tu producto y lo que quieres comunicar. 
-              No partimos con una cámara — partimos con las preguntas correctas.
+              Antes de cualquier producción entendemos tu marca, tu producto
+              y lo que quieres lograr. No partimos con una cámara —
+              partimos con las preguntas correctas.
             </p>
           </div>
         </div>
 
         <div class="proceso-step fade-up">
-          <div class="step-num">02</div>
-          <div class="step-content">
-            <div class="step-title">Planificación y dirección de arte</div>
+          <div class="step-num" aria-hidden="true">02</div>
+          <div>
+            <h3 class="step-title">Planificación y dirección de arte</h3>
             <p class="step-desc">
-              Definimos referencias, estética, props, ubicaciones y timing. 
-              Cada jornada está planificada antes de llegar, para que el día de producción sea eficiente y predecible.
+              Definimos referencias visuales, estética, props, locaciones y
+              timing. Cada proyecto está planificado antes de llegar a set,
+              para que la producción sea eficiente y los resultados predecibles.
             </p>
           </div>
         </div>
 
         <div class="proceso-step fade-up">
-          <div class="step-num">03</div>
-          <div class="step-content">
-            <div class="step-title">Producción</div>
+          <div class="step-num" aria-hidden="true">03</div>
+          <div>
+            <h3 class="step-title">Producción</h3>
             <p class="step-desc">
-              Sesión con equipo profesional — fotografía, iluminación controlada, captura tethered. 
-              Puedes estar presente y ver las imágenes en tiempo real.
+              Sesión con equipo profesional — fotografía o video, iluminación
+              controlada, captura tethered. Puedes estar presente y revisar
+              el material en tiempo real durante la jornada.
             </p>
           </div>
         </div>
 
         <div class="proceso-step fade-up">
-          <div class="step-num">04</div>
-          <div class="step-content">
-            <div class="step-title">Entrega lista para usar</div>
+          <div class="step-num" aria-hidden="true">04</div>
+          <div>
+            <h3 class="step-title">Entrega lista para usar</h3>
             <p class="step-desc">
-              Postproducción, retoque y entrega en formatos optimizados para web, redes sociales y piezas gráficas. 
-              Material listo para publicar, no para editar.
+              Postproducción, retoque y entrega en todos los formatos necesarios
+              — web, redes sociales, imprenta, plataformas digitales.
+              Material listo para publicar, no para seguir editando.
             </p>
           </div>
         </div>
@@ -1325,60 +1178,61 @@
   </section>
 
   <!-- SOBRE NOSOTROS -->
-  <section class="sobre">
+  <section class="sobre" id="sobre">
     <div class="sobre-visual">
-      <div></div>
       <div class="sobre-visual-logo">
-        <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="150" cy="150" r="140" fill="white"/>
-          <polygon points="30,270 150,60 270,270" fill="#0a0a0a"/>
-          <polygon points="90,270 160,130 230,270" fill="#0a0a0a" opacity="0.6"/>
+        <svg viewBox="0 0 856.45 856.46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
         </svg>
       </div>
       <div class="sobre-visual-tag">
         <strong>Seba Ogalde + Ignacio Flores</strong>
-        <p>Fotografía, dirección de arte y producción audiovisual. 
-        Dos personas, una metodología clara, más de una década de trabajo real.</p>
+        <p>Fotografía, dirección de arte y producción audiovisual.
+        Dos personas, una metodología clara, más de una década
+        de trabajo real con marcas en Chile.</p>
       </div>
     </div>
 
     <div class="sobre-content fade-up">
-      <div class="statement-label">Sobre Solaz Studio</div>
+      <div class="section-label">Sobre Solaz Studio</div>
+      <!-- Copy que diferencia — el que más te gustó -->
       <h2 class="sobre-headline">
         No somos una agencia.<br>
         Somos los que<br>
         hacen el trabajo.
       </h2>
       <p class="sobre-body">
-        Solaz Studio nace de más de 12 años de experiencia en fotografía publicitaria. 
-        Trabajamos como <strong>estructura flexible</strong> — un equipo que se articula según 
-        la escala de cada proyecto, sin capas de intermediarios.
+        Solaz Studio nace de más de 12 años de experiencia en producción
+        visual y audiovisual para marcas. Operamos como <strong>estructura flexible</strong>
+        — un equipo que se articula según la escala de cada proyecto,
+        sin capas de intermediarios ni criterio diluido.
       </p>
       <p class="sobre-body">
-        Cuando nos contratas, trabajas directamente con quien decide la luz, 
-        el encuadre y la dirección de arte. Eso tiene un nombre: 
-        <strong>consistencia visual</strong>. Y es lo que hace que las marcas vuelvan.
+        Trabajamos en todo Chile — desde el norte minero hasta el sur austral.
+        Cuando nos contratas, trabajas directamente con quien decide la luz,
+        el encuadre y la narrativa visual. Eso tiene un resultado concreto:
+        <strong>coherencia, criterio y consistencia</strong> en cada entrega.
       </p>
 
       <div class="sobre-stats">
-        <div class="stat">
+        <div>
           <div class="stat-num">+12</div>
-          <div class="stat-label">Años de experiencia</div>
+          <div class="stat-label">Años de trayectoria</div>
         </div>
-        <div class="stat">
+        <div>
           <div class="stat-num">+50</div>
           <div class="stat-label">Marcas trabajadas</div>
         </div>
-        <div class="stat">
+        <div>
           <div class="stat-num">+500</div>
-          <div class="stat-label">Producciones</div>
+          <div class="stat-label">Producciones realizadas</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA -->
-  <section class="cta-section" id="contacto">
+  <!-- CTA / CONTACTO -->
+  <section class="cta-section" id="contacto" aria-label="Contacto Solaz Studio">
     <div>
       <h2 class="cta-headline">
         <span>HABLEMOS</span>
@@ -1386,53 +1240,48 @@
         <span>PROYECTO_</span>
       </h2>
     </div>
-    <div class="cta-right fade-up">
+    <div class="fade-up">
       <p class="cta-body">
-        Cuéntanos en qué estás trabajando. 
-        <strong>No necesitamos un brief perfecto</strong> — solo necesitamos 
-        entender tu marca y lo que quieres lograr.
+        Cuéntanos en qué estás trabajando.
+        <strong>No necesitamos un brief perfecto</strong> — solo necesitamos
+        entender tu marca, tu objetivo y lo que quieres lograr.
       </p>
       <p class="cta-body">
-        Respondemos dentro de 24 horas hábiles y podemos agendar 
-        una llamada corta sin compromiso.
+        Respondemos dentro de 24 horas hábiles. Podemos agendar
+        una llamada corta sin compromiso para evaluar juntos tu proyecto.
       </p>
       <div>
         <a href="mailto:hola@solazstudio.cl" class="btn-primary">
           Escribir ahora →
         </a>
-        <a href="https://wa.me/56984212617" class="btn-secondary">
+        <a href="https://wa.me/56984212617" class="btn-secondary" target="_blank" rel="noopener">
           WhatsApp
         </a>
       </div>
       <div class="cta-contact-info">
         <a href="mailto:hola@solazstudio.cl">hola@solazstudio.cl</a>
         <a href="tel:+56984212617">+56 9 8421 2617</a>
-        <a href="#">Instagram @solazstudio</a>
+        <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">@solazstudio</a>
       </div>
     </div>
   </section>
 
   <!-- FOOTER -->
   <footer>
-    <div class="footer-logo">
-      <svg viewBox="0 0 200 40" xmlns="http://www.w3.org/2000/svg">
-        <text x="0" y="32" font-family="serif" font-size="36" font-weight="700" letter-spacing="-1" fill="white">solaz</text>
-      </svg>
-    </div>
-    <span class="footer-copy">© 2026 Solaz Studio SpA — Santiago, Chile</span>
-    <div class="footer-links">
-      <a href="#">Instagram</a>
-      <a href="#">Trabajo</a>
-      <a href="#">Contacto</a>
-    </div>
+    <div class="footer-logo">solaz</div>
+    <span class="footer-copy">© 2026 Solaz Studio — Chile</span>
+    <nav class="footer-links" aria-label="Enlaces secundarios">
+      <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">Instagram</a>
+      <a href="#proyectos">Proyectos</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
   </footer>
 
   <script>
-    // Custom cursor
+    // Cursor personalizado
     const cursor = document.getElementById('cursor');
     const ring = document.getElementById('cursorRing');
-    let mouseX = 0, mouseY = 0;
-    let ringX = 0, ringY = 0;
+    let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
 
     document.addEventListener('mousemove', (e) => {
       mouseX = e.clientX;
@@ -1450,9 +1299,7 @@
     }
     animateRing();
 
-    // Hover effects on interactive elements
-    const interactives = document.querySelectorAll('a, button, .work-item, .rubro-item, .client-tag');
-    interactives.forEach(el => {
+    document.querySelectorAll('a, button, .work-item, .rubro-item, .client-tag').forEach(el => {
       el.addEventListener('mouseenter', () => {
         cursor.style.transform = 'scale(3)';
         ring.style.transform = 'scale(1.5)';
@@ -1465,22 +1312,20 @@
       });
     });
 
-    // Scroll fade-up
+    // Fade-up al hacer scroll
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
+        if (entry.isIntersecting) entry.target.classList.add('visible');
       });
     }, { threshold: 0.1 });
 
     document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 
-    // Nav scroll behavior
+    // Nav con fondo al hacer scroll
     const nav = document.querySelector('nav');
     window.addEventListener('scroll', () => {
       if (window.scrollY > 80) {
-        nav.style.background = 'rgba(10,10,10,0.95)';
+        nav.style.background = 'rgba(10,10,10,0.96)';
         nav.style.backdropFilter = 'blur(12px)';
       } else {
         nav.style.background = '';
