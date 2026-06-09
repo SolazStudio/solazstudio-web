@@ -30,8 +30,6 @@
     body { background: var(--black); color: var(--white); font-family: var(--font-body); overflow-x: hidden; }
 
     /* CURSOR */
-    .cursor { width: 8px; height: 8px; background: var(--white); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transition: transform 0.15s ease;  }
-    .cursor-ring { width: 36px; height: 36px; border: 1px solid rgba(245,243,239,0.4); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transition: all 0.25s ease;  }
 
     /* NAV */
     .main-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; background: rgba(10,10,10,0.96); backdrop-filter: blur(12px); }
@@ -50,6 +48,8 @@
 
     /* PAGE LAYOUT */
     .contact-page {
+      position: relative;
+      overflow: hidden;
       display: grid;
       grid-template-columns: 1fr 1fr;
       grid-template-areas:
@@ -125,8 +125,12 @@
     /* Mountain watermark */
     .contact-mountain {
       position: absolute;
-      right: -80px; bottom: -60px;
-      width: 380px; opacity: 0.03;
+      right: -100px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: clamp(560px, 62vw, 820px);
+      height: auto;
+      opacity: 0.06;
       pointer-events: none;
     }
 
@@ -174,14 +178,14 @@
 
     .form-input,
     .form-textarea {
-      width: 100%; background: var(--black-soft);
-      border: 1px solid var(--grey-dark); color: var(--white);
+      width: 100%; background: rgba(17,17,17,0.92);
+      border: 1px solid rgba(68,66,64,0.8); color: var(--white);
       font-family: var(--font-body); font-size: 14px; font-weight: 300;
       padding: 14px 16px; outline: none;
       transition: border-color 0.2s;
       -webkit-appearance: none;
     }
-    .form-input::placeholder, .form-textarea::placeholder { color: var(--grey-mid); }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--grey-light); }
     .form-input:focus, .form-textarea:focus { border-color: var(--accent); }
     .form-textarea { resize: vertical; min-height: 120px; line-height: 1.7; }
 
@@ -207,7 +211,7 @@
     .check-item label:hover { border-color: var(--grey-mid); color: var(--white); }
 
     .form-note {
-      font-size: 12px; font-weight: 300; color: var(--grey-mid);
+      font-size: 13px; font-weight: 300; color: var(--grey-light);
       line-height: 1.7; margin-bottom: 24px;
     }
 
@@ -370,6 +374,7 @@
 
     @media (max-width: 640px) {
       .nav-hamburger { display: flex; }
+      .nav-links { display: none !important; }
       .nav-instagram { display: none !important; }
     }
 
@@ -380,10 +385,6 @@
   </script>
 </head>
 <body>
-
-  <div class="cursor" id="cursor"></div>
-  <div class="cursor-ring" id="cursorRing"></div>
-
   <!-- NAV -->
   <nav class="main-nav" aria-label="Navegación principal">
     <a href="index.html" class="nav-logo">solaz</a>
@@ -413,12 +414,12 @@
 
   <div class="contact-page">
 
+    <svg class="contact-mountain" viewBox="0 0 856.45 856.46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
+    </svg>
+
     <!-- TOP LEFT: Headline + subtitle -->
     <div class="contact-top fade-up">
-
-      <svg class="contact-mountain" viewBox="0 0 856.45 856.46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
-      </svg>
 
       <div class="contact-eyebrow">Contacto</div>
 
@@ -600,26 +601,7 @@
   </footer>
 
   <script>
-    // Cursor
-    const cursor = document.getElementById('cursor');
-    const ring = document.getElementById('cursorRing');
-    let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
-    document.addEventListener('mousemove', e => {
-      mouseX = e.clientX; mouseY = e.clientY;
-      cursor.style.left = mouseX - 4 + 'px';
-      cursor.style.top = mouseY - 4 + 'px';
-    });
-    (function loop() {
-      ringX += (mouseX - ringX - 18) * 0.12;
-      ringY += (mouseY - ringY - 18) * 0.12;
-      ring.style.left = ringX + 'px';
-      ring.style.top = ringY + 'px';
-      requestAnimationFrame(loop);
-    })();
-    document.querySelectorAll('a, button, .form-input, .form-textarea, label').forEach(el => {
-      el.addEventListener('mouseenter', () => { cursor.style.transform = 'scale(3)'; ring.style.transform = 'scale(1.5)'; ring.style.borderColor = 'rgba(200,185,154,0.6)'; });
-      el.addEventListener('mouseleave', () => { cursor.style.transform = 'scale(1)'; ring.style.transform = 'scale(1)'; ring.style.borderColor = 'rgba(245,243,239,0.4)'; });
-    });
+
 
     // Tabs
     document.querySelectorAll('.tab-btn').forEach(btn => {

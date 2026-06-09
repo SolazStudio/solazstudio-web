@@ -90,28 +90,6 @@
       cursor: default;
     }
 
-    /* ── CURSOR ── */
-    .cursor {
-      width: 8px; height: 8px;
-      background: var(--white);
-      border-radius: 50%;
-      position: fixed;
-      pointer-events: none;
-      z-index: 9999;
-      transition: transform 0.15s ease;
-      
-    }
-    .cursor-ring {
-      width: 36px; height: 36px;
-      border: 1px solid rgba(245,243,239,0.4);
-      border-radius: 50%;
-      position: fixed;
-      pointer-events: none;
-      z-index: 9998;
-      transition: all 0.25s ease;
-      
-    }
-
     /* ── NAV ── */
     .main-nav {
       position: fixed;
@@ -120,6 +98,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 16px;
       padding: 28px 48px;
       background: rgba(10,10,10,0.96);
       backdrop-filter: blur(12px);
@@ -167,6 +146,14 @@
     .nav-cta:hover { background: var(--accent); }
     .nav-instagram { font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--white); text-decoration: none; opacity: 0.6; transition: opacity 0.2s; padding: 4px 0; }
     .nav-instagram:hover { opacity: 1; }
+    .ig-short { display: none; }
+    @media (max-width: 640px) {
+      .ig-full { display: none; }
+      .ig-short { display: inline; }
+      .nav-hamburger { display: flex; }
+      .nav-links { display: none !important; }
+      .nav-instagram { display: none !important; }
+    }
 
     /* ── HERO ── */
     .hero {
@@ -185,14 +172,33 @@
       background: linear-gradient(to top, rgba(10,10,10,1) 0%, rgba(10,10,10,0.4) 40%, rgba(10,10,10,0.15) 100%),
                   linear-gradient(105deg, #1a1612 0%, #0f0e0c 50%, #151310 100%);
     }
-    .hero-mountain {
+    /* Hero background: image or video */
+    .hero-bg {
       position: absolute;
-      right: -5%;
-      top: 0;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      background: var(--black-mid);
+    }
+    .hero-video,
+    .hero-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
       height: 100%;
-      width: 60%;
-      opacity: 0.045;
-      pointer-events: none;
+      object-fit: cover;
+      display: block;
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(
+        to right,
+        rgba(10,10,10,0.88) 0%,
+        rgba(10,10,10,0.6) 60%,
+        rgba(10,10,10,0.3) 100%
+      );
     }
     .hero-eyebrow {
       position: relative;
@@ -281,7 +287,7 @@
     }
     .ticker-track {
       display: flex;
-      animation: ticker 28s linear infinite;
+      animation: ticker 33s linear infinite;
       white-space: nowrap;
     }
     .ticker-item {
@@ -309,12 +315,30 @@
 
     /* ── STATEMENT ── */
     .statement {
+      position: relative;
       padding: 120px 48px;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 80px;
       align-items: center;
       border-bottom: 1px solid var(--grey-dark);
+      overflow: hidden;
+    }
+    .statement > div:first-child {
+      position: relative;
+      z-index: 1;
+    }
+    .statement-isotipo {
+      position: absolute;
+      right: -120px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: clamp(420px, 48vw, 640px);
+      height: 130%;
+      object-fit: contain;
+      opacity: 0.065;
+      pointer-events: none;
+      z-index: 0;
     }
     .section-label {
       font-size: 10px;
@@ -937,10 +961,6 @@
   </style>
 </head>
 <body>
-
-  <div class="cursor" id="cursor"></div>
-  <div class="cursor-ring" id="cursorRing"></div>
-
   <!-- NAV -->
   <nav class="main-nav" aria-label="Navegación principal">
     <a href="index.html" class="nav-logo" aria-label="Solaz Studio — Inicio">solaz</a>
@@ -949,7 +969,7 @@
       <li><a href="servicios.html">Servicios</a></li>
       <li><a href="nosotros.html">Nosotros</a></li>
     </ul>
-    <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Solaz Studio en Instagram">IG</a>
+    <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Solaz Studio en Instagram"><span class="ig-full">Instagram</span><span class="ig-short">IG</span></a>
     <a href="contacto.html" class="nav-cta">Contacto</a>
   
     <button class="nav-hamburger" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
@@ -972,12 +992,19 @@
   <!-- HERO -->
   <section class="hero" aria-label="Solaz Studio — Producción audiovisual y fotografía comercial para marcas en Chile">
 
-    <div class="hero-bg"></div>
+    <!-- FONDO: imagen o video. Descomenta la opción que uses -->
+    <div class="hero-bg">
+      <!--
+        OPCIÓN A — Video de fondo (recomendado):
+        <video class="hero-video" autoplay muted loop playsinline>
+          <source src="video/hero-reel.mp4" type="video/mp4">
+        </video>
 
-    <!-- Isotipo Solaz Studio -->
-    <svg class="hero-mountain" viewBox="0 0 856.45 856.46" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-      <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
-    </svg>
+        OPCIÓN B — Imagen de fondo:
+        <img class="hero-image" src="img/hero-bg.jpg" alt="">
+      -->
+    </div>
+    <div class="hero-overlay"></div>
 
     <div class="hero-eyebrow">
       Studio Fotográfico & Audiovisual — Chile
@@ -1030,7 +1057,10 @@
 
   <!-- STATEMENT -->
   <section class="statement" id="estudio">
-    <div>
+    <svg class="statement-isotipo" viewBox="0 0 856.45 856.46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
+    </svg>
+    <div style="position:relative;z-index:1;">
       <div class="section-label">Nuestra postura</div>
       <!-- H2 con keyword natural -->
       <h2 class="statement-text">
@@ -1240,8 +1270,8 @@
           <div>
             <h3 class="step-title">Conversación inicial</h3>
             <p class="step-desc">
-              Antes de cualquier producción entendemos tu marca, tu producto
-              y lo que quieres lograr. No partimos con una cámara —
+              Antes de cualquier producción entendemos tu marca, tu audiencia
+              y el objetivo concreto del contenido. No partimos con una cámara —
               partimos con las preguntas correctas.
             </p>
           </div>
@@ -1250,11 +1280,11 @@
         <div class="proceso-step fade-up">
           <div class="step-num" aria-hidden="true">02</div>
           <div>
-            <h3 class="step-title">Planificación y dirección de arte</h3>
+            <h3 class="step-title">Planificación y preproducción</h3>
             <p class="step-desc">
-              Definimos referencias visuales, estética, props, locaciones y
-              timing. Cada proyecto está planificado antes de llegar a set,
-              para que la producción sea eficiente y los resultados predecibles.
+              Definimos el concepto visual, el guion o brief, referencias,
+              locaciones, props y timing. Todo resuelto antes de llegar a set —
+              para que cada minuto de producción trabaje a favor del resultado.
             </p>
           </div>
         </div>
@@ -1264,9 +1294,9 @@
           <div>
             <h3 class="step-title">Producción</h3>
             <p class="step-desc">
-              Sesión con equipo profesional — fotografía o video, iluminación
-              controlada, captura tethered. Puedes estar presente y revisar
-              el material en tiempo real durante la jornada.
+              El día de la sesión llegamos con todo resuelto. Fotografía o video,
+              iluminación y dirección — trabajamos con precisión y con criterio,
+              para que cada toma tenga propósito y el resultado supere lo que imaginabas.
             </p>
           </div>
         </div>
@@ -1274,11 +1304,11 @@
         <div class="proceso-step fade-up">
           <div class="step-num" aria-hidden="true">04</div>
           <div>
-            <h3 class="step-title">Entrega lista para usar</h3>
+            <h3 class="step-title">Entrega lista para publicar</h3>
             <p class="step-desc">
-              Postproducción, retoque y entrega en todos los formatos necesarios
-              — web, redes sociales, imprenta, plataformas digitales.
-              Material listo para publicar, no para seguir editando.
+              Postproducción, retoque y entrega optimizada para cada canal —
+              redes sociales, web, campañas digitales o imprenta.
+              Activos visuales listos para generar impacto, no para seguir editando.
             </p>
           </div>
         </div>
@@ -1387,38 +1417,9 @@
   </footer>
 
   <script>
-    // Cursor personalizado
-    const cursor = document.getElementById('cursor');
-    const ring = document.getElementById('cursorRing');
-    let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
-
-    document.addEventListener('mousemove', (e) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-      cursor.style.left = mouseX - 4 + 'px';
-      cursor.style.top = mouseY - 4 + 'px';
-    });
-
-    function animateRing() {
-      ringX += (mouseX - ringX - 18) * 0.12;
-      ringY += (mouseY - ringY - 18) * 0.12;
-      ring.style.left = ringX + 'px';
-      ring.style.top = ringY + 'px';
-      requestAnimationFrame(animateRing);
-    }
-    animateRing();
-
     document.querySelectorAll('a, button, .work-item, .rubro-item, .client-tag').forEach(el => {
-      el.addEventListener('mouseenter', () => {
-        cursor.style.transform = 'scale(3)';
-        ring.style.transform = 'scale(1.5)';
-        ring.style.borderColor = 'rgba(200,185,154,0.6)';
-      });
-      el.addEventListener('mouseleave', () => {
-        cursor.style.transform = 'scale(1)';
-        ring.style.transform = 'scale(1)';
-        ring.style.borderColor = 'rgba(245,243,239,0.4)';
-      });
+      el.addEventListener('mouseenter', () => {  });
+      el.addEventListener('mouseleave', () => {  });
     });
 
     // Fade-up al hacer scroll

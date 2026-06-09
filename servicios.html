@@ -49,28 +49,6 @@
       overflow-x: hidden;
     }
 
-    /* ── CURSOR ── */
-    .cursor {
-      width: 8px; height: 8px;
-      background: var(--white);
-      border-radius: 50%;
-      position: fixed;
-      pointer-events: none;
-      z-index: 9999;
-      transition: transform 0.15s ease;
-      
-    }
-    .cursor-ring {
-      width: 36px; height: 36px;
-      border: 1px solid rgba(245,243,239,0.4);
-      border-radius: 50%;
-      position: fixed;
-      pointer-events: none;
-      z-index: 9998;
-      transition: all 0.25s ease;
-      
-    }
-
     /* ── NAV ── */
     .main-nav {
       position: fixed;
@@ -79,6 +57,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 16px;
       padding: 28px 48px;
       background: rgba(10,10,10,0.96);
       backdrop-filter: blur(12px);
@@ -120,6 +99,14 @@
     .nav-cta:hover { background: var(--accent); }
     .nav-instagram { font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--white); text-decoration: none; opacity: 0.6; transition: opacity 0.2s; padding: 4px 0; }
     .nav-instagram:hover { opacity: 1; }
+    .ig-short { display: none; }
+    @media (max-width: 640px) {
+      .ig-full { display: none; }
+      .ig-short { display: inline; }
+      .nav-hamburger { display: flex; }
+      .nav-links { display: none !important; }
+      .nav-instagram { display: none !important; }
+    }
 
     /* ── FADE UP ── */
     .fade-up {
@@ -156,6 +143,9 @@
       height: 1px;
       background: var(--accent);
     }
+    .page-header { position: relative; overflow: hidden; }
+    .page-header-isotipo { position: absolute; right: -80px; top: 50%; transform: translateY(-50%); width: clamp(600px, 70vw, 900px); height: 130%; object-fit: contain; opacity: 0.07; pointer-events: none; z-index: 0; }
+    .page-header > div { position: relative; z-index: 1; }
     .page-title {
       font-family: var(--font-display);
       font-size: clamp(64px, 8vw, 120px);
@@ -256,6 +246,19 @@
       max-width: 380px;
     }
 
+
+    .service-more {
+      display: inline-block;
+      margin-top: 20px;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .service-more:hover { opacity: 0.7; }
     /* ── IMAGE PLACEHOLDER ── */
     .service-image {
       position: relative;
@@ -263,44 +266,6 @@
       background: var(--black-mid);
     }
 
-    .img-placeholder {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      background: repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 20px,
-        rgba(255,255,255,0.012) 20px,
-        rgba(255,255,255,0.012) 21px
-      );
-    }
-
-    .img-placeholder-icon {
-      width: 40px; height: 40px;
-      border: 1px solid var(--grey-dark);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .img-placeholder-icon svg {
-      width: 16px; height: 16px;
-      stroke: var(--grey-mid);
-      fill: none;
-      stroke-width: 1.5;
-    }
-    .img-placeholder-label {
-      font-size: 9px;
-      font-weight: 400;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--grey-dark);
-    }
 
     .service-image img {
       position: absolute;
@@ -640,19 +605,15 @@
   </script>
 </head>
 <body>
-
-  <div class="cursor" id="cursor"></div>
-  <div class="cursor-ring" id="cursorRing"></div>
-
   <!-- NAV -->
   <nav class="main-nav" aria-label="Navegación principal">
     <a href="index.html" class="nav-logo">solaz</a>
     <ul class="nav-links">
-      <li><a href="index.html#proyectos">Proyectos</a></li>
+      <li><a href="index.html#proyectos">Portafolio</a></li>
       <li><a href="servicios.html" class="active">Servicios</a></li>
       <li><a href="nosotros.html">Nosotros</a></li>
     </ul>
-    <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Solaz Studio en Instagram">IG</a>
+    <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Solaz Studio en Instagram"><span class="ig-full">Instagram</span><span class="ig-short">IG</span></a>
     <a href="contacto.html" class="nav-cta">Contacto</a>
   
     <button class="nav-hamburger" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
@@ -674,6 +635,9 @@
 
   <!-- PAGE HEADER -->
   <header class="page-header">
+    <svg class="page-header-isotipo" viewBox="0 0 856.45 856.46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
+    </svg>
     <div>
       <div class="page-eyebrow">Solaz Studio</div>
       <h1 class="page-title">
@@ -707,6 +671,7 @@
           <span class="service-tag">Fotografía</span>
         </div>
         <h2 class="service-name">FOTOGRAFÍA<br>COMERCIAL &<br>PUBLICITARIA</h2>
+          <a href="fotografia-comercial.html" class="service-more">Ver en detalle →</a>
         <p class="service-desc">
           Producto, gastronomía, e-commerce, lifestyle, joyería, bodegón.
           Cada sesión tiene dirección de arte — la luz, el encuadre y la composición
@@ -714,12 +679,7 @@
         </p>
       </div>
       <div class="service-image">
-        <!-- <img src="img/fotografia-comercial.jpg" alt="Fotografía comercial Solaz Studio"> -->
-        <div class="img-placeholder">
-          <div class="img-placeholder-icon">
-            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
-          </div>
-          <span class="img-placeholder-label">Fotografía comercial</span>
+        <img src="img/fotografia-comercial.jpg" alt="Fotografía comercial Solaz Studio">
         </div>
       </div>
     </article>
@@ -732,6 +692,7 @@
           <span class="service-tag">Video</span>
         </div>
         <h2 class="service-name">PRODUCCIÓN<br>AUDIOVISUAL<br>& VIDEO</h2>
+          <a href="produccion-audiovisual.html" class="service-more">Ver en detalle →</a>
         <p class="service-desc">
           Video corporativo, spots, institucionales, videos de producto y filmación aérea.
           Del concepto al corte final, todo el proceso en el mismo equipo —
@@ -739,12 +700,7 @@
         </p>
       </div>
       <div class="service-image">
-        <!-- <img src="img/produccion-audiovisual.jpg" alt="Producción audiovisual Solaz Studio"> -->
-        <div class="img-placeholder">
-          <div class="img-placeholder-icon">
-            <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-          </div>
-          <span class="img-placeholder-label">Producción audiovisual</span>
+        <img src="img/produccion-audiovisual.jpg" alt="Producción audiovisual Solaz Studio">
         </div>
       </div>
     </article>
@@ -757,6 +713,7 @@
           <span class="service-tag">Contenido Digital</span>
         </div>
         <h2 class="service-name">CONTENIDO<br>PARA<br>MARCAS</h2>
+          <a href="contenido-redes-sociales.html" class="service-more">Ver en detalle →</a>
         <p class="service-desc">
           Fotografía y video pensados para redes sociales. Reels, stories, posts —
           contenido que mantiene coherencia visual y comunica con intención,
@@ -764,12 +721,7 @@
         </p>
       </div>
       <div class="service-image">
-        <!-- <img src="img/contenido-marcas.jpg" alt="Contenido para marcas Solaz Studio"> -->
-        <div class="img-placeholder">
-          <div class="img-placeholder-icon">
-            <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/></svg>
-          </div>
-          <span class="img-placeholder-label">Contenido para redes</span>
+        <img src="img/contenido-marcas.jpg" alt="Contenido para marcas Solaz Studio">
         </div>
       </div>
     </article>
@@ -782,6 +734,7 @@
           <span class="service-tag">Corporativo</span>
         </div>
         <h2 class="service-name">FOTOGRAFÍA<br>CORPORATIVA<br>& HEADSHOTS</h2>
+          <a href="fotografia-corporativa.html" class="service-more">Ver en detalle →</a>
         <p class="service-desc">
           Retratos de equipo, headshots y fotografía en dependencias.
           Instalamos estudio completo donde el cliente lo necesite —
@@ -789,12 +742,7 @@
         </p>
       </div>
       <div class="service-image">
-        <!-- <img src="img/fotografia-corporativa.jpg" alt="Fotografía corporativa Solaz Studio"> -->
-        <div class="img-placeholder">
-          <div class="img-placeholder-icon">
-            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          </div>
-          <span class="img-placeholder-label">Fotografía corporativa</span>
+        <img src="img/fotografia-corporativa.jpg" alt="Fotografía corporativa Solaz Studio">
         </div>
       </div>
     </article>
@@ -814,13 +762,6 @@
         </p>
       </div>
       <div class="service-image">
-        <!-- <img src="img/direccion-arte.jpg" alt="Dirección de arte Solaz Studio"> -->
-        <div class="img-placeholder">
-          <div class="img-placeholder-icon">
-            <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          </div>
-          <span class="img-placeholder-label">Dirección de arte</span>
-        </div>
       </div>
     </article>
 
@@ -832,6 +773,7 @@
           <span class="service-tag">Industrial</span>
         </div>
         <h2 class="service-name">FOTOGRAFÍA<br>& VIDEO<br>INDUSTRIAL</h2>
+          <a href="fotografia-industrial.html" class="service-more">Ver en detalle →</a>
         <p class="service-desc">
           Producción visual para el sector industrial, minero, construcción y servicios.
           Video institucional, planes de emergencia, capacitación y comunicación corporativa —
@@ -839,12 +781,7 @@
         </p>
       </div>
       <div class="service-image">
-        <!-- <img src="img/industrial.jpg" alt="Fotografía industrial Solaz Studio"> -->
-        <div class="img-placeholder">
-          <div class="img-placeholder-icon">
-            <svg viewBox="0 0 24 24"><path d="M2 20h20"/><path d="M4 20V10l8-8 8 8v10"/><path d="M10 20v-6h4v6"/></svg>
-          </div>
-          <span class="img-placeholder-label">Fotografía industrial</span>
+        <img src="img/industrial.jpg" alt="Fotografía industrial Solaz Studio">
         </div>
       </div>
     </article>
@@ -867,12 +804,28 @@
         </p>
       </div>
       <div class="service-image">
-        <!-- <img src="img/mas-servicios.jpg" alt="Más servicios Solaz Studio"> -->
-        <div class="img-placeholder">
-          <div class="img-placeholder-icon">
-            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          </div>
-          <span class="img-placeholder-label">Más servicios</span>
+        <img src="img/mas-servicios.jpg" alt="Más servicios Solaz Studio">
+        </div>
+      </div>
+    </article>
+
+    <!-- 08 -->
+    <article class="service-block reverse fade-up">
+      <div class="service-content">
+        <div class="service-header">
+          <span class="service-number">08</span>
+          <span class="service-tag">Eventos</span>
+        </div>
+        <h2 class="service-name">COBERTURA<br>DE<br>EVENTOS_</h2>
+        <p class="service-desc">
+          Cobertura fotográfica y audiovisual de eventos corporativos, lanzamientos de marca,
+          activaciones y conferencias. Documentamos lo que ocurre con criterio editorial —
+          no solo registro, sino contenido que sirva para comunicar después del evento.
+          Disponible con dron, Photowall e impresión en sitio según el proyecto.
+        </p>
+      </div>
+      <div class="service-image">
+        <img src="img/eventos.jpg" alt="Cobertura de eventos corporativos Solaz Studio">
         </div>
       </div>
     </article>
@@ -941,36 +894,9 @@
   </footer>
 
   <script>
-    const cursor = document.getElementById('cursor');
-    const ring = document.getElementById('cursorRing');
-    let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
-
-    document.addEventListener('mousemove', (e) => {
-      mouseX = e.clientX; mouseY = e.clientY;
-      cursor.style.left = mouseX - 4 + 'px';
-      cursor.style.top = mouseY - 4 + 'px';
-    });
-
-    function animateRing() {
-      ringX += (mouseX - ringX - 18) * 0.12;
-      ringY += (mouseY - ringY - 18) * 0.12;
-      ring.style.left = ringX + 'px';
-      ring.style.top = ringY + 'px';
-      requestAnimationFrame(animateRing);
-    }
-    animateRing();
-
     document.querySelectorAll('a, button, .service-block').forEach(el => {
-      el.addEventListener('mouseenter', () => {
-        cursor.style.transform = 'scale(3)';
-        ring.style.transform = 'scale(1.5)';
-        ring.style.borderColor = 'rgba(200,185,154,0.6)';
-      });
-      el.addEventListener('mouseleave', () => {
-        cursor.style.transform = 'scale(1)';
-        ring.style.transform = 'scale(1)';
-        ring.style.borderColor = 'rgba(245,243,239,0.4)';
-      });
+      el.addEventListener('mouseenter', () => {  });
+      el.addEventListener('mouseleave', () => {  });
     });
 
     const observer = new IntersectionObserver((entries) => {
