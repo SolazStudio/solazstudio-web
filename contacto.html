@@ -215,6 +215,31 @@
       line-height: 1.7; margin-bottom: 24px;
     }
 
+    .form-consent {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .form-consent input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      accent-color: var(--accent);
+      margin-top: 2px;
+      cursor: pointer;
+    }
+    .form-consent label {
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--grey-light);
+      line-height: 1.6;
+      cursor: pointer;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+    .form-consent a { color: var(--accent); text-decoration: none; }
+    .form-consent a:hover { text-decoration: underline; }
     .form-submit {
       display: inline-flex; align-items: center; gap: 10px;
       font-family: var(--font-body); font-size: 11px; font-weight: 500;
@@ -510,6 +535,11 @@
             <input class="form-input" type="text" id="presupuesto" name="presupuesto" placeholder="Si tienes algo en mente, puedes dejarlo acá…">
           </div>
 
+          <div class="form-consent">
+            <input type="checkbox" id="consent-marketing" name="consent_marketing" value="si">
+            <label for="consent-marketing">Acepto recibir información comercial ocasional de Solaz Studio, como promociones o novedades. Este consentimiento es opcional y puede retirarse en cualquier momento escribiendo a <a href="mailto:hola@solazstudio.cl">hola@solazstudio.cl</a>.</label>
+          </div>
+
           <button type="submit" class="form-submit">
             Enviar mensaje
             <span class="form-submit-arrow">→</span>
@@ -592,7 +622,7 @@
   <!-- FOOTER -->
   <footer>
     <div class="footer-logo">solaz</div>
-    <span class="footer-copy">© 2026 Solaz Studio — Chile</span>
+    <span class="footer-copy">© 2026 Solaz Studio — Chile &nbsp;·&nbsp; <a href="politica-privacidad.html" style="color:inherit;text-decoration:none;opacity:.7;transition:opacity .2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Política de Privacidad</a> &nbsp;·&nbsp; <a href="terminos-uso.html" style="color:inherit;text-decoration:none;opacity:.7;transition:opacity .2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Términos de Uso</a></span>
     <div class="footer-links">
       <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">Instagram</a>
       <a href="portafolio.html">Portafolio</a>

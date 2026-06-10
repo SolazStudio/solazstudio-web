@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Términos de Uso | Solaz Studio</title>
+  <meta name="description" content="Términos de Uso del sitio web de Solaz Studio. Condiciones de uso, propiedad intelectual y limitación de responsabilidad.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="https://www.solazstudio.cl/terminos-uso">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black:#0a0a0a;--black-soft:#111111;--black-mid:#1a1a1a;
+      --white:#f5f3ef;--grey-light:#888580;--grey-mid:#444240;
+      --grey-dark:#222220;--accent:#c8b99a;
+      --font-display:'Bebas Neue',sans-serif;
+      --font-serif:'DM Serif Display',serif;
+      --font-body:'Inter',sans-serif;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--black);color:var(--white);font-family:var(--font-body);overflow-x:hidden;}
+    .main-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:28px 48px;background:rgba(10,10,10,.96);backdrop-filter:blur(12px);}
+    .nav-logo{font-family:var(--font-serif);font-size:22px;color:var(--white);letter-spacing:-.02em;text-decoration:none;}
+    .nav-links{display:flex;gap:40px;list-style:none;}
+    .nav-links a{color:var(--white);text-decoration:none;font-size:11px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;opacity:.7;transition:opacity .2s;}
+    .nav-links a:hover{opacity:1;}
+    .nav-instagram{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--white);text-decoration:none;opacity:.6;transition:opacity .2s;}
+    .ig-short{display:none;}
+    .nav-cta{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--black);background:var(--white);padding:10px 22px;text-decoration:none;transition:background .2s;}
+    .nav-cta:hover{background:var(--accent);}
+    .nav-hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;z-index:101;}
+    .nav-hamburger span{display:block;width:22px;height:1.5px;background:var(--white);transition:all .3s ease;}
+    .nav-hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg);}
+    .nav-hamburger.open span:nth-child(2){opacity:0;}
+    .nav-hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);}
+    .mobile-menu{position:fixed;inset:0;z-index:98;background:var(--black);display:flex;flex-direction:column;justify-content:center;padding:100px 48px 64px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
+    .mobile-menu.open{opacity:1;pointer-events:all;}
+    .mobile-menu-links{display:flex;flex-direction:column;gap:0;margin-bottom:48px;}
+    .mobile-menu-links a{font-family:var(--font-display);font-size:clamp(44px,12vw,72px);line-height:1.05;color:var(--white);text-decoration:none;opacity:.45;transition:opacity .2s;padding:8px 0;border-bottom:1px solid rgba(68,66,64,.3);}
+    .mobile-menu-links a:first-child{border-top:1px solid rgba(68,66,64,.3);}
+    .mobile-menu-links a:hover{opacity:1;}
+    .mobile-menu-bottom{display:flex;flex-direction:column;gap:16px;}
+    .mobile-menu-cta{display:inline-block;font-family:var(--font-body);font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--black);background:var(--white);padding:14px 32px;text-decoration:none;width:fit-content;}
+    .mobile-menu-instagram{font-size:11px;font-weight:300;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-light);text-decoration:none;}
+
+    .legal-page { max-width: 740px; margin: 0 auto; padding: 140px 48px 100px; }
+    .legal-eyebrow { font-size: 10px; font-weight: 400; letter-spacing: .25em; text-transform: uppercase; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 16px; }
+    .legal-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--accent); }
+    .legal-title { font-family: var(--font-display); font-size: clamp(40px, 5vw, 72px); line-height: .95; margin-bottom: 16px; }
+    .legal-date { font-size: 12px; font-weight: 300; color: var(--grey-light); letter-spacing: .08em; margin-bottom: 56px; }
+    .legal-section { margin-bottom: 48px; border-top: 1px solid var(--grey-dark); padding-top: 32px; }
+    .legal-section h2 { font-family: var(--font-display); font-size: 22px; letter-spacing: .03em; color: var(--white); margin-bottom: 16px; }
+    .legal-section p { font-size: 14px; font-weight: 300; color: var(--grey-light); line-height: 1.85; margin-bottom: 14px; }
+    .legal-section p:last-child { margin-bottom: 0; }
+    .legal-section ul { list-style: none; padding: 0; margin-bottom: 14px; }
+    .legal-section ul li { font-size: 14px; font-weight: 300; color: var(--grey-light); line-height: 1.85; padding-left: 20px; position: relative; margin-bottom: 8px; }
+    .legal-section ul li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
+    .legal-section strong { color: var(--white); font-weight: 400; }
+    .legal-section a { color: var(--accent); text-decoration: none; }
+    .legal-section a:hover { text-decoration: underline; }
+
+    footer{padding:40px 48px;border-top:1px solid var(--grey-dark);display:flex;align-items:center;justify-content:space-between;gap:32px;}
+    .footer-logo{font-family:var(--font-serif);font-size:20px;color:var(--white);}
+    .footer-copy{font-size:11px;font-weight:300;color:var(--grey-mid);letter-spacing:.06em;}
+    .footer-links{display:flex;gap:32px;}
+    .footer-links a{font-size:11px;font-weight:300;color:var(--grey-mid);text-decoration:none;letter-spacing:.08em;transition:color .2s;}
+    .footer-links a:hover{color:var(--white);}
+
+    @media(max-width:640px){
+      .main-nav{padding:20px 24px;}
+      .nav-hamburger{display:flex;}
+      .nav-links,.nav-instagram{display:none!important;}
+      .ig-full{display:none;}
+      .ig-short{display:inline;}
+      .legal-page{padding:110px 24px 80px;}
+      footer{padding:32px 24px;flex-direction:column;align-items:flex-start;gap:20px;}
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="main-nav" aria-label="Navegación principal">
+    <a href="index.html" class="nav-logo">solaz</a>
+    <ul class="nav-links">
+      <li><a href="portafolio.html">Portafolio</a></li>
+      <li><a href="servicios.html">Servicios</a></li>
+      <li><a href="nosotros.html">Nosotros</a></li>
+    </ul>
+    <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener"><span class="ig-full">Instagram</span><span class="ig-short">IG</span></a>
+    <a href="contacto.html" class="nav-cta">Contacto</a>
+    <button class="nav-hamburger" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-menu-links">
+      <a href="portafolio.html">Portafolio</a>
+      <a href="servicios.html">Servicios</a>
+      <a href="nosotros.html">Nosotros</a>
+    </div>
+    <div class="mobile-menu-bottom">
+      <a href="contacto.html" class="mobile-menu-cta">Contacto →</a>
+      <a href="https://www.instagram.com/solazstudio/" class="mobile-menu-instagram" target="_blank" rel="noopener">Instagram ↗</a>
+    </div>
+  </div>
+
+  <main class="legal-page">
+
+    <div class="legal-eyebrow">Legal</div>
+    <h1 class="legal-title">TÉRMINOS<br>DE USO_</h1>
+    <p class="legal-date">Última actualización: junio de 2026</p>
+
+    <div class="legal-section">
+      <h2>1. ACEPTACIÓN</h2>
+      <p>El acceso y uso de este sitio web implica la aceptación de los presentes Términos de Uso. Si no estás de acuerdo con alguno de ellos, te pedimos que no utilices el sitio.</p>
+      <p>Este sitio es operado por <strong>Solaz Studio SpA</strong>, RUT 77.734.441-2, con domicilio en Santiago de Chile.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>2. PROPIEDAD INTELECTUAL</h2>
+      <p>Todo el contenido publicado en este sitio — incluyendo fotografías, videos, textos, logotipos, diseño y código — es propiedad de Solaz Studio o ha sido licenciado para su uso por Solaz Studio.</p>
+      <p>Queda estrictamente prohibido:</p>
+      <ul>
+        <li>Reproducir, distribuir o modificar cualquier imagen o video publicado en este sitio sin autorización expresa por escrito.</li>
+        <li>Usar el contenido visual de este sitio con fines comerciales sin contar con los derechos correspondientes.</li>
+        <li>Atribuir a terceros el trabajo creativo publicado aquí como propio.</li>
+      </ul>
+      <p>Para solicitar autorización de uso de cualquier contenido, contáctanos en <a href="mailto:hola@solazstudio.cl">hola@solazstudio.cl</a>.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>3. USO DEL SITIO</h2>
+      <p>El uso de este sitio está limitado a fines informativos y de contacto comercial legítimo. Queda prohibido:</p>
+      <ul>
+        <li>Intentar acceder a sistemas o datos no autorizados.</li>
+        <li>Usar el formulario de contacto para enviar spam, contenido malicioso o solicitudes fraudulentas.</li>
+        <li>Realizar cualquier acción que pueda interferir con el funcionamiento normal del sitio.</li>
+      </ul>
+    </div>
+
+    <div class="legal-section">
+      <h2>4. LIMITACIÓN DE RESPONSABILIDAD</h2>
+      <p>Solaz Studio no se hace responsable de los daños o perjuicios que pudieran derivarse del uso de este sitio, incluyendo interrupciones del servicio, errores en el contenido o problemas técnicos ajenos a nuestra voluntad.</p>
+      <p>Los enlaces a sitios externos que pudieran existir en este sitio no implican responsabilidad sobre el contenido de dichos sitios.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>5. DATOS PERSONALES</h2>
+      <p>El tratamiento de los datos personales recopilados a través de este sitio se rige por nuestra <a href="politica-privacidad.html">Política de Privacidad</a>, conforme a la Ley 21.719 sobre Protección de Datos Personales.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>6. LEGISLACIÓN APLICABLE</h2>
+      <p>Estos términos se rigen por la legislación vigente en la República de Chile. Cualquier controversia que pudiera surgir en relación con el uso de este sitio será sometida a los tribunales competentes de Santiago de Chile.</p>
+    </div>
+
+    <div class="legal-section">
+      <h2>7. MODIFICACIONES</h2>
+      <p>Solaz Studio se reserva el derecho de modificar estos Términos de Uso en cualquier momento. Las modificaciones entrarán en vigencia desde su publicación en este sitio.</p>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="footer-logo">solaz</div>
+    <span class="footer-copy">© 2026 Solaz Studio &nbsp;·&nbsp; <a href="politica-privacidad.html" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Política de Privacidad</a> &nbsp;·&nbsp; <a href="terminos-uso.html" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Términos de Uso</a></span>
+    <div class="footer-links">
+      <a href="politica-privacidad.html">Política de Privacidad</a>
+      <a href="portafolio.html">Portafolio</a>
+      <a href="contacto.html">Contacto</a>
+    </div>
+  </footer>
+
+  <script>
+    const t=document.getElementById('navToggle'),m=document.getElementById('mobileMenu');
+    if(t&&m){t.addEventListener('click',()=>{const o=m.classList.toggle('open');t.classList.toggle('open');m.setAttribute('aria-hidden',String(!o));document.body.style.overflow=o?'hidden':'';});m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{m.classList.remove('open');t.classList.remove('open');m.setAttribute('aria-hidden','true');document.body.style.overflow='';}));}
+  </script>
+
+</body>
+</html>
