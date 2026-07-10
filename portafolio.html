@@ -1018,9 +1018,16 @@
       const WASTE_THRESHOLD = colWidth * 0.05;
       const LOOKAHEAD = 6;
 
+      let pairRotation = 0;
       function bestPairFor(heights) {
+        const numPairs = heights.length - 1;
         let bestPair = 0, bestWaste = Infinity;
-        for (let c = 0; c <= heights.length - 2; c++) {
+        // Empezamos la búsqueda desde un punto rotativo: si varios pares
+        // están empatados en desnivel (ej. todas las columnas en 0, como
+        // pasa al filtrar y quedar solo proyectos), esto evita que siempre
+        // se elija el mismo par y las demás columnas queden sin usar.
+        for (let k = 0; k < numPairs; k++) {
+          const c = (pairRotation + k) % numPairs;
           const waste = Math.abs(heights[c] - heights[c + 1]);
           if (waste < bestWaste) { bestWaste = waste; bestPair = c; }
         }
@@ -1065,6 +1072,7 @@
         if (span === 2) {
           colIndex = bestPairFor(colHeights).colIndex;
           width = colWidth * 2 + GAP;
+          pairRotation = (pairRotation + 1) % (cols - 1);
         } else {
           colIndex = colHeights.indexOf(Math.min(...colHeights));
           width = colWidth;
