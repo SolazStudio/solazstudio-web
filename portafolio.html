@@ -174,11 +174,14 @@
       margin-left: 4px;
     }
 
-    /* ── GALLERY GRID — Masonry 4 columnas ── */
+    /* ── GALLERY GRID — Masonry 5 columnas (CSS Grid + spans calculados por JS) ── */
     .gallery {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-auto-rows: 4px;
+      grid-auto-flow: row dense;
+      gap: var(--gap);
       padding: var(--gap);
-      columns: 4;
-      column-gap: var(--gap);
     }
 
     /* ── GALLERY ITEM ── */
@@ -188,10 +191,7 @@
       overflow: hidden;
       cursor: pointer;
       background: var(--black-mid);
-      break-inside: avoid;
-      margin-bottom: var(--gap);
-      display: block;
-      width: 100%;
+      grid-column: span 1;
     }
 
     .gallery-item img {
@@ -257,6 +257,7 @@
 
     /* ── PROJECT CARD ── */
     .gallery-item.is-project {
+      grid-column: span 2;
       border: 1px solid var(--grey-dark);
       aspect-ratio: 3/2;
     }
@@ -508,16 +509,14 @@
 
     /* ── RESPONSIVE ── */
     @media (max-width: 1024px) {
-      .gallery { columns: 3; }
+      .gallery { grid-template-columns: repeat(3, 1fr); }
     }
     @media (max-width: 768px) {
       nav { padding: 20px 24px; }
       .page-header { padding: 110px 24px 40px; flex-direction: column; align-items: flex-start; gap: 20px; }
       .page-meta { text-align: left; }
       .filters { padding: 16px 24px; top: 69px; overflow-x: auto; }
-      .gallery { columns: 2; padding: var(--gap); }
-      .span-2 { grid-column: span 2; }
-      .span-tall { grid-row: span 2; }
+      .gallery { grid-template-columns: repeat(2, 1fr); padding: var(--gap); }
       .cta-section { padding: 64px 24px; grid-template-columns: 1fr; gap: 40px; }
       footer { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 20px; }
       .lightbox-nav { display: none; }
@@ -1000,18 +999,64 @@
   </footer>
 
   <script>
-    // Manejar imágenes que no cargan (fallback real, sin forzar proporción en imágenes que sí cargan)
-    document.querySelectorAll('.gallery-item img').forEach(img => {
-      img.addEventListener('error', () => {
-        img.closest('.gallery-item').style.aspectRatio = '3/2';
+    // ── Masonry con CSS Grid: calcular cuántas filas ocupa cada item ──
+    // (el grid usa grid-auto-rows muy fino; cada item declara cuántas
+    // filas necesita según la proporción NATURAL de su imagen, sin recortar
+    // ni forzar proporciones)
+    const gallery = document.querySelector('.gallery');
+    const ROW_UNIT = 4; // debe coincidir con grid-auto-rows en CSS
+
+    function resizeGridItem(item) {
+      const width = item.getBoundingClientRect().width;
+      if (!width) return; // aún no visible/renderizado
+      let targetHeight;
+
+      if (item.classList.contains('is-project')) {
+        // Las tarjetas de proyecto usan aspect-ratio 3/2 (ancho:alto = 3:2)
+        targetHeight = width * (2 / 3);
+      } else {
+        const img = item.querySelector('img');
+        if (img && img.naturalWidth && img.naturalHeight) {
+          targetHeight = width * (img.naturalHeight / img.naturalWidth);
+        } else {
+          targetHeight = width * (2 / 3); // fallback mientras carga o si falla
+        }
+      }
+
+      const rowGap = parseFloat(getComputedStyle(gallery).rowGap) || 0;
+      const rowSpan = Math.ceil((targetHeight + rowGap) / (ROW_UNIT + rowGap));
+      item.style.gridRowEnd = 'span ' + rowSpan;
+    }
+
+    function resizeAllGridItems() {
+      document.querySelectorAll('.gallery-item').forEach(item => {
+        // Solo recalcular items visibles (los ocultos por filtro no tienen tamaño real)
+        if (item.style.display !== 'none') resizeGridItem(item);
       });
-      // Solo aplica el fallback si la imagen ya terminó de cargar y realmente falló
-      // (complete=true + naturalHeight=0). Antes se evaluaba también el estado de
-      // carga en curso, lo que forzaba 3/2 en TODAS las fotos válidas mientras cargaban.
-      if (img.complete && img.naturalHeight === 0) {
-        img.closest('.gallery-item').style.aspectRatio = '3/2';
+    }
+
+    function debounce(fn, wait) {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), wait);
+      };
+    }
+
+    // Calcular tamaño inicial de cada item en cuanto su imagen tenga dimensiones reales
+    document.querySelectorAll('.gallery-item').forEach(item => {
+      const img = item.querySelector('img');
+      if (!img) { resizeGridItem(item); return; }
+      if (img.complete && img.naturalWidth) {
+        resizeGridItem(item);
+      } else {
+        img.addEventListener('load', () => resizeGridItem(item));
+        img.addEventListener('error', () => resizeGridItem(item)); // fallback razonable, sin forzar recorte visible
       }
     });
+
+    window.addEventListener('load', resizeAllGridItems);
+    window.addEventListener('resize', debounce(resizeAllGridItems, 150));
 
     // ── Filters ──
     const filterBtns = document.querySelectorAll('.filter-btn');
