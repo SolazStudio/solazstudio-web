@@ -174,12 +174,11 @@
       margin-left: 4px;
     }
 
-    /* ── GALLERY GRID — 4 columnas ── */
+    /* ── GALLERY GRID — Masonry 4 columnas ── */
     .gallery {
       padding: var(--gap);
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: var(--gap);
+      columns: 4;
+      column-gap: var(--gap);
     }
 
     /* ── GALLERY ITEM ── */
@@ -189,6 +188,10 @@
       overflow: hidden;
       cursor: pointer;
       background: var(--black-mid);
+      break-inside: avoid;
+      margin-bottom: var(--gap);
+      display: inline-block;
+      width: 100%;
     }
 
     .gallery-item img {
@@ -255,6 +258,13 @@
     /* ── PROJECT CARD ── */
     .gallery-item.is-project {
       border: 1px solid var(--grey-dark);
+      aspect-ratio: 3/2;
+    }
+    .gallery-item.is-project img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
     .project-label {
@@ -498,14 +508,14 @@
 
     /* ── RESPONSIVE ── */
     @media (max-width: 1024px) {
-      .gallery { grid-template-columns: repeat(3, 1fr); }
+      .gallery { columns: 3; }
     }
     @media (max-width: 768px) {
       nav { padding: 20px 24px; }
       .page-header { padding: 110px 24px 40px; flex-direction: column; align-items: flex-start; gap: 20px; }
       .page-meta { text-align: left; }
       .filters { padding: 16px 24px; top: 69px; overflow-x: auto; }
-      .gallery { grid-template-columns: repeat(2, 1fr); padding: var(--gap); }
+      .gallery { columns: 2; padding: var(--gap); }
       .span-2 { grid-column: span 2; }
       .span-tall { grid-row: span 2; }
       .cta-section { padding: 64px 24px; grid-template-columns: 1fr; gap: 40px; }
@@ -990,6 +1000,16 @@
   </footer>
 
   <script>
+    // Manejar imágenes que no cargan
+    document.querySelectorAll('.gallery-item img').forEach(img => {
+      img.addEventListener('error', () => {
+        img.closest('.gallery-item').style.aspectRatio = '3/2';
+      });
+      if (!img.complete || img.naturalHeight === 0) {
+        img.closest('.gallery-item').style.aspectRatio = '3/2';
+      }
+    });
+
     // ── Filters ──
     const filterBtns = document.querySelectorAll('.filter-btn');
     const galleryItems = document.querySelectorAll('.gallery-item');
