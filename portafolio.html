@@ -1000,12 +1000,15 @@
   </footer>
 
   <script>
-    // Manejar imágenes que no cargan
+    // Manejar imágenes que no cargan (fallback real, sin forzar proporción en imágenes que sí cargan)
     document.querySelectorAll('.gallery-item img').forEach(img => {
       img.addEventListener('error', () => {
         img.closest('.gallery-item').style.aspectRatio = '3/2';
       });
-      if (!img.complete || img.naturalHeight === 0) {
+      // Solo aplica el fallback si la imagen ya terminó de cargar y realmente falló
+      // (complete=true + naturalHeight=0). Antes se evaluaba también el estado de
+      // carga en curso, lo que forzaba 3/2 en TODAS las fotos válidas mientras cargaban.
+      if (img.complete && img.naturalHeight === 0) {
         img.closest('.gallery-item').style.aspectRatio = '3/2';
       }
     });
