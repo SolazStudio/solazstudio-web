@@ -137,11 +137,12 @@
 
     /* ── FILTERS ── */
     .filters {
-      padding: 24px 48px;
+      padding: 24px 16px;
       border-bottom: 1px solid var(--grey-dark);
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-wrap: wrap;
       gap: 4px;
       position: sticky;
       top: 81px;
@@ -188,13 +189,11 @@
       overflow: hidden;
       cursor: pointer;
       background: var(--black-mid);
-      aspect-ratio: 3/2;
     }
 
     .gallery-item img {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      height: auto;
       display: block;
       transition: transform 0.5s ease;
     }
@@ -1002,8 +1001,7 @@
         const f = btn.dataset.filter;
         galleryItems.forEach(item => {
           const match = f === 'all' || item.dataset.cat === f;
-          item.style.opacity = match ? '1' : '0.15';
-          item.style.pointerEvents = match ? 'all' : 'none';
+          item.style.display = match ? '' : 'none';
         });
       });
     });
