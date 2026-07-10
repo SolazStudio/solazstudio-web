@@ -174,24 +174,18 @@
       margin-left: 4px;
     }
 
-    /* ── GALLERY GRID — Masonry 5 columnas (CSS Grid + spans calculados por JS) ── */
+    /* ── GALLERY GRID — Masonry 5 columnas (posicionamiento absoluto, precisión exacta en px) ── */
     .gallery {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      grid-auto-rows: 4px;
-      grid-auto-flow: row dense;
-      gap: var(--gap);
-      padding: var(--gap);
+      position: relative;
     }
 
     /* ── GALLERY ITEM ── */
 
     .gallery-item {
-      position: relative;
+      position: absolute;
       overflow: hidden;
       cursor: pointer;
       background: var(--black-mid);
-      grid-column: span 1;
     }
 
     .gallery-item img {
@@ -257,14 +251,11 @@
 
     /* ── PROJECT CARD ── */
     .gallery-item.is-project {
-      grid-column: span 2;
       border: 1px solid var(--grey-dark);
-      aspect-ratio: 3/2;
     }
     .gallery-item.is-project img {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      height: auto;
       display: block;
     }
 
@@ -508,15 +499,12 @@
     .fade-up.visible { opacity: 1; transform: none; }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 1024px) {
-      .gallery { grid-template-columns: repeat(3, 1fr); }
-    }
     @media (max-width: 768px) {
       nav { padding: 20px 24px; }
       .page-header { padding: 110px 24px 40px; flex-direction: column; align-items: flex-start; gap: 20px; }
       .page-meta { text-align: left; }
       .filters { padding: 16px 24px; top: 69px; overflow-x: auto; }
-      .gallery { grid-template-columns: repeat(2, 1fr); padding: var(--gap); }
+      .gallery { padding: var(--gap); }
       .cta-section { padding: 64px 24px; grid-template-columns: 1fr; gap: 40px; }
       footer { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 20px; }
       .lightbox-nav { display: none; }
@@ -999,40 +987,115 @@
   </footer>
 
   <script>
-    // ── Masonry con CSS Grid: calcular cuántas filas ocupa cada item ──
-    // (el grid usa grid-auto-rows muy fino; cada item declara cuántas
-    // filas necesita según la proporción NATURAL de su imagen, sin recortar
-    // ni forzar proporciones)
+    // ── Masonry con posicionamiento absoluto (precisión exacta en px, sin holgura) ──
+    // Cada foto se posiciona con top/left calculados matemáticamente según su
+    // proporción NATURAL (sin recortar), colocándose siempre en la columna más
+    // corta disponible. Las tarjetas de proyecto (is-project) ocupan el par de
+    // columnas adyacentes más corto, para destacar más grandes que el resto.
     const gallery = document.querySelector('.gallery');
-    const ROW_UNIT = 4; // debe coincidir con grid-auto-rows en CSS
+    const GAP = 3; // debe coincidir con --gap en CSS
 
-    function resizeGridItem(item) {
-      const width = item.getBoundingClientRect().width;
-      if (!width) return; // aún no visible/renderizado
-      let targetHeight;
-
-      if (item.classList.contains('is-project')) {
-        // Las tarjetas de proyecto usan aspect-ratio 3/2 (ancho:alto = 3:2)
-        targetHeight = width * (2 / 3);
-      } else {
-        const img = item.querySelector('img');
-        if (img && img.naturalWidth && img.naturalHeight) {
-          targetHeight = width * (img.naturalHeight / img.naturalWidth);
-        } else {
-          targetHeight = width * (2 / 3); // fallback mientras carga o si falla
-        }
-      }
-
-      const rowGap = parseFloat(getComputedStyle(gallery).rowGap) || 0;
-      const rowSpan = Math.ceil((targetHeight + rowGap) / (ROW_UNIT + rowGap));
-      item.style.gridRowEnd = 'span ' + rowSpan;
+    function getColumnCount() {
+      const w = window.innerWidth;
+      if (w <= 768) return 2;
+      if (w <= 1024) return 3;
+      return 5;
     }
 
-    function resizeAllGridItems() {
-      document.querySelectorAll('.gallery-item').forEach(item => {
-        // Solo recalcular items visibles (los ocultos por filtro no tienen tamaño real)
-        if (item.style.display !== 'none') resizeGridItem(item);
-      });
+    function layoutGallery() {
+      // Array mutable: si un proyecto encuentra un desnivel grande entre las
+      // columnas que le tocarían, adelantamos una foto regular cercana (de las
+      // próximas en la fila) para nivelar antes de colocarlo, evitando el hueco.
+      const items = Array.from(document.querySelectorAll('.gallery-item'))
+        .filter(item => item.style.display !== 'none');
+
+      const cols = getColumnCount();
+      // El margen exterior de la galería se maneja aquí (no con padding CSS),
+      // porque los hijos absolute se posicionan respecto al padding-box del
+      // contenedor, lo que rompería el cálculo si CSS también aplicara padding.
+      const containerWidth = gallery.clientWidth - GAP * 2;
+      const colWidth = (containerWidth - GAP * (cols - 1)) / cols;
+      const colHeights = new Array(cols).fill(0);
+      const WASTE_THRESHOLD = colWidth * 0.05;
+      const LOOKAHEAD = 6;
+
+      function bestPairFor(heights) {
+        let bestPair = 0, bestWaste = Infinity;
+        for (let c = 0; c <= heights.length - 2; c++) {
+          const waste = Math.abs(heights[c] - heights[c + 1]);
+          if (waste < bestWaste) { bestWaste = waste; bestPair = c; }
+        }
+        return { colIndex: bestPair, waste: bestWaste };
+      }
+
+      let i = 0;
+      while (i < items.length) {
+        const item = items[i];
+        const isProjectItem = item.classList.contains('is-project');
+        const img = item.querySelector('img');
+        const naturalRatio = (img && img.naturalWidth && img.naturalHeight)
+          ? img.naturalWidth / img.naturalHeight
+          : null;
+        // Mientras la imagen carga, asumimos horizontal (comportamiento previo);
+        // se recalcula solo cuando la imagen termina de cargar (ver scheduleRelayout).
+        const isLandscape = naturalRatio === null ? true : naturalRatio >= 1;
+        // Los proyectos horizontales ocupan 2 columnas para destacar más grandes;
+        // los verticales (típicos de contenido para RRSS) ocupan 1 columna con
+        // su alto natural, sin recortar ni forzar una caja horizontal.
+        const wantsSpan2 = isProjectItem && isLandscape && cols >= 2;
+
+        if (wantsSpan2) {
+          const { waste } = bestPairFor(colHeights);
+          if (waste > WASTE_THRESHOLD) {
+            // buscar una foto regular cercana para adelantarla y nivelar
+            let swapIdx = -1;
+            for (let k = i + 1; k < Math.min(i + 1 + LOOKAHEAD, items.length); k++) {
+              if (!items[k].classList.contains('is-project')) { swapIdx = k; break; }
+            }
+            if (swapIdx !== -1) {
+              const [moved] = items.splice(swapIdx, 1);
+              items.splice(i, 0, moved);
+              continue; // reprocesar la posición i con el item adelantado
+            }
+          }
+        }
+
+        const span = wantsSpan2 ? Math.min(2, cols) : 1;
+        let width, left, colIndex;
+
+        if (span === 2) {
+          colIndex = bestPairFor(colHeights).colIndex;
+          width = colWidth * 2 + GAP;
+        } else {
+          colIndex = colHeights.indexOf(Math.min(...colHeights));
+          width = colWidth;
+        }
+
+        left = GAP + colIndex * (colWidth + GAP);
+        const top = GAP + (span === 2
+          ? Math.max(colHeights[colIndex], colHeights[colIndex + 1])
+          : colHeights[colIndex]);
+
+        const height = naturalRatio
+          ? width / naturalRatio
+          : width * (2 / 3); // fallback mientras carga o si falla
+
+        item.style.width = width + 'px';
+        item.style.left = left + 'px';
+        item.style.top = top + 'px';
+
+        const relHeight = (top - GAP) + height + GAP;
+        if (span === 2) {
+          colHeights[colIndex] = relHeight;
+          colHeights[colIndex + 1] = relHeight;
+        } else {
+          colHeights[colIndex] = relHeight;
+        }
+
+        i++;
+      }
+
+      gallery.style.height = (Math.max(0, ...colHeights) + GAP) + 'px';
     }
 
     function debounce(fn, wait) {
@@ -1043,20 +1106,29 @@
       };
     }
 
-    // Calcular tamaño inicial de cada item en cuanto su imagen tenga dimensiones reales
-    document.querySelectorAll('.gallery-item').forEach(item => {
-      const img = item.querySelector('img');
-      if (!img) { resizeGridItem(item); return; }
+    // Relayout cada vez que una imagen termina de cargar (afecta la altura de su columna)
+    let relayoutScheduled = false;
+    function scheduleRelayout() {
+      if (relayoutScheduled) return;
+      relayoutScheduled = true;
+      requestAnimationFrame(() => {
+        relayoutScheduled = false;
+        layoutGallery();
+      });
+    }
+
+    document.querySelectorAll('.gallery-item img').forEach(img => {
       if (img.complete && img.naturalWidth) {
-        resizeGridItem(item);
+        // ya en caché, no dispara 'load'
       } else {
-        img.addEventListener('load', () => resizeGridItem(item));
-        img.addEventListener('error', () => resizeGridItem(item)); // fallback razonable, sin forzar recorte visible
+        img.addEventListener('load', scheduleRelayout);
+        img.addEventListener('error', scheduleRelayout); // fallback razonable, sin forzar recorte visible
       }
     });
 
-    window.addEventListener('load', resizeAllGridItems);
-    window.addEventListener('resize', debounce(resizeAllGridItems, 150));
+    layoutGallery();
+    window.addEventListener('load', layoutGallery);
+    window.addEventListener('resize', debounce(layoutGallery, 150));
 
     // ── Filters ──
     const filterBtns = document.querySelectorAll('.filter-btn');
@@ -1071,6 +1143,7 @@
           const match = f === 'all' || item.dataset.cat === f;
           item.style.display = match ? '' : 'none';
         });
+        layoutGallery();
       });
     });
 
