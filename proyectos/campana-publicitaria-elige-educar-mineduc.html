@@ -120,27 +120,20 @@
       text-transform: uppercase; color: var(--grey-mid);
     }
 
-    /* PROJECT CONTENT */
+    /* PROJECT CONTENT — masonry de proporción natural (sin forzar recortes) */
     .project-content {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0;
-      margin: 0;
-      padding: 0;
+      position: relative;
     }
 
     .content-item {
-      position: relative; overflow: hidden;
+      position: absolute;
+      overflow: hidden;
+      cursor: pointer;
       background: var(--black);
     }
     .content-item img, .content-item video {
-      width: 100%; height: 100%; object-fit: cover; display: block;
+      width: 100%; height: auto; display: block;
     }
-    .content-item.portrait { aspect-ratio: 3/4; }
-    .content-item.landscape { aspect-ratio: 4/3; }
-    .content-item.square { aspect-ratio: 1/1; }
-    .content-item.wide { grid-column: span 2; aspect-ratio: 16/9; }
-    .content-item.full { grid-column: span 3; aspect-ratio: 21/9; }
 
     .item-placeholder-sm {
       position: absolute; inset: 0;
@@ -207,9 +200,7 @@
       .ig-full { display: none; }
       .ig-short { display: inline; }
       .project-header { padding: 110px 24px 48px; grid-template-columns: 1fr; gap: 32px; }
-      .project-content { grid-template-columns: repeat(2, 1fr); }
-      .content-item.full { grid-column: span 2; }
-      .content-item.wide { grid-column: span 2; }
+      .project-content { padding: var(--gap, 3px); }
       .project-nav { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 16px; }
       footer { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 20px; }
     }
@@ -291,181 +282,181 @@
   <!-- PROJECT GALLERY -->
   <section class="project-content" aria-label="Galería del proyecto Elige Educar × Mineduc">
 
-    <div class="content-item portrait">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-grafica-cta-retrato-mujer.jpg" alt="Gráfica publicitaria Elige Educar — retrato mujer, estudiapedagogia.cl" loading="lazy">
     </div>
 
-    <div class="content-item landscape">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-grafica-testimonio-profesor-matematicas.jpg" alt="Gráfica testimonio profesor de matemáticas — campaña Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item square">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-retrato-hombre-estudio-fondo-blanco-1.jpg" alt="Retrato hombre en estudio fondo blanco — campaña Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item portrait">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-grafica-testimonio-profesor-aula-diego.jpg" alt="Gráfica testimonio profesor Diego en aula — campaña Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item square">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-grafica-testimonio-profesora-aula-francesca.jpg" alt="Gráfica testimonio profesora Francesca en aula — campaña Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item wide" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-horizontal.mp4">
+    <div class="content-item is-video" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-horizontal.mp4">
       <video src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-horizontal.mp4" muted loop playsinline preload="metadata" aria-label="Campaña Elige Educar × Mineduc — video horizontal"></video>
       <div class="video-overlay">
         <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
       </div>
     </div>
 
-    <div class="content-item landscape">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-grafica-testimonio-profesora-tania.jpg" alt="Gráfica testimonio profesora Tania — campaña Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item portrait">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-retrato-pareja-estudio-fondo-oscuro.jpg" alt="Retrato pareja de profesores en estudio — campaña Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item square">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-profesor-pizarra-aula-estudiantes-1.jpg" alt="Profesor en pizarra frente a estudiantes, aula con puerta roja — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item full">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-profesor-pizarra-aula-estudiantes-2.jpg" alt="Profesor en pizarra frente a estudiantes, otro ángulo — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item portrait" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-vertical.mp4">
+    <div class="content-item is-video" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-vertical.mp4">
       <video src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-vertical.mp4" muted loop playsinline preload="metadata" aria-label="Campaña Elige Educar × Mineduc — video vertical"></video>
       <div class="video-overlay">
         <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
       </div>
     </div>
 
-    <div class="content-item square">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-estudiante-mochila-exterior-colegio.jpg" alt="Estudiante con mochila en patio exterior de colegio — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item landscape">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-profesora-aula-pizarra-blanca.jpg" alt="Profesora de pie junto a pizarra en aula — campaña Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item portrait">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-mujer-pasillo-madera-colegio-1.jpg" alt="Mujer caminando por pasillo de madera de colegio — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item portrait">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-hombre-pasillo-mochila-colegio.jpg" alt="Hombre con mochila caminando por pasillo de colegio — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item landscape">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-mujer-pasillo-carpeta-colegio.jpg" alt="Mujer con carpeta en pasillo de colegio — campaña Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item portrait" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-reel.mp4">
+    <div class="content-item is-video" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-reel.mp4">
       <video src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-reel.mp4" muted loop playsinline preload="metadata" aria-label="Campaña Elige Educar × Mineduc — video reel"></video>
       <div class="video-overlay">
         <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
       </div>
     </div>
 
-    <div class="content-item square">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-profesora-pizarra-estudiantes-espalda.jpg" alt="Profesora escribiendo en pizarra, vista desde estudiantes — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item portrait">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-retrato-hombre-exterior-carpeta-1.jpg" alt="Retrato hombre con carpeta en exterior de colegio — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item square">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-profesor-pizarra-siguiente-paso-aula.jpg" alt="Profesor en pizarra con mensaje 'Atrévete a dar el siguiente paso' — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item landscape">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-mujer-exterior-arboles-colegio.jpg" alt="Mujer caminando en exterior arbolado de colegio — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item portrait">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-hombre-exterior-arboles-carpeta.jpg" alt="Hombre con carpeta en exterior arbolado de colegio — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item landscape" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-profesor.mp4">
+    <div class="content-item is-video" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-profesor.mp4">
       <video src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-profesor.mp4" muted loop playsinline preload="metadata" aria-label="Campaña Elige Educar × Mineduc — video profesor"></video>
       <div class="video-overlay">
         <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
       </div>
     </div>
 
-    <div class="content-item square">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-hombre-escritorio-oficina-laptop-1.jpg" alt="Hombre trabajando en escritorio con laptop y papeles — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item full">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-retrato-mujer-estudio-vestido-negro-1.jpg" alt="Retrato mujer en estudio, vestido negro — campaña Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item square">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-retrato-mujer-estudio-vestido-negro-2.jpg" alt="Retrato mujer en estudio, vestido negro, otra pose — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item landscape">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-hombre-escritorio-oficina-laptop-2.jpg" alt="Hombre en escritorio de oficina con laptop, otro ángulo — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item portrait">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-profesora-escritorio-conversacion.jpg" alt="Profesora conversando con colega en escritorio — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item wide" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-screen.mp4">
+    <div class="content-item is-video" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-screen.mp4">
       <video src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc-screen.mp4" muted loop playsinline preload="metadata" aria-label="Campaña Elige Educar × Mineduc — video screen"></video>
       <div class="video-overlay">
         <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
       </div>
     </div>
 
-    <div class="content-item portrait">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-mujer-pasillo-madera-colegio-2.jpg" alt="Mujer con carpeta en pasillo de madera de colegio — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item landscape">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-retrato-pareja-estudio-verde.jpg" alt="Retrato pareja de profesores en estudio, fondo blanco — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item square">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-retrato-mujer-estudio-verde-1.jpg" alt="Retrato mujer en estudio, polera verde — campaña Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item portrait">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-retrato-hombre-estudio-azul.jpg" alt="Retrato hombre en estudio, polera azul — campaña Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item full" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc.mp4">
+    <div class="content-item is-video" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc.mp4">
       <video src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/campana-publicitaria-elige-educar-mineduc/video-campana-publicitaria-elige-educar-mineduc.mp4" muted loop playsinline preload="metadata" aria-label="Campaña Elige Educar × Mineduc — video principal"></video>
       <div class="video-overlay">
         <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
       </div>
     </div>
 
-    <div class="content-item square">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-grafica-siguiente-paso-mujer-libro.jpg" alt="Gráfica 'Atrévete a dar el siguiente paso' — mujer con libro, estudiapedagogia.cl" loading="lazy">
     </div>
 
-    <div class="content-item landscape">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-retrato-mujer-estudio-verde-2.jpg" alt="Retrato mujer en estudio con carpeta, polera verde — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item portrait">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-grafica-siguiente-paso-mujer-carpeta.jpg" alt="Gráfica 'Atrévete a dar el siguiente paso' — mujer con carpeta, estudiapedagogia.cl" loading="lazy">
     </div>
 
-    <div class="content-item square">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-retrato-hombre-estudio-fondo-blanco-2.jpg" alt="Retrato hombre en estudio fondo blanco, con carpeta — Elige Educar Mineduc" loading="lazy">
     </div>
 
-    <div class="content-item full">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-grafica-informate-programas-hombre-1.jpg" alt="Gráfica 'Infórmate sobre los programas' — hombre exterior, estudiapedagogia.cl" loading="lazy">
     </div>
 
-    <div class="content-item square">
+    <div class="content-item">
       <img src="../img/proyectos/campana-publicitaria-elige-educar-mineduc/campana-publicitaria-elige-educar-mineduc-grafica-informate-programas-hombre-2.jpg" alt="Gráfica 'Infórmate sobre los programas' — hombre exterior, otra foto, estudiapedagogia.cl" loading="lazy">
     </div>
 
@@ -494,6 +485,68 @@
     if(t&&m){t.addEventListener('click',()=>{const o=m.classList.toggle('open');t.classList.toggle('open');m.setAttribute('aria-hidden',String(!o));document.body.style.overflow=o?'hidden':'';});m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{m.classList.remove('open');t.classList.remove('open');m.setAttribute('aria-hidden','true');document.body.style.overflow='';}));}
     const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.08});
     document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+
+    // ── Masonry con posicionamiento absoluto (proporción natural, sin recortes) ──
+    const galleryEl = document.querySelector('.project-content');
+    const GAP = 3;
+
+    function getColumnCount() {
+      const w = window.innerWidth;
+      return w <= 640 ? 2 : 3;
+    }
+
+    function layoutProjectGallery() {
+      if (!galleryEl) return;
+      const items = Array.from(galleryEl.querySelectorAll('.content-item'));
+      const cols = getColumnCount();
+      const containerWidth = galleryEl.clientWidth - GAP * 2;
+      const colWidth = (containerWidth - GAP * (cols - 1)) / cols;
+      const colHeights = new Array(cols).fill(0);
+
+      items.forEach(item => {
+        const colIndex = colHeights.indexOf(Math.min(...colHeights));
+        const left = GAP + colIndex * (colWidth + GAP);
+        const top = GAP + colHeights[colIndex];
+
+        const media = item.querySelector('img, video');
+        let ratio = null;
+        if (media) {
+          if (media.tagName === 'IMG' && media.naturalWidth && media.naturalHeight) {
+            ratio = media.naturalWidth / media.naturalHeight;
+          } else if (media.tagName === 'VIDEO' && media.videoWidth && media.videoHeight) {
+            ratio = media.videoWidth / media.videoHeight;
+          }
+        }
+        const height = ratio ? colWidth / ratio : colWidth * (2 / 3);
+
+        item.style.width = colWidth + 'px';
+        item.style.left = left + 'px';
+        item.style.top = top + 'px';
+
+        colHeights[colIndex] = top - GAP + height + GAP;
+      });
+
+      galleryEl.style.height = (Math.max(0, ...colHeights) + GAP) + 'px';
+    }
+
+    function debounceProj(fn, wait) {
+      let t;
+      return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+    }
+
+    document.querySelectorAll('.content-item img').forEach(img => {
+      if (!(img.complete && img.naturalWidth)) {
+        img.addEventListener('load', layoutProjectGallery);
+        img.addEventListener('error', layoutProjectGallery);
+      }
+    });
+    document.querySelectorAll('.content-item video').forEach(video => {
+      video.addEventListener('loadedmetadata', layoutProjectGallery);
+    });
+
+    layoutProjectGallery();
+    window.addEventListener('load', layoutProjectGallery);
+    window.addEventListener('resize', debounceProj(layoutProjectGallery, 150));
 
     // Reproducir video al hacer click (esta página no usa el lightbox del portafolio general)
     document.querySelectorAll('.content-item[data-lightbox="video"]').forEach(item => {
