@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kifit — TNF Endurance Trail 2025 — Solaz Studio</title>
+  <meta name="description" content="Cobertura fotográfica y audiovisual del TNF Endurance Trail 2025 para Kifit — Solaz Studio.">
+  <link rel="canonical" href="https://www.solazstudio.cl/proyectos/cobertura-evento-kifit-tnf-trail">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Kifit — TNF Endurance Trail 2025 — Solaz Studio">
+  <meta property="og:description" content="Cobertura fotográfica y audiovisual del TNF Endurance Trail 2025 para Kifit — Solaz Studio.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.solazstudio.cl/proyectos/cobertura-evento-kifit-tnf-trail">
+  <meta property="og:image" content="https://www.solazstudio.cl/og-image.jpg">
+  <meta property="og:locale" content="es_CL">
+  <meta property="og:site_name" content="Solaz Studio">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --black: #0a0a0a; --black-soft: #111111; --black-mid: #1a1a1a;
+      --white: #f5f3ef; --grey-light: #888580; --grey-mid: #444240;
+      --grey-dark: #222220; --accent: #c8b99a;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-serif: 'DM Serif Display', serif;
+      --font-body: 'Inter', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--black); color: var(--white); font-family: var(--font-body); overflow-x: hidden; }
+
+    .main-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:28px 48px;background:rgba(10,10,10,.96);backdrop-filter:blur(12px);}
+    .nav-logo{font-family:var(--font-serif);font-size:22px;color:var(--white);letter-spacing:-.02em;text-decoration:none;}
+    .nav-links{display:flex;gap:40px;list-style:none;}
+    .nav-links a{color:var(--white);text-decoration:none;font-size:11px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;opacity:.7;transition:opacity .2s;}
+    .nav-links a:hover,.nav-links a.active{opacity:1;}
+    .nav-instagram{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--white);text-decoration:none;opacity:.6;transition:opacity .2s;}
+    .ig-short{display:none;}
+    .nav-instagram:hover{opacity:1;}
+    .nav-cta{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--black);background:var(--white);padding:10px 22px;text-decoration:none;transition:background .2s;}
+    .nav-cta:hover{background:var(--accent);}
+    .nav-hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;z-index:101;}
+    .nav-hamburger span{display:block;width:22px;height:1.5px;background:var(--white);transition:all .3s ease;}
+    .nav-hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg);}
+    .nav-hamburger.open span:nth-child(2){opacity:0;}
+    .nav-hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg);}
+    .mobile-menu{position:fixed;inset:0;z-index:98;background:var(--black);display:flex;flex-direction:column;justify-content:center;padding:100px 48px 64px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
+    .mobile-menu.open{opacity:1;pointer-events:all;}
+    .mobile-menu-links{display:flex;flex-direction:column;gap:0;margin-bottom:48px;}
+    .mobile-menu-links a{font-family:var(--font-display);font-size:clamp(44px,12vw,72px);line-height:1.05;color:var(--white);text-decoration:none;opacity:.45;transition:opacity .2s;padding:8px 0;border-bottom:1px solid rgba(68,66,64,.3);}
+    .mobile-menu-links a:first-child{border-top:1px solid rgba(68,66,64,.3);}
+    .mobile-menu-links a:hover{opacity:1;}
+    .mobile-menu-bottom{display:flex;flex-direction:column;gap:16px;}
+    .mobile-menu-cta{display:inline-block;font-family:var(--font-body);font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--black);background:var(--white);padding:14px 32px;text-decoration:none;width:fit-content;}
+    .mobile-menu-cta:hover{background:var(--accent);}
+    .mobile-menu-instagram{font-size:11px;font-weight:300;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-light);text-decoration:none;}
+    .fade-up{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease;}
+    .fade-up.visible{opacity:1;transform:none;}
+
+    /* PROJECT HEADER */
+    .project-header {
+      padding: 140px 48px 80px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: end;
+    }
+    .project-eyebrow {
+      font-size: 10px; font-weight: 400; letter-spacing: 0.25em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .project-eyebrow::before {
+      content: ''; display: block; width: 32px; height: 1px; background: var(--accent);
+    }
+    .project-client {
+      font-family: var(--font-display);
+      font-size: clamp(56px, 7vw, 104px);
+      line-height: 0.92; letter-spacing: -0.01em;
+    }
+    .project-client .outline {
+      color: transparent; -webkit-text-stroke: 1px rgba(245,243,239,0.3);
+    }
+    .project-meta {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+      padding-bottom: 8px;
+    }
+    .meta-item {}
+    .meta-label {
+      font-size: 9px; font-weight: 500; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--grey-mid); margin-bottom: 8px;
+    }
+    .meta-value {
+      font-size: 14px; font-weight: 300; color: var(--white); line-height: 1.5;
+    }
+    .project-description {
+      grid-column: 1 / -1;
+      font-size: 14px; font-weight: 300; color: var(--grey-light);
+      line-height: 1.85; margin-top: 8px;
+    }
+
+    /* COVER IMAGE */
+    .project-cover {
+      width: 100%; aspect-ratio: 16/7; overflow: hidden;
+      background: var(--black);
+      position: relative;
+    }
+    .project-cover img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .cover-placeholder {
+      position: absolute; inset: 0; display: flex; align-items: center;
+      justify-content: center;
+      background: var(--black);
+    }
+    .cover-placeholder span {
+      font-size: 9px; font-weight: 400; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--grey-mid);
+    }
+
+    /* PROJECT CONTENT */
+    .project-content {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .content-item {
+      position: relative; overflow: hidden;
+      background: var(--black);
+    }
+    .content-item img, .content-item video {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .content-item.portrait { aspect-ratio: 3/4; }
+    .content-item.landscape { aspect-ratio: 4/3; }
+    .content-item.square { aspect-ratio: 1/1; }
+    .content-item.wide { grid-column: span 2; aspect-ratio: 16/9; }
+    .content-item.full { grid-column: span 3; aspect-ratio: 21/9; }
+
+    .item-placeholder-sm {
+      position: absolute; inset: 0;
+      background: var(--black);
+    }
+
+    .video-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(10,10,10,0.3);
+    }
+    .play-icon-sm {
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 1px solid rgba(245,243,239,0.6);
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(10,10,10,0.5);
+    }
+    .play-icon-sm svg { width: 14px; fill: var(--white); margin-left: 3px; }
+
+    /* NAV BETWEEN PROJECTS */
+    .project-nav {
+      padding: 48px;
+      border-top: 1px solid var(--grey-dark);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 32px;
+    }
+    .proj-nav-link {
+      font-size: 11px; font-weight: 400; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--grey-light);
+      text-decoration: none; transition: color 0.2s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .proj-nav-link:hover { color: var(--white); }
+    .proj-nav-center {
+      font-size: 11px; font-weight: 300; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--grey-mid);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .proj-nav-center:hover { color: var(--white); }
+
+    /* FOOTER */
+    footer {
+      padding: 40px 48px; border-top: 1px solid var(--grey-dark);
+      display: flex; align-items: center; justify-content: space-between; gap: 32px;
+    }
+    .footer-logo { font-family: var(--font-serif); font-size: 20px; color: var(--white); }
+    .footer-copy { font-size: 11px; font-weight: 300; color: var(--grey-mid); letter-spacing: 0.06em; }
+    .footer-links { display: flex; gap: 32px; }
+    .footer-links a {
+      font-size: 11px; font-weight: 300; color: var(--grey-mid);
+      text-decoration: none; letter-spacing: 0.08em; transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--white); }
+
+    @media (max-width: 1024px) {
+      .project-header { padding: 120px 32px 60px; gap: 40px; }
+    }
+    @media (max-width: 640px) {
+      .main-nav { padding: 20px 24px; }
+      .nav-hamburger { display: flex; }
+      .nav-links, .nav-instagram { display: none !important; }
+      .ig-full { display: none; }
+      .ig-short { display: inline; }
+      .project-header { padding: 110px 24px 48px; grid-template-columns: 1fr; gap: 32px; }
+      .project-content { grid-template-columns: repeat(2, 1fr); }
+      .content-item.full { grid-column: span 2; }
+      .content-item.wide { grid-column: span 2; }
+      .project-nav { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 16px; }
+      footer { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 20px; }
+    }
+  </style>
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
+</head>
+<body>
+
+  <nav class="main-nav" aria-label="Navegación principal">
+    <a href="../index.html" class="nav-logo">solaz</a>
+    <ul class="nav-links">
+      <li><a href="../portafolio.html">Portafolio</a></li>
+      <li><a href="../servicios.html">Servicios</a></li>
+      <li><a href="../nosotros.html">Nosotros</a></li>
+    </ul>
+    <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Instagram"><span class="ig-full">Instagram</span><span class="ig-short">IG</span></a>
+    <a href="../contacto.html" class="nav-cta">Contacto</a>
+    <button class="nav-hamburger" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-menu-links">
+      <a href="../portafolio.html">Portafolio</a>
+      <a href="../servicios.html">Servicios</a>
+      <a href="../nosotros.html">Nosotros</a>
+    </div>
+    <div class="mobile-menu-bottom">
+      <a href="../contacto.html" class="mobile-menu-cta">Contacto →</a>
+      <a href="https://www.instagram.com/solazstudio/" class="mobile-menu-instagram" target="_blank" rel="noopener">Instagram ↗</a>
+    </div>
+  </div>
+
+  <!-- PROJECT HEADER -->
+  <header class="project-header">
+    <div>
+      <div class="project-eyebrow">Proyecto — 2025</div>
+      <h1 class="project-client">
+        TNF<br>
+        <span class="outline">TRAIL</span>_
+      </h1>
+    </div>
+    <div>
+      <div class="project-meta">
+        <div class="meta-item">
+          <div class="meta-label">Cliente</div>
+          <div class="meta-value">Kifit</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Año</div>
+          <div class="meta-value">2025</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Lugar</div>
+          <div class="meta-value">Chile</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Tipo</div>
+          <div class="meta-value">Cobertura de evento · Fotografía y video</div>
+        </div>
+        <p class="project-description">
+          Cobertura integral fotográfica y audiovisual del TNF Endurance Trail 2025.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- COVER -->
+  <div class="project-cover">
+    <img src="../img/portfolio/cobertura-evento-kifit-tnf-trail-2025-cover.jpg" alt="Kifit — TNF Endurance Trail 2025">
+  </div>
+
+  <!-- PROJECT GALLERY -->
+  <section class="project-content" aria-label="Galería del proyecto Kifit — TNF Endurance Trail 2025">
+
+    <!-- Fila 1: video ancho + portrait -->
+    <div class="content-item wide">
+      <div class="item-placeholder-sm"></div>
+      <div class="video-overlay">
+        <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+      </div>
+    </div>
+    <div class="content-item portrait">
+      <div class="item-placeholder-sm"></div>
+    </div>
+
+    <!-- Fila 2: tres portraits -->
+    <div class="content-item portrait">
+      <div class="item-placeholder-sm"></div>
+    </div>
+    <div class="content-item portrait">
+      <div class="item-placeholder-sm"></div>
+    </div>
+    <div class="content-item portrait">
+      <div class="item-placeholder-sm"></div>
+    </div>
+
+    <!-- Fila 3: dos landscape + square -->
+    <div class="content-item landscape">
+      <div class="item-placeholder-sm"></div>
+    </div>
+    <div class="content-item landscape">
+      <div class="item-placeholder-sm"></div>
+    </div>
+    <div class="content-item square">
+      <div class="item-placeholder-sm"></div>
+    </div>
+
+    <!-- Fila 4: full width -->
+    <div class="content-item full">
+      <div class="item-placeholder-sm"></div>
+    </div>
+
+    <!-- Fila 5: tres squares -->
+    <div class="content-item square">
+      <div class="item-placeholder-sm"></div>
+    </div>
+    <div class="content-item square">
+      <div class="item-placeholder-sm"></div>
+    </div>
+    <div class="content-item square">
+      <div class="item-placeholder-sm"></div>
+    </div>
+
+  </section>
+
+  <!-- NAV BETWEEN PROJECTS -->
+  <nav class="project-nav" aria-label="Navegación entre proyectos">
+    <a class="proj-nav-link" href="fotografia-arquitectura-cassone.html">← Proyecto anterior</a>
+    <a class="proj-nav-center" href="../portafolio.html">Ver todos los proyectos</a>
+    <a class="proj-nav-link" href="cobertura-maraton-santiago-2025.html">Proyecto siguiente →</a>
+  </nav>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">solaz</div>
+    <span class="footer-copy">© 2026 Solaz Studio &nbsp;·&nbsp; <a href="../politica-privacidad.html" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Política de Privacidad</a> &nbsp;·&nbsp; <a href="../terminos-uso.html" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Términos de Uso</a></span>
+    <div class="footer-links">
+      <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">Instagram</a>
+      <a href="../portafolio.html">Portafolio</a>
+      <a href="../contacto.html">Contacto</a>
+    </div>
+  </footer>
+
+  <script>
+    const t=document.getElementById('navToggle'),m=document.getElementById('mobileMenu');
+    if(t&&m){t.addEventListener('click',()=>{const o=m.classList.toggle('open');t.classList.toggle('open');m.setAttribute('aria-hidden',String(!o));document.body.style.overflow=o?'hidden':'';});m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{m.classList.remove('open');t.classList.remove('open');m.setAttribute('aria-hidden','true');document.body.style.overflow='';}));}
+    const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.08});
+    document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+  </script>
+</body>
+</html>
