@@ -101,46 +101,23 @@
       line-height: 1.85; margin-top: 8px;
     }
 
-    /* COVER IMAGE */
-    .project-cover {
-      width: 100%; aspect-ratio: 16/7; overflow: hidden;
-      background: var(--black);
-      position: relative;
-    }
-    .project-cover img {
-      width: 100%; height: 100%; object-fit: cover; display: block;
-    }
-    .cover-placeholder {
-      position: absolute; inset: 0; display: flex; align-items: center;
-      justify-content: center;
-      background: var(--black);
-    }
-    .cover-placeholder span {
-      font-size: 9px; font-weight: 400; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--grey-mid);
-    }
-
-    /* PROJECT CONTENT */
+    /* PROJECT CONTENT — masonry de proporción natural (sin forzar recortes) */
     .project-content {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0;
-      margin: 0;
-      padding: 0;
+      position: relative;
     }
 
     .content-item {
-      position: relative; overflow: hidden;
+      position: absolute;
+      overflow: hidden;
+      cursor: pointer;
       background: var(--black);
     }
     .content-item img, .content-item video {
-      width: 100%; height: 100%; object-fit: cover; display: block;
+      width: 100%; height: auto; display: block;
     }
-    .content-item.portrait { aspect-ratio: 3/4; }
-    .content-item.landscape { aspect-ratio: 4/3; }
-    .content-item.square { aspect-ratio: 1/1; }
-    .content-item.wide { grid-column: span 2; aspect-ratio: 16/9; }
-    .content-item.full { grid-column: span 3; aspect-ratio: 21/9; }
+    .content-item.is-featured {
+      border: 2px solid var(--accent);
+    }
 
     .item-placeholder-sm {
       position: absolute; inset: 0;
@@ -150,15 +127,53 @@
     .video-overlay {
       position: absolute; inset: 0;
       display: flex; align-items: center; justify-content: center;
-      background: rgba(10,10,10,0.3);
     }
     .play-icon-sm {
       width: 48px; height: 48px; border-radius: 50%;
       border: 1px solid rgba(245,243,239,0.6);
       display: flex; align-items: center; justify-content: center;
-      background: rgba(10,10,10,0.5);
+      background: rgba(10,10,10,0.4);
+      backdrop-filter: blur(4px);
     }
     .play-icon-sm svg { width: 14px; fill: var(--white); margin-left: 3px; }
+
+    /* ── LIGHTBOX (idéntico al del portafolio) ── */
+    .lightbox {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(10,10,10,0.97);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .lightbox.active { opacity: 1; pointer-events: all; }
+    .lightbox-inner {
+      position: relative; max-width: 90vw; max-height: 90vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-inner img { max-width: 90vw; max-height: 85vh; object-fit: contain; display: block; }
+    .lightbox-inner video { max-width: 90vw; max-height: 85vh; }
+    .lightbox-close {
+      position: fixed; top: 28px; right: 40px; width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      border: 1px solid var(--grey-dark); background: none; color: var(--white);
+      font-size: 20px; font-weight: 200; transition: border-color 0.2s; font-family: var(--font-body);
+    }
+    .lightbox-close:hover { border-color: var(--accent); color: var(--accent); }
+    .lightbox-nav {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: 1px solid var(--grey-dark); background: rgba(10,10,10,0.5);
+      color: var(--white); font-size: 18px; transition: border-color 0.2s, background 0.2s; user-select: none;
+    }
+    .lightbox-nav:hover { border-color: var(--accent); }
+    .lightbox-prev { left: 24px; }
+    .lightbox-next { right: 24px; }
+    .lightbox-counter {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      font-size: 10px; font-weight: 300; letter-spacing: 0.2em; color: var(--grey-mid);
+    }
+    @media (max-width: 640px) {
+      .lightbox-nav { display: none; }
+    }
 
     /* NAV BETWEEN PROJECTS */
     .project-nav {
@@ -207,7 +222,7 @@
       .ig-full { display: none; }
       .ig-short { display: inline; }
       .project-header { padding: 110px 24px 48px; grid-template-columns: 1fr; gap: 32px; }
-      .project-content { grid-template-columns: repeat(2, 1fr); }
+      .project-content { padding: var(--gap, 3px); }
       .content-item.full { grid-column: span 2; }
       .content-item.wide { grid-column: span 2; }
       .project-nav { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 16px; }
@@ -283,61 +298,299 @@
     </div>
   </header>
 
-  <!-- COVER -->
-  <div class="project-cover">
-    <img src="../img/portfolio/cobertura-evento-kifit-tnf-trail-2025-cover.jpg" alt="Kifit — TNF Endurance Trail 2025">
-  </div>
-
   <!-- PROJECT GALLERY -->
   <section class="project-content" aria-label="Galería del proyecto Kifit — TNF Endurance Trail 2025">
 
-    <!-- Fila 1: video ancho + portrait -->
-    <div class="content-item wide">
-      <div class="item-placeholder-sm"></div>
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-camiseta-azul-carrera.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-camiseta-azul-carrera.jpg" alt="Kifit TNF Endurance Trail 2025 — corredor camiseta azul carrera" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-tratamiento-pierna-1.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-tratamiento-pierna-1.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta tratamiento pierna 1" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-chaleco-hidratacion-arco.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-chaleco-hidratacion-arco.jpg" alt="Kifit TNF Endurance Trail 2025 — corredor chaleco hidratacion arco" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-mujer-cabello-largo-sonriendo.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-mujer-cabello-largo-sonriendo.jpg" alt="Kifit TNF Endurance Trail 2025 — retrato mujer cabello largo sonriendo" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-tratamiento-pierna-2.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-tratamiento-pierna-2.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta tratamiento pierna 2" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredores-acercandose-arco-tnf.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredores-acercandose-arco-tnf.jpg" alt="Kifit TNF Endurance Trail 2025 — corredores acercandose arco tnf" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-mujer-apuntando-camara.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-mujer-apuntando-camara.jpg" alt="Kifit TNF Endurance Trail 2025 — retrato mujer apuntando camara" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-hombre-tratamiento-pierna-1.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-hombre-tratamiento-pierna-1.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta hombre tratamiento pierna 1" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-camiseta-verde-arco.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-camiseta-verde-arco.jpg" alt="Kifit TNF Endurance Trail 2025 — corredor camiseta verde arco" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-hombre-lentes-brazos-cruzados.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-hombre-lentes-brazos-cruzados.jpg" alt="Kifit TNF Endurance Trail 2025 — retrato hombre lentes brazos cruzados" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-hombre-tratamiento-pierna-2.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-hombre-tratamiento-pierna-2.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta hombre tratamiento pierna 2" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-chaleco-llegada-1.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-chaleco-llegada-1.jpg" alt="Kifit TNF Endurance Trail 2025 — corredor chaleco llegada 1" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-carpa-recuperacion-vista-general.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-carpa-recuperacion-vista-general.jpg" alt="Kifit TNF Endurance Trail 2025 — carpa recuperacion vista general" loading="lazy">
+    </div>
+
+    <div class="content-item is-video" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/cobertura-evento-kifit-tnf-trail/video-kifit-tnf-trail-story-evento-1-vertical.mp4">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/video-kifit-tnf-trail-story-evento-1-vertical-cover.jpg" alt="Kifit TNF Endurance Trail 2025 — story evento 1" loading="lazy">
       <div class="video-overlay">
         <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
       </div>
     </div>
-    <div class="content-item portrait">
-      <div class="item-placeholder-sm"></div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-mujer-nike-medalla-gesto.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-mujer-nike-medalla-gesto.jpg" alt="Kifit TNF Endurance Trail 2025 — retrato mujer nike medalla gesto" loading="lazy">
     </div>
 
-    <!-- Fila 2: tres portraits -->
-    <div class="content-item portrait">
-      <div class="item-placeholder-sm"></div>
-    </div>
-    <div class="content-item portrait">
-      <div class="item-placeholder-sm"></div>
-    </div>
-    <div class="content-item portrait">
-      <div class="item-placeholder-sm"></div>
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-mujer-tratamiento-espalda.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-mujer-tratamiento-espalda.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta mujer tratamiento espalda" loading="lazy">
     </div>
 
-    <!-- Fila 3: dos landscape + square -->
-    <div class="content-item landscape">
-      <div class="item-placeholder-sm"></div>
-    </div>
-    <div class="content-item landscape">
-      <div class="item-placeholder-sm"></div>
-    </div>
-    <div class="content-item square">
-      <div class="item-placeholder-sm"></div>
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-llegada-meta-1.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-llegada-meta-1.jpg" alt="Kifit TNF Endurance Trail 2025 — corredor llegada meta 1" loading="lazy">
     </div>
 
-    <!-- Fila 4: full width -->
-    <div class="content-item full">
-      <div class="item-placeholder-sm"></div>
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-medallas-detalle-evento.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-medallas-detalle-evento.jpg" alt="Kifit TNF Endurance Trail 2025 — medallas detalle evento" loading="lazy">
     </div>
 
-    <!-- Fila 5: tres squares -->
-    <div class="content-item square">
-      <div class="item-placeholder-sm"></div>
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-pareja-pulgar-arriba-medallas.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-pareja-pulgar-arriba-medallas.jpg" alt="Kifit TNF Endurance Trail 2025 — retrato pareja pulgar arriba medallas" loading="lazy">
     </div>
-    <div class="content-item square">
-      <div class="item-placeholder-sm"></div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-hombre-lentes-tratamiento.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-hombre-lentes-tratamiento.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta hombre lentes tratamiento" loading="lazy">
     </div>
-    <div class="content-item square">
-      <div class="item-placeholder-sm"></div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atleta-descansando-camilla-carpa.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atleta-descansando-camilla-carpa.jpg" alt="Kifit TNF Endurance Trail 2025 — atleta descansando camilla carpa" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-arco-endurance-campana.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-arco-endurance-campana.jpg" alt="Kifit TNF Endurance Trail 2025 — corredor arco endurance campana" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-mesa-decoracion-flores-letras-ki.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-mesa-decoracion-flores-letras-ki.jpg" alt="Kifit TNF Endurance Trail 2025 — mesa decoracion flores letras ki" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-mujer-brazos-cruzados-sonriendo.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-mujer-brazos-cruzados-sonriendo.jpg" alt="Kifit TNF Endurance Trail 2025 — retrato mujer brazos cruzados sonriendo" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-tratamiento-pierna-3.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-tratamiento-pierna-3.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta tratamiento pierna 3" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atleta-mujer-tina-hielo-medalla.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atleta-mujer-tina-hielo-medalla.jpg" alt="Kifit TNF Endurance Trail 2025 — atleta mujer tina hielo medalla" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-meta-banner-endurance.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-meta-banner-endurance.jpg" alt="Kifit TNF Endurance Trail 2025 — corredor meta banner endurance" loading="lazy">
+    </div>
+
+    <div class="content-item is-video" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/cobertura-evento-kifit-tnf-trail/video-kifit-tnf-trail-story-evento-2-vertical.mp4">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/video-kifit-tnf-trail-story-evento-2-vertical-cover.jpg" alt="Kifit TNF Endurance Trail 2025 — story evento 2" loading="lazy">
+      <div class="video-overlay">
+        <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+      </div>
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombre-cargando-bebe-meta.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombre-cargando-bebe-meta.jpg" alt="Kifit TNF Endurance Trail 2025 — hombre cargando bebe meta" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-hombre-joven-brazos-cruzados.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-hombre-joven-brazos-cruzados.jpg" alt="Kifit TNF Endurance Trail 2025 — retrato hombre joven brazos cruzados" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-tratamiento-atleta-medalla.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-tratamiento-atleta-medalla.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta tratamiento atleta medalla" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atletas-medallas-conversando.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atletas-medallas-conversando.jpg" alt="Kifit TNF Endurance Trail 2025 — atletas medallas conversando" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-meta-medalla-area.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-meta-medalla-area.jpg" alt="Kifit TNF Endurance Trail 2025 — corredor meta medalla area" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-grupo-flexionando-brazos-medallas.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-grupo-flexionando-brazos-medallas.jpg" alt="Kifit TNF Endurance Trail 2025 — grupo flexionando brazos medallas" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-hombre-medalla-merrell.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-hombre-medalla-merrell.jpg" alt="Kifit TNF Endurance Trail 2025 — retrato hombre medalla merrell" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-estiramiento-pierna-silla.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-estiramiento-pierna-silla.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta estiramiento pierna silla" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atleta-sonriendo-tratamiento-pie.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atleta-sonriendo-tratamiento-pie.jpg" alt="Kifit TNF Endurance Trail 2025 — atleta sonriendo tratamiento pie" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-acercandose-meta.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-acercandose-meta.jpg" alt="Kifit TNF Endurance Trail 2025 — corredor acercandose meta" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-personas-espalda-camisetas-kifit-texto.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-personas-espalda-camisetas-kifit-texto.jpg" alt="Kifit TNF Endurance Trail 2025 — personas espalda camisetas kifit texto" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-hombre-lentes-kifit-sonriendo.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-hombre-lentes-kifit-sonriendo.jpg" alt="Kifit TNF Endurance Trail 2025 — retrato hombre lentes kifit sonriendo" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-masaje-pierna-mesa.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-masaje-pierna-mesa.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta masaje pierna mesa" loading="lazy">
+    </div>
+
+    <div class="content-item is-video" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/cobertura-evento-kifit-tnf-trail/video-kifit-tnf-trail-collage-retratos-equipo-vertical.mp4">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/video-kifit-tnf-trail-collage-retratos-equipo-vertical-cover.jpg" alt="Kifit TNF Endurance Trail 2025 — collage retratos equipo" loading="lazy">
+      <div class="video-overlay">
+        <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+      </div>
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atleta-hombre-tina-hielo-gorra.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atleta-hombre-tina-hielo-gorra.jpg" alt="Kifit TNF Endurance Trail 2025 — atleta hombre tina hielo gorra" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-finish-area.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-finish-area.jpg" alt="Kifit TNF Endurance Trail 2025 — corredor finish area" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombre-espalda-kifit-texto.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombre-espalda-kifit-texto.jpg" alt="Kifit TNF Endurance Trail 2025 — hombre espalda kifit texto" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-mujer-rubia-kifit.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-mujer-rubia-kifit.jpg" alt="Kifit TNF Endurance Trail 2025 — retrato mujer rubia kifit" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-mujer-tratamiento-pierna.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-mujer-tratamiento-pierna.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta mujer tratamiento pierna" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atletas-piscina-inflable-pareja.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atletas-piscina-inflable-pareja.jpg" alt="Kifit TNF Endurance Trail 2025 — atletas piscina inflable pareja" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombres-conversando-espalda-kifit.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombres-conversando-espalda-kifit.jpg" alt="Kifit TNF Endurance Trail 2025 — hombres conversando espalda kifit" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredores-celebrando-campana-meta-1.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredores-celebrando-campana-meta-1.jpg" alt="Kifit TNF Endurance Trail 2025 — corredores celebrando campana meta 1" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombre-cabello-largo-radio-1.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombre-cabello-largo-radio-1.jpg" alt="Kifit TNF Endurance Trail 2025 — hombre cabello largo radio 1" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-mujer-cabello-oscuro-brazos-cruzados.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-mujer-cabello-oscuro-brazos-cruzados.jpg" alt="Kifit TNF Endurance Trail 2025 — retrato mujer cabello oscuro brazos cruzados" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-pistola-masaje-pierna.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-pistola-masaje-pierna.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta pistola masaje pierna" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atleta-mujer-medalla-chaleco-sonriendo.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atleta-mujer-medalla-chaleco-sonriendo.jpg" alt="Kifit TNF Endurance Trail 2025 — atleta mujer medalla chaleco sonriendo" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombres-conversando-cabello-largo.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombres-conversando-cabello-largo.jpg" alt="Kifit TNF Endurance Trail 2025 — hombres conversando cabello largo" loading="lazy">
+    </div>
+
+    <div class="content-item is-video" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/cobertura-evento-kifit-tnf-trail/video-kifit-tnf-trail-recap-evento-vertical.mp4">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/video-kifit-tnf-trail-recap-evento-vertical-cover.jpg" alt="Kifit TNF Endurance Trail 2025 — recap del evento" loading="lazy">
+      <div class="video-overlay">
+        <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+      </div>
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredores-celebrando-campana-meta-2.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredores-celebrando-campana-meta-2.jpg" alt="Kifit TNF Endurance Trail 2025 — corredores celebrando campana meta 2" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombre-cabello-largo-radio-2.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombre-cabello-largo-radio-2.jpg" alt="Kifit TNF Endurance Trail 2025 — hombre cabello largo radio 2" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-podio-mujeres-brazos-arriba.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-podio-mujeres-brazos-arriba.jpg" alt="Kifit TNF Endurance Trail 2025 — podio mujeres brazos arriba" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-hombre-barba-brazos-cruzados.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-hombre-barba-brazos-cruzados.jpg" alt="Kifit TNF Endurance Trail 2025 — retrato hombre barba brazos cruzados" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-staff-ajustando-camara-equipo.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-staff-ajustando-camara-equipo.jpg" alt="Kifit TNF Endurance Trail 2025 — staff ajustando camara equipo" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-tratamiento-brazo-dispositivo.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-tratamiento-brazo-dispositivo.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta tratamiento brazo dispositivo" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atleta-mujer-aplaudiendo.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-atleta-mujer-aplaudiendo.jpg" alt="Kifit TNF Endurance Trail 2025 — atleta mujer aplaudiendo" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombres-hablando-kifit-espalda.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-hombres-hablando-kifit-espalda.jpg" alt="Kifit TNF Endurance Trail 2025 — hombres hablando kifit espalda" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-cartel-endurance-trail.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-corredor-cartel-endurance-trail.jpg" alt="Kifit TNF Endurance Trail 2025 — corredor cartel endurance trail" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-grupo-completo-equipo-arco-tnf.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-grupo-completo-equipo-arco-tnf.jpg" alt="Kifit TNF Endurance Trail 2025 — grupo completo equipo arco tnf" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-podio-grupo-medallas-tnf.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-podio-grupo-medallas-tnf.jpg" alt="Kifit TNF Endurance Trail 2025 — podio grupo medallas tnf" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-hombre-lentes-kifit-2.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-retrato-hombre-lentes-kifit-2.jpg" alt="Kifit TNF Endurance Trail 2025 — retrato hombre lentes kifit 2" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-staff-mujer-doblando-toalla.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-staff-mujer-doblando-toalla.jpg" alt="Kifit TNF Endurance Trail 2025 — staff mujer doblando toalla" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-tratamiento-pierna-mesa-2.jpg">
+      <img src="../img/proyectos/cobertura-evento-kifit-tnf-trail/fotografia-evento-kifit-tnf-trail-terapeuta-tratamiento-pierna-mesa-2.jpg" alt="Kifit TNF Endurance Trail 2025 — terapeuta tratamiento pierna mesa 2" loading="lazy">
     </div>
 
   </section>
@@ -360,11 +613,178 @@
     </div>
   </footer>
 
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Visor de imagen">
+    <button class="lightbox-close" id="lbClose" aria-label="Cerrar">✕</button>
+    <button class="lightbox-nav lightbox-prev" id="lbPrev" aria-label="Anterior">←</button>
+    <button class="lightbox-nav lightbox-next" id="lbNext" aria-label="Siguiente">→</button>
+    <div class="lightbox-inner" id="lbInner"></div>
+    <div class="lightbox-counter" id="lbCounter"></div>
+  </div>
+
   <script>
     const t=document.getElementById('navToggle'),m=document.getElementById('mobileMenu');
     if(t&&m){t.addEventListener('click',()=>{const o=m.classList.toggle('open');t.classList.toggle('open');m.setAttribute('aria-hidden',String(!o));document.body.style.overflow=o?'hidden':'';});m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{m.classList.remove('open');t.classList.remove('open');m.setAttribute('aria-hidden','true');document.body.style.overflow='';}));}
     const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.08});
     document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+
+    // ── Masonry con posicionamiento absoluto (proporción natural, sin recortes) ──
+    const galleryEl = document.querySelector('.project-content');
+    const GAP = 3;
+
+    function getColumnCount() {
+      const w = window.innerWidth;
+      if (w <= 640) return 2;
+      if (w <= 1024) return 3;
+      return 5;
+    }
+
+    let pairRotation = 0;
+    let lastFeaturedPair = -1;
+    function bestPairFor(heights, excludePair) {
+      const numPairs = heights.length - 1;
+      let bestPair = -1, bestWaste = Infinity;
+      for (let k = 0; k < numPairs; k++) {
+        const c = (pairRotation + k) % numPairs;
+        if (excludePair !== undefined && c === excludePair && numPairs > 1) continue;
+        const waste = Math.abs(heights[c] - heights[c + 1]);
+        if (waste < bestWaste) { bestWaste = waste; bestPair = c; }
+      }
+      if (bestPair === -1) return bestPairFor(heights);
+      return { colIndex: bestPair, waste: bestWaste };
+    }
+
+    function layoutProjectGallery() {
+      if (!galleryEl) return;
+      const cols = getColumnCount();
+      const containerWidth = galleryEl.clientWidth - GAP * 2;
+      const colWidth = (containerWidth - GAP * (cols - 1)) / cols;
+      const colHeights = new Array(cols).fill(0);
+
+      const items = Array.from(galleryEl.querySelectorAll('.content-item'));
+
+      items.forEach(item => {
+        const isFeatured = item.classList.contains('is-featured') && cols >= 2;
+        const span = isFeatured ? 2 : 1;
+        let colIndex, width;
+
+        if (span === 2) {
+          colIndex = bestPairFor(colHeights, lastFeaturedPair).colIndex;
+          width = colWidth * 2 + GAP;
+          lastFeaturedPair = colIndex;
+          pairRotation = (pairRotation + 1) % (cols - 1);
+        } else {
+          colIndex = colHeights.indexOf(Math.min(...colHeights));
+          width = colWidth;
+        }
+
+        const left = GAP + colIndex * (colWidth + GAP);
+        const top = GAP + (span === 2
+          ? Math.max(colHeights[colIndex], colHeights[colIndex + 1])
+          : colHeights[colIndex]);
+
+        const img = item.querySelector('img');
+        const ratio = (img && img.naturalWidth && img.naturalHeight)
+          ? img.naturalWidth / img.naturalHeight
+          : null;
+        const height = ratio ? width / ratio : width * (2 / 3);
+
+        item.style.width = width + 'px';
+        item.style.left = left + 'px';
+        item.style.top = top + 'px';
+
+        const relHeight = (top - GAP) + height + GAP;
+        if (span === 2) {
+          colHeights[colIndex] = relHeight;
+          colHeights[colIndex + 1] = relHeight;
+        } else {
+          colHeights[colIndex] = relHeight;
+        }
+      });
+
+      galleryEl.style.height = (Math.max(0, ...colHeights) + GAP) + 'px';
+    }
+
+    function debounceProj(fn, wait) {
+      let tt;
+      return (...args) => { clearTimeout(tt); tt = setTimeout(() => fn(...args), wait); };
+    }
+
+    document.querySelectorAll('.content-item img').forEach(img => {
+      if (!(img.complete && img.naturalWidth)) {
+        img.addEventListener('load', layoutProjectGallery);
+        img.addEventListener('error', layoutProjectGallery);
+      }
+    });
+
+    layoutProjectGallery();
+    window.addEventListener('load', layoutProjectGallery);
+    window.addEventListener('resize', debounceProj(layoutProjectGallery, 150));
+
+    // ── Lightbox (idéntico al del portafolio) ──
+    const lb      = document.getElementById('lightbox');
+    const lbInner = document.getElementById('lbInner');
+    const lbClose = document.getElementById('lbClose');
+    const lbPrev  = document.getElementById('lbPrev');
+    const lbNext  = document.getElementById('lbNext');
+    const lbCounter = document.getElementById('lbCounter');
+
+    const lbItems = Array.from(document.querySelectorAll('[data-lightbox]'));
+    let currentIdx = 0;
+
+    function openLightbox(idx) {
+      currentIdx = idx;
+      const item = lbItems[idx];
+      const type = item.dataset.lightbox;
+      lbInner.innerHTML = '';
+
+      if (type === 'video') {
+        const video = document.createElement('video');
+        video.src = item.dataset.src || '';
+        video.controls = true;
+        video.autoplay = true;
+        lbInner.appendChild(video);
+      } else {
+        const img = document.createElement('img');
+        img.src = type;
+        img.alt = '';
+        lbInner.appendChild(img);
+      }
+
+      lbCounter.textContent = (idx + 1) + ' / ' + lbItems.length;
+      lb.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lb.classList.remove('active');
+      lbInner.innerHTML = '';
+      document.body.style.overflow = '';
+    }
+
+    function prevItem() {
+      const idx = (currentIdx - 1 + lbItems.length) % lbItems.length;
+      openLightbox(idx);
+    }
+
+    function nextItem() {
+      const idx = (currentIdx + 1) % lbItems.length;
+      openLightbox(idx);
+    }
+
+    lbItems.forEach((item, idx) => {
+      item.addEventListener('click', () => openLightbox(idx));
+    });
+
+    lbClose.addEventListener('click', closeLightbox);
+    lbPrev.addEventListener('click', prevItem);
+    lbNext.addEventListener('click', nextItem);
+    lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+    document.addEventListener('keydown', e => {
+      if (!lb.classList.contains('active')) return;
+      if (e.key === 'Escape')     closeLightbox();
+      if (e.key === 'ArrowLeft')  prevItem();
+      if (e.key === 'ArrowRight') nextItem();
+    });
   </script>
 </body>
 </html>
