@@ -101,46 +101,23 @@
       line-height: 1.85; margin-top: 8px;
     }
 
-    /* COVER IMAGE */
-    .project-cover {
-      width: 100%; aspect-ratio: 16/7; overflow: hidden;
-      background: var(--black);
-      position: relative;
-    }
-    .project-cover img {
-      width: 100%; height: 100%; object-fit: cover; display: block;
-    }
-    .cover-placeholder {
-      position: absolute; inset: 0; display: flex; align-items: center;
-      justify-content: center;
-      background: var(--black);
-    }
-    .cover-placeholder span {
-      font-size: 9px; font-weight: 400; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--grey-mid);
-    }
-
-    /* PROJECT CONTENT */
+    /* PROJECT CONTENT — masonry de proporción natural (sin forzar recortes) */
     .project-content {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0;
-      margin: 0;
-      padding: 0;
+      position: relative;
     }
 
     .content-item {
-      position: relative; overflow: hidden;
+      position: absolute;
+      overflow: hidden;
+      cursor: pointer;
       background: var(--black);
     }
     .content-item img, .content-item video {
-      width: 100%; height: 100%; object-fit: cover; display: block;
+      width: 100%; height: auto; display: block;
     }
-    .content-item.portrait { aspect-ratio: 3/4; }
-    .content-item.landscape { aspect-ratio: 4/3; }
-    .content-item.square { aspect-ratio: 1/1; }
-    .content-item.wide { grid-column: span 2; aspect-ratio: 16/9; }
-    .content-item.full { grid-column: span 3; aspect-ratio: 21/9; }
+    .content-item.is-featured {
+      border: 2px solid var(--accent);
+    }
 
     .item-placeholder-sm {
       position: absolute; inset: 0;
@@ -150,15 +127,53 @@
     .video-overlay {
       position: absolute; inset: 0;
       display: flex; align-items: center; justify-content: center;
-      background: rgba(10,10,10,0.3);
     }
     .play-icon-sm {
       width: 48px; height: 48px; border-radius: 50%;
       border: 1px solid rgba(245,243,239,0.6);
       display: flex; align-items: center; justify-content: center;
-      background: rgba(10,10,10,0.5);
+      background: rgba(10,10,10,0.4);
+      backdrop-filter: blur(4px);
     }
     .play-icon-sm svg { width: 14px; fill: var(--white); margin-left: 3px; }
+
+    /* ── LIGHTBOX (idéntico al del portafolio) ── */
+    .lightbox {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(10,10,10,0.97);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .lightbox.active { opacity: 1; pointer-events: all; }
+    .lightbox-inner {
+      position: relative; max-width: 90vw; max-height: 90vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-inner img { max-width: 90vw; max-height: 85vh; object-fit: contain; display: block; }
+    .lightbox-inner video { max-width: 90vw; max-height: 85vh; }
+    .lightbox-close {
+      position: fixed; top: 28px; right: 40px; width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      border: 1px solid var(--grey-dark); background: none; color: var(--white);
+      font-size: 20px; font-weight: 200; transition: border-color 0.2s; font-family: var(--font-body);
+    }
+    .lightbox-close:hover { border-color: var(--accent); color: var(--accent); }
+    .lightbox-nav {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border: 1px solid var(--grey-dark); background: rgba(10,10,10,0.5);
+      color: var(--white); font-size: 18px; transition: border-color 0.2s, background 0.2s; user-select: none;
+    }
+    .lightbox-nav:hover { border-color: var(--accent); }
+    .lightbox-prev { left: 24px; }
+    .lightbox-next { right: 24px; }
+    .lightbox-counter {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      font-size: 10px; font-weight: 300; letter-spacing: 0.2em; color: var(--grey-mid);
+    }
+    @media (max-width: 640px) {
+      .lightbox-nav { display: none; }
+    }
 
     /* NAV BETWEEN PROJECTS */
     .project-nav {
@@ -207,9 +222,7 @@
       .ig-full { display: none; }
       .ig-short { display: inline; }
       .project-header { padding: 110px 24px 48px; grid-template-columns: 1fr; gap: 32px; }
-      .project-content { grid-template-columns: repeat(2, 1fr); }
-      .content-item.full { grid-column: span 2; }
-      .content-item.wide { grid-column: span 2; }
+      .project-content { padding: var(--gap, 3px); }
       .project-nav { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 16px; }
       footer { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 20px; }
     }
@@ -284,61 +297,208 @@
     </div>
   </header>
 
-  <!-- COVER -->
-  <div class="project-cover">
-    <img src="../img/portfolio/clew-evento-internacional-world-vaper-show-cover.jpg" alt="Clew — Cobertura evento internacional World Vaper Show 2025">
-  </div>
-
   <!-- PROJECT GALLERY -->
   <section class="project-content" aria-label="Galería del proyecto Clew — World Vaper Show 2025">
 
-    <!-- Fila 1: video ancho + portrait -->
-    <div class="content-item wide">
-      <div class="item-placeholder-sm"></div>
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-retrato-hombre-stand-1.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-retrato-hombre-stand-1.jpg" alt="Clew World Vaper Show 2025 — retrato hombre stand 1" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-entrega-reconocimiento.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-entrega-reconocimiento.jpg" alt="Clew World Vaper Show 2025 — entrega reconocimiento" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-retrato-hombre-stand-2.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-retrato-hombre-stand-2.jpg" alt="Clew World Vaper Show 2025 — retrato hombre stand 2" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-trofeo-reconocimiento.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-trofeo-reconocimiento.jpg" alt="Clew World Vaper Show 2025 — hombre trofeo reconocimiento" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-world-vaper-show-grupo-visitantes-stand.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-world-vaper-show-grupo-visitantes-stand.jpg" alt="Clew World Vaper Show 2025 — world vaper show grupo visitantes stand" loading="lazy">
+    </div>
+
+    <div class="content-item is-video" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/clew-evento-internacional-world-vaper-show/video-clew-evento-world-vaper-show-reel-premio-ceo-vertical.mp4">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/video-clew-evento-world-vaper-show-reel-premio-ceo-vertical-cover.jpg" alt="Clew World Vaper Show 2025 — reel premio CEO" loading="lazy">
       <div class="video-overlay">
         <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
       </div>
     </div>
-    <div class="content-item portrait">
-      <div class="item-placeholder-sm"></div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-retrato-hombre-stand-3.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-retrato-hombre-stand-3.jpg" alt="Clew World Vaper Show 2025 — retrato hombre stand 3" loading="lazy">
     </div>
 
-    <!-- Fila 2: tres portraits -->
-    <div class="content-item portrait">
-      <div class="item-placeholder-sm"></div>
-    </div>
-    <div class="content-item portrait">
-      <div class="item-placeholder-sm"></div>
-    </div>
-    <div class="content-item portrait">
-      <div class="item-placeholder-sm"></div>
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-telefono-pantalla-app.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-telefono-pantalla-app.jpg" alt="Clew World Vaper Show 2025 — telefono pantalla app" loading="lazy">
     </div>
 
-    <!-- Fila 3: dos landscape + square -->
-    <div class="content-item landscape">
-      <div class="item-placeholder-sm"></div>
-    </div>
-    <div class="content-item landscape">
-      <div class="item-placeholder-sm"></div>
-    </div>
-    <div class="content-item square">
-      <div class="item-placeholder-sm"></div>
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-grupo-mujeres-premios.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-grupo-mujeres-premios.jpg" alt="Clew World Vaper Show 2025 — grupo mujeres premios" loading="lazy">
     </div>
 
-    <!-- Fila 4: full width -->
-    <div class="content-item full">
-      <div class="item-placeholder-sm"></div>
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-sentado-stand-telefono.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-sentado-stand-telefono.jpg" alt="Clew World Vaper Show 2025 — hombre sentado stand telefono" loading="lazy">
     </div>
 
-    <!-- Fila 5: tres squares -->
-    <div class="content-item square">
-      <div class="item-placeholder-sm"></div>
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-interaccion-mostrador.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-interaccion-mostrador.jpg" alt="Clew World Vaper Show 2025 — interaccion mostrador" loading="lazy">
     </div>
-    <div class="content-item square">
-      <div class="item-placeholder-sm"></div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-stand-pantalla-redbull.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-stand-pantalla-redbull.jpg" alt="Clew World Vaper Show 2025 — hombre stand pantalla redbull" loading="lazy">
     </div>
-    <div class="content-item square">
-      <div class="item-placeholder-sm"></div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-grupo-hombres-badges.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-grupo-hombres-badges.jpg" alt="Clew World Vaper Show 2025 — grupo hombres badges" loading="lazy">
+    </div>
+
+    <div class="content-item is-video is-featured" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/clew-evento-internacional-world-vaper-show/video-clew-evento-world-vaper-show-recap-evento-horizontal.mp4">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/video-clew-evento-world-vaper-show-recap-evento-horizontal-cover.jpg" alt="Clew World Vaper Show 2025 — recap del evento" loading="lazy">
+      <div class="video-overlay">
+        <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+      </div>
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-perfil-telefono.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-perfil-telefono.jpg" alt="Clew World Vaper Show 2025 — hombre perfil telefono" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-saludo-apreton-manos.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-saludo-apreton-manos.jpg" alt="Clew World Vaper Show 2025 — saludo apreton manos" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-pantalla-nicotine-pouches-dj.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-pantalla-nicotine-pouches-dj.jpg" alt="Clew World Vaper Show 2025 — pantalla nicotine pouches dj" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-stand-letra-w-mesa.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-stand-letra-w-mesa.jpg" alt="Clew World Vaper Show 2025 — stand letra w mesa" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-grupo-personas-stand.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-grupo-personas-stand.jpg" alt="Clew World Vaper Show 2025 — grupo personas stand" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-caminando-stand-1.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-caminando-stand-1.jpg" alt="Clew World Vaper Show 2025 — hombre caminando stand 1" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-intercambio-producto-mostrador.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-intercambio-producto-mostrador.jpg" alt="Clew World Vaper Show 2025 — intercambio producto mostrador" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-personas-mesas-blancas.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-personas-mesas-blancas.jpg" alt="Clew World Vaper Show 2025 — personas mesas blancas" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-producto-latas-tarjetas.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-producto-latas-tarjetas.jpg" alt="Clew World Vaper Show 2025 — producto latas tarjetas" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-stand-general-pasillo.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-stand-general-pasillo.jpg" alt="Clew World Vaper Show 2025 — stand general pasillo" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-grupo-mujeres-posando.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-grupo-mujeres-posando.jpg" alt="Clew World Vaper Show 2025 — grupo mujeres posando" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-caminando-stand-2.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-caminando-stand-2.jpg" alt="Clew World Vaper Show 2025 — hombre caminando stand 2" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-interaccion-stand-selfie.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-interaccion-stand-selfie.jpg" alt="Clew World Vaper Show 2025 — interaccion stand selfie" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-stand-mostrador-personas.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-stand-mostrador-personas.jpg" alt="Clew World Vaper Show 2025 — stand mostrador personas" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-presentacion-microfono-escenario.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-presentacion-microfono-escenario.jpg" alt="Clew World Vaper Show 2025 — presentacion microfono escenario" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-producto-latas-detalle.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-producto-latas-detalle.jpg" alt="Clew World Vaper Show 2025 — producto latas detalle" loading="lazy">
+    </div>
+
+    <div class="content-item is-video" data-lightbox="video" data-src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/proyectos/clew-evento-internacional-world-vaper-show/video-clew-evento-world-vaper-show-reel-waqas-khan-vertical.mp4">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/video-clew-evento-world-vaper-show-reel-waqas-khan-vertical-cover.jpg" alt="Clew World Vaper Show 2025 — reel Waqas Khan CEO" loading="lazy">
+      <div class="video-overlay">
+        <div class="play-icon-sm"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+      </div>
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-stand-letra-w.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-stand-letra-w.jpg" alt="Clew World Vaper Show 2025 — hombre stand letra w" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-grupo-conversando-casual.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-grupo-conversando-casual.jpg" alt="Clew World Vaper Show 2025 — grupo conversando casual" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-stand-w-productos.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-stand-w-productos.jpg" alt="Clew World Vaper Show 2025 — hombre stand w productos" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-conversacion-casual-stand.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-conversacion-casual-stand.jpg" alt="Clew World Vaper Show 2025 — conversacion casual stand" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-retrato-mujer-camiseta-producto.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-retrato-mujer-camiseta-producto.jpg" alt="Clew World Vaper Show 2025 — retrato mujer camiseta producto" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-mujer-stand-cartel.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-mujer-stand-cartel.jpg" alt="Clew World Vaper Show 2025 — mujer stand cartel" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-presentacion-escenario-pantalla.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-presentacion-escenario-pantalla.jpg" alt="Clew World Vaper Show 2025 — presentacion escenario pantalla" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-producto-latas-colores.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-producto-latas-colores.jpg" alt="Clew World Vaper Show 2025 — producto latas colores" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-superficie-turquesa-logo.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-superficie-turquesa-logo.jpg" alt="Clew World Vaper Show 2025 — superficie turquesa logo" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-grupo-grande-mujeres-w.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-grupo-grande-mujeres-w.jpg" alt="Clew World Vaper Show 2025 — grupo grande mujeres w" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-telefono-stand-w.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-telefono-stand-w.jpg" alt="Clew World Vaper Show 2025 — hombre telefono stand w" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-mujer-riendo.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-hombre-mujer-riendo.jpg" alt="Clew World Vaper Show 2025 — hombre mujer riendo" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-retrato-mujer-producto-2.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-retrato-mujer-producto-2.jpg" alt="Clew World Vaper Show 2025 — retrato mujer producto 2" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-personas-stand-circular.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-personas-stand-circular.jpg" alt="Clew World Vaper Show 2025 — personas stand circular" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-presentacion-microfono-audiencia.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-presentacion-microfono-audiencia.jpg" alt="Clew World Vaper Show 2025 — presentacion microfono audiencia" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-marcadores-detalle.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-marcadores-detalle.jpg" alt="Clew World Vaper Show 2025 — marcadores detalle" loading="lazy">
+    </div>
+
+    <div class="content-item" data-lightbox="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-fondo-logo-w-geometrico.jpg">
+      <img src="../img/proyectos/clew-evento-internacional-world-vaper-show/fotografia-evento-clew-fondo-logo-w-geometrico.jpg" alt="Clew World Vaper Show 2025 — fondo logo w geometrico" loading="lazy">
     </div>
 
   </section>
@@ -361,11 +521,178 @@
     </div>
   </footer>
 
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Visor de imagen">
+    <button class="lightbox-close" id="lbClose" aria-label="Cerrar">✕</button>
+    <button class="lightbox-nav lightbox-prev" id="lbPrev" aria-label="Anterior">←</button>
+    <button class="lightbox-nav lightbox-next" id="lbNext" aria-label="Siguiente">→</button>
+    <div class="lightbox-inner" id="lbInner"></div>
+    <div class="lightbox-counter" id="lbCounter"></div>
+  </div>
+
   <script>
     const t=document.getElementById('navToggle'),m=document.getElementById('mobileMenu');
     if(t&&m){t.addEventListener('click',()=>{const o=m.classList.toggle('open');t.classList.toggle('open');m.setAttribute('aria-hidden',String(!o));document.body.style.overflow=o?'hidden':'';});m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{m.classList.remove('open');t.classList.remove('open');m.setAttribute('aria-hidden','true');document.body.style.overflow='';}));}
     const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.08});
     document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+
+    // ── Masonry con posicionamiento absoluto (proporción natural, sin recortes) ──
+    const galleryEl = document.querySelector('.project-content');
+    const GAP = 3;
+
+    function getColumnCount() {
+      const w = window.innerWidth;
+      if (w <= 640) return 2;
+      if (w <= 1024) return 3;
+      return 4;
+    }
+
+    let pairRotation = 0;
+    let lastFeaturedPair = -1;
+    function bestPairFor(heights, excludePair) {
+      const numPairs = heights.length - 1;
+      let bestPair = -1, bestWaste = Infinity;
+      for (let k = 0; k < numPairs; k++) {
+        const c = (pairRotation + k) % numPairs;
+        if (excludePair !== undefined && c === excludePair && numPairs > 1) continue;
+        const waste = Math.abs(heights[c] - heights[c + 1]);
+        if (waste < bestWaste) { bestWaste = waste; bestPair = c; }
+      }
+      if (bestPair === -1) return bestPairFor(heights);
+      return { colIndex: bestPair, waste: bestWaste };
+    }
+
+    function layoutProjectGallery() {
+      if (!galleryEl) return;
+      const cols = getColumnCount();
+      const containerWidth = galleryEl.clientWidth - GAP * 2;
+      const colWidth = (containerWidth - GAP * (cols - 1)) / cols;
+      const colHeights = new Array(cols).fill(0);
+
+      const items = Array.from(galleryEl.querySelectorAll('.content-item'));
+
+      items.forEach(item => {
+        const isFeatured = item.classList.contains('is-featured') && cols >= 2;
+        const span = isFeatured ? 2 : 1;
+        let colIndex, width;
+
+        if (span === 2) {
+          colIndex = bestPairFor(colHeights, lastFeaturedPair).colIndex;
+          width = colWidth * 2 + GAP;
+          lastFeaturedPair = colIndex;
+          pairRotation = (pairRotation + 1) % (cols - 1);
+        } else {
+          colIndex = colHeights.indexOf(Math.min(...colHeights));
+          width = colWidth;
+        }
+
+        const left = GAP + colIndex * (colWidth + GAP);
+        const top = GAP + (span === 2
+          ? Math.max(colHeights[colIndex], colHeights[colIndex + 1])
+          : colHeights[colIndex]);
+
+        const img = item.querySelector('img');
+        const ratio = (img && img.naturalWidth && img.naturalHeight)
+          ? img.naturalWidth / img.naturalHeight
+          : null;
+        const height = ratio ? width / ratio : width * (2 / 3);
+
+        item.style.width = width + 'px';
+        item.style.left = left + 'px';
+        item.style.top = top + 'px';
+
+        const relHeight = (top - GAP) + height + GAP;
+        if (span === 2) {
+          colHeights[colIndex] = relHeight;
+          colHeights[colIndex + 1] = relHeight;
+        } else {
+          colHeights[colIndex] = relHeight;
+        }
+      });
+
+      galleryEl.style.height = (Math.max(0, ...colHeights) + GAP) + 'px';
+    }
+
+    function debounceProj(fn, wait) {
+      let tt;
+      return (...args) => { clearTimeout(tt); tt = setTimeout(() => fn(...args), wait); };
+    }
+
+    document.querySelectorAll('.content-item img').forEach(img => {
+      if (!(img.complete && img.naturalWidth)) {
+        img.addEventListener('load', layoutProjectGallery);
+        img.addEventListener('error', layoutProjectGallery);
+      }
+    });
+
+    layoutProjectGallery();
+    window.addEventListener('load', layoutProjectGallery);
+    window.addEventListener('resize', debounceProj(layoutProjectGallery, 150));
+
+    // ── Lightbox (idéntico al del portafolio) ──
+    const lb      = document.getElementById('lightbox');
+    const lbInner = document.getElementById('lbInner');
+    const lbClose = document.getElementById('lbClose');
+    const lbPrev  = document.getElementById('lbPrev');
+    const lbNext  = document.getElementById('lbNext');
+    const lbCounter = document.getElementById('lbCounter');
+
+    const lbItems = Array.from(document.querySelectorAll('[data-lightbox]'));
+    let currentIdx = 0;
+
+    function openLightbox(idx) {
+      currentIdx = idx;
+      const item = lbItems[idx];
+      const type = item.dataset.lightbox;
+      lbInner.innerHTML = '';
+
+      if (type === 'video') {
+        const video = document.createElement('video');
+        video.src = item.dataset.src || '';
+        video.controls = true;
+        video.autoplay = true;
+        lbInner.appendChild(video);
+      } else {
+        const img = document.createElement('img');
+        img.src = type;
+        img.alt = '';
+        lbInner.appendChild(img);
+      }
+
+      lbCounter.textContent = (idx + 1) + ' / ' + lbItems.length;
+      lb.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lb.classList.remove('active');
+      lbInner.innerHTML = '';
+      document.body.style.overflow = '';
+    }
+
+    function prevItem() {
+      const idx = (currentIdx - 1 + lbItems.length) % lbItems.length;
+      openLightbox(idx);
+    }
+
+    function nextItem() {
+      const idx = (currentIdx + 1) % lbItems.length;
+      openLightbox(idx);
+    }
+
+    lbItems.forEach((item, idx) => {
+      item.addEventListener('click', () => openLightbox(idx));
+    });
+
+    lbClose.addEventListener('click', closeLightbox);
+    lbPrev.addEventListener('click', prevItem);
+    lbNext.addEventListener('click', nextItem);
+    lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+    document.addEventListener('keydown', e => {
+      if (!lb.classList.contains('active')) return;
+      if (e.key === 'Escape')     closeLightbox();
+      if (e.key === 'ArrowLeft')  prevItem();
+      if (e.key === 'ArrowRight') nextItem();
+    });
   </script>
 </body>
 </html>
