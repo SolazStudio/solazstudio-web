@@ -264,10 +264,8 @@
   <header class="project-header">
     <div>
       <div class="project-eyebrow">Proyecto — 2025</div>
-      <h1 class="project-client">
-        SEMI<br>
-        <span class="outline">NARI</span><br>
-        OS_
+      <h1 class="project-client" style="font-size: clamp(40px, 4.2vw, 72px); line-height: 1;">
+        SEMINARI<span class="outline">OS</span>_
       </h1>
     </div>
     <div>
@@ -487,9 +485,7 @@
       return 5;
     }
 
-    let pairRotation = 0;
-    let lastFeaturedPair = -1;
-    function bestPairFor(heights, excludePair) {
+    function bestPairFor(heights, pairRotation, excludePair) {
       const numPairs = heights.length - 1;
       let bestPair = -1, bestWaste = Infinity;
       for (let k = 0; k < numPairs; k++) {
@@ -498,12 +494,17 @@
         const waste = Math.abs(heights[c] - heights[c + 1]);
         if (waste < bestWaste) { bestWaste = waste; bestPair = c; }
       }
-      if (bestPair === -1) return bestPairFor(heights);
+      if (bestPair === -1) return bestPairFor(heights, pairRotation);
       return { colIndex: bestPair, waste: bestWaste };
     }
 
     function layoutProjectGallery() {
       if (!galleryEl) return;
+      // Estado de rotación reiniciado en cada corrida: el resultado del layout
+      // debe ser siempre el mismo sin importar en qué orden hayan llegado las imágenes.
+      let pairRotation = 0;
+      let lastFeaturedPair = -1;
+
       const cols = getColumnCount();
       const containerWidth = galleryEl.clientWidth - GAP * 2;
       const colWidth = (containerWidth - GAP * (cols - 1)) / cols;
@@ -513,7 +514,7 @@
         const span = isFeatured ? 2 : 1;
         let colIndex, width;
         if (span === 2) {
-          colIndex = bestPairFor(colHeights, lastFeaturedPair).colIndex;
+          colIndex = bestPairFor(colHeights, pairRotation, lastFeaturedPair).colIndex;
           width = colWidth * 2 + GAP;
           lastFeaturedPair = colIndex;
           pairRotation = (pairRotation + 1) % (cols - 1);
@@ -541,14 +542,21 @@
       return (...args) => { clearTimeout(tt); tt = setTimeout(() => fn(...args), wait); };
     }
 
-    document.querySelectorAll('.content-item img').forEach(img => {
-      if (!(img.complete && img.naturalWidth)) {
-        img.addEventListener('load', layoutProjectGallery);
-        img.addEventListener('error', layoutProjectGallery);
-      }
+    // Esperar a que TODAS las imágenes hayan cargado (o fallado) antes de
+    // calcular el layout una sola vez. Recalcular en cada carga individual
+    // (como antes) producía resultados distintos según el orden de llegada
+    // de las imágenes — por eso la galería se veía distinta en cada visita
+    // y aparecían huecos negros.
+    const galleryImgs = Array.from(document.querySelectorAll('.content-item img'));
+    const imgReady = img => new Promise(resolve => {
+      if (img.complete && img.naturalWidth) { resolve(); return; }
+      img.addEventListener('load', resolve, { once: true });
+      img.addEventListener('error', resolve, { once: true });
     });
 
-    layoutProjectGallery();
+    layoutProjectGallery(); // primer pintado aproximado, evita parpadeo inicial
+    Promise.all(galleryImgs.map(imgReady)).then(layoutProjectGallery);
+
     window.addEventListener('load', layoutProjectGallery);
     window.addEventListener('resize', debounceProj(layoutProjectGallery, 150));
 
