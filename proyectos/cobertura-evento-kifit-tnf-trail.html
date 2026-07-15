@@ -738,9 +738,39 @@
     });
 
     layoutProjectGallery(); // primer pintado aproximado, evita parpadeo inicial
-    Promise.all(galleryImgs.map(imgReady)).then(layoutProjectGallery);
 
-    window.addEventListener('load', layoutProjectGallery);
+    // Un solo punto de disparo determinístico. Antes, Promise.all(...).then()
+    // y window.addEventListener('load', layoutProjectGallery) corrían de
+    // forma independiente, y el evento 'load' del navegador no garantiza que
+    // todas las imágenes ya tengan naturalWidth/naturalHeight poblados —
+    // si 'load' disparaba primero (o casi al mismo tiempo), el layout corría
+    // con datos parciales, dejando fotos con la altura de fallback en vez de
+    // su altura real y una franja vacía debajo. window.load ahora es solo un
+    // fallback tardío por si Promise.all nunca resolviera.
+    let galleryReady = false;
+    function runInitialLayout() {
+      if (galleryReady) return;
+      galleryReady = true;
+      layoutProjectGallery();
+    }
+    Promise.all(galleryImgs.map(imgReady)).then(runInitialLayout);
+    window.addEventListener('load', () => setTimeout(runInitialLayout, 300));
+
+    // Las fuentes web pueden terminar de cargar DESPUÉS de que las imágenes
+    // ya resolvieron, cambiando el ancho real del contenedor. Se recalcula
+    // una vez más cuando las fuentes confirman estar listas.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => layoutProjectGallery());
+    }
+
+    // Restauración desde el caché de navegación (bfcache) del navegador —
+    // al volver atrás/adelante, el navegador puede restaurar la página sin
+    // volver a disparar 'load'. persisted=true indica que la página vino
+    // del bfcache; se recalcula explícitamente en ese caso.
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) layoutProjectGallery();
+    });
+
     window.addEventListener('resize', debounceProj(layoutProjectGallery, 150));
 
     // ── Lightbox (idéntico al del portafolio) ──
