@@ -291,6 +291,7 @@
       opacity: 0;
       transition: opacity 0.35s ease;
       z-index: 2;
+      overflow: hidden; /* nunca debe desbordar la tarjeta hacia la de arriba */
     }
     .gallery-item.is-project:hover .project-overlay { opacity: 1; }
     .gallery-item.is-project:hover img { transform: scale(1.04); }
@@ -301,6 +302,7 @@
       line-height: 1;
       letter-spacing: 0.01em;
       margin-bottom: 8px;
+      flex-shrink: 0; /* título: nunca se recorta ni se comprime */
     }
     .project-info {
       font-size: 11px;
@@ -308,6 +310,7 @@
       color: var(--grey-light);
       letter-spacing: 0.06em;
       margin-bottom: 12px;
+      flex-shrink: 0; /* lugar y año: nunca se recorta ni se comprime */
     }
     .project-desc {
       font-size: 12px;
@@ -316,7 +319,16 @@
       line-height: 1.6;
       margin-bottom: 20px;
       opacity: 0.85;
+      flex-shrink: 0;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3; /* valor por defecto; JS lo ajusta según espacio real */
     }
+    /* Si en la tarjeta angosta no alcanza ni una línea completa de
+       descripción, JS agrega esta clase para ocultarla del todo — el
+       título y el lugar/año siempre se mantienen. */
+    .project-overlay.no-desc .project-desc { display: none; }
     .project-cta {
       font-size: 10px;
       font-weight: 500;
@@ -327,12 +339,24 @@
       align-items: center;
       gap: 8px;
       text-decoration: none;
+      flex-shrink: 0; /* cta: nunca se recorta ni se comprime */
     }
     .project-cta::after {
       content: '→';
       transition: transform 0.2s;
     }
     .gallery-item.is-project:hover .project-cta::after { transform: translateX(4px); }
+
+    /* Tarjetas angostas (vista "Proyectos"): mismo overlay, con menos
+       relleno y tipografía más chica para aprovechar mejor el espacio
+       reducido. Título, lugar/año y CTA se mantienen siempre visibles;
+       la descripción se ajusta o se oculta vía JS según el espacio real. */
+    .gallery-item.is-project.compact-card .project-overlay { padding: 18px 20px; }
+    .gallery-item.is-project.compact-card .project-client { font-size: 20px; margin-bottom: 4px; }
+    .gallery-item.is-project.compact-card .project-info { margin-bottom: 6px; }
+    .gallery-item.is-project.compact-card .project-desc { margin-bottom: 8px; font-size: 11px; line-height: 1.5; }
+    .gallery-item.is-project.compact-card .project-cta { font-size: 9px; }
+
 
     /* ── LIGHTBOX ── */
     .lightbox {
@@ -1338,11 +1362,61 @@
           item.style.width = colWidth + 'px';
           item.style.left = left + 'px';
           item.style.top = top + 'px';
+          // Altura explícita: antes se dejaba en "auto" (heredada del <img>),
+          // lo que podía desalinearse del valor usado acá para calcular el
+          // "top" del siguiente ítem de la columna si el navegador redondeaba
+          // el alto renderizado distinto al calculado — fijarla evita ese
+          // desajuste y hace que overflow:hidden recorte de forma predecible.
+          item.style.height = height + 'px';
+          item.classList.add('compact-card');
           projColHeights[colIndex] = (top - GAP) + height + GAP;
+
+          // El título, lugar/año y CTA nunca deben recortarse (flex-shrink:0
+          // en CSS ya lo garantiza); la descripción es la única que cede
+          // espacio. Medimos lo que realmente ocupan esos elementos fijos y
+          // ajustamos cuántas líneas de descripción caben (o la ocultamos
+          // del todo) para que el overlay jamás desborde la tarjeta.
+          const overlay = item.querySelector('.project-overlay');
+          const clientEl = item.querySelector('.project-client');
+          const infoEl = item.querySelector('.project-info');
+          const descEl = item.querySelector('.project-desc');
+          const ctaEl = item.querySelector('.project-cta');
+          if (overlay && clientEl && infoEl && ctaEl) {
+            const ov = getComputedStyle(overlay);
+            const innerHeight = height - parseFloat(ov.paddingTop) - parseFloat(ov.paddingBottom);
+            const clientMB = parseFloat(getComputedStyle(clientEl).marginBottom) || 0;
+            const infoMB = parseFloat(getComputedStyle(infoEl).marginBottom) || 0;
+            const fixedHeight = clientEl.offsetHeight + clientMB + infoEl.offsetHeight + infoMB + ctaEl.offsetHeight;
+            overlay.classList.remove('no-desc');
+            if (descEl) {
+              const descMB = parseFloat(getComputedStyle(descEl).marginBottom) || 0;
+              const descLineHeight = parseFloat(getComputedStyle(descEl).lineHeight) || 16;
+              const availableForDesc = innerHeight - fixedHeight - descMB;
+              const maxLines = Math.floor(availableForDesc / descLineHeight);
+              if (maxLines < 1) {
+                overlay.classList.add('no-desc');
+              } else {
+                descEl.style.webkitLineClamp = String(Math.min(maxLines, 3));
+              }
+            }
+          }
         });
         gallery.style.height = (Math.max(0, ...projColHeights) + GAP) + 'px';
         return;
       }
+
+      // Filtro distinto a "Proyectos": revertir el estado compacto (clase,
+      // altura fijada y ocultamiento de descripción) que pudo haber quedado
+      // de una corrida anterior con allProjects, para que las tarjetas de
+      // proyecto vuelvan a su tamaño normal dentro del masonry general.
+      document.querySelectorAll('.gallery-item.is-project.compact-card').forEach(item => {
+        item.classList.remove('compact-card');
+        item.style.height = '';
+        const overlay = item.querySelector('.project-overlay');
+        const descEl = item.querySelector('.project-desc');
+        if (overlay) overlay.classList.remove('no-desc');
+        if (descEl) descEl.style.webkitLineClamp = '';
+      });
 
       const colHeights = new Array(cols).fill(0);
       const WASTE_THRESHOLD = colWidth * 0.05;
