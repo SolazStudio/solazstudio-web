@@ -1317,8 +1317,15 @@
       // bajo la más baja — el masonry de columna simple no tiene ese problema
       // porque cada columna crece de forma independiente según su propio
       // contenido, sin pares que sincronizar.
+      // Esta rama debe aplicarse SIEMPRE que allProjects sea true, sin
+      // importar cuántas columnas haya (incluido mobile, cols=2): si se
+      // restringe a cols >= 3, en mobile el código cae al masonry genérico
+      // de abajo, donde los proyectos horizontales ocupan 2 columnas (fila
+      // completa) pero los verticales ocupan solo 1 — dejando la otra
+      // columna permanentemente vacía al lado de cada proyecto vertical
+      // (bug confirmado con capturas de pantalla en mobile).
       const allProjects = items.length > 0 && items.every(it => it.classList.contains('is-project'));
-      if (allProjects && cols >= 3) {
+      if (allProjects) {
         const projColHeights = new Array(cols).fill(0);
         items.forEach(item => {
           const colIndex = projColHeights.indexOf(Math.min(...projColHeights));
