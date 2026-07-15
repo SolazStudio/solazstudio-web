@@ -264,8 +264,9 @@
   <header class="project-header">
     <div>
       <div class="project-eyebrow">Proyecto — 2025</div>
-      <h1 class="project-client" style="font-size: clamp(40px, 4.2vw, 72px); line-height: 1;">
-        SEMINARI<span class="outline">OS</span>_
+      <h1 class="project-client">
+        SEMI-<br>
+        NARI<span class="outline">OS</span>_
       </h1>
     </div>
     <div>
@@ -544,13 +545,28 @@
 
     // Esperar a que TODAS las imágenes hayan cargado (o fallado) antes de
     // calcular el layout una sola vez. Recalcular en cada carga individual
-    // (como antes) producía resultados distintos según el orden de llegada
-    // de las imágenes — por eso la galería se veía distinta en cada visita
-    // y aparecían huecos negros.
+    // producía resultados distintos según el orden de llegada de las
+    // imágenes. Además, algunas imágenes en caché disparan "complete" antes
+    // de que naturalWidth/naturalHeight estén realmente poblados (condición
+    // de carrera del navegador) — se reintenta con requestAnimationFrame
+    // en vez de asumir que el valor está listo de inmediato.
     const galleryImgs = Array.from(document.querySelectorAll('.content-item img'));
     const imgReady = img => new Promise(resolve => {
-      if (img.complete && img.naturalWidth) { resolve(); return; }
-      img.addEventListener('load', resolve, { once: true });
+      function checkReady() {
+        if (img.naturalWidth && img.naturalHeight) { resolve(); return true; }
+        return false;
+      }
+      if (img.complete) {
+        if (checkReady()) return;
+        // complete=true pero naturalWidth aún en 0: reintentar un par de frames
+        let tries = 0;
+        (function retry() {
+          if (checkReady() || ++tries > 10) { resolve(); return; }
+          requestAnimationFrame(retry);
+        })();
+        return;
+      }
+      img.addEventListener('load', () => { if (!checkReady()) requestAnimationFrame(() => { checkReady(); resolve(); }); }, { once: true });
       img.addEventListener('error', resolve, { once: true });
     });
 
