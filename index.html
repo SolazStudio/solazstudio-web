@@ -614,52 +614,26 @@
 
     /* ── SOBRE ── */
     .sobre {
-      padding: 120px 48px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 80px;
-      align-items: center;
-    }
-    .sobre-visual {
       position: relative;
-      aspect-ratio: 3/4;
-      background: var(--black-mid);
+      padding: 120px 48px;
+      display: flex;
+      justify-content: center;
       overflow: hidden;
     }
-    .sobre-visual::before {
-      content: '';
+    .sobre-isotipo {
       position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, #151210 0%, #1e1a14 100%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 900px;
+      max-width: none;
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 0;
     }
-    .sobre-visual-logo {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .sobre-visual-logo svg { width: 60%; opacity: 0.06; fill: var(--white); }
-    .sobre-visual-tag {
-      position: absolute;
-      bottom: 32px; left: 32px; right: 32px;
-      border: 1px solid rgba(245,243,239,0.1);
-      padding: 20px 24px;
-      background: rgba(10,10,10,0.7);
-      backdrop-filter: blur(8px);
-    }
-    .sobre-visual-tag strong {
-      display: block;
-      font-size: 13px;
-      font-weight: 400;
-      color: var(--white);
-      margin-bottom: 4px;
-    }
-    .sobre-visual-tag p {
-      font-size: 11px;
-      font-weight: 300;
-      color: var(--grey-light);
-      line-height: 1.6;
+    .sobre-content {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
     }
     .sobre-headline {
       font-family: var(--font-serif);
@@ -832,8 +806,8 @@
       .proceso { padding: 80px 32px; }
       .proceso-grid { grid-template-columns: 1fr; gap: 40px; }
       .proceso-intro { position: static; }
-      .sobre { padding: 80px 32px; grid-template-columns: 1fr; }
-      .sobre-visual { aspect-ratio: 16/9; }
+      .sobre { padding: 80px 32px; }
+      .sobre-isotipo { width: 480px; }
       .cta-section { padding: 80px 32px; grid-template-columns: 1fr; }
       footer { padding: 32px; flex-wrap: wrap; gap: 16px; }
     }
@@ -1297,19 +1271,9 @@
 
   <!-- SOBRE NOSOTROS -->
   <section class="sobre" id="sobre">
-    <div class="sobre-visual">
-      <div class="sobre-visual-logo">
-        <svg viewBox="0 0 856.45 856.46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
-        </svg>
-      </div>
-      <div class="sobre-visual-tag">
-        <strong>Seba Ogalde + Ignacio Flores</strong>
-        <p>Fotografía, dirección de arte y producción audiovisual.
-        Dos personas, una metodología clara, más de una década
-        de trabajo real con marcas en Chile.</p>
-      </div>
-    </div>
+    <svg class="sobre-isotipo" viewBox="0 0 856.45 856.46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
+    </svg>
 
     <div class="sobre-content fade-up">
       <div class="section-label">Sobre Solaz Studio</div>
