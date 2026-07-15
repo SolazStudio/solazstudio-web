@@ -324,18 +324,6 @@
       position: relative;
       z-index: 1;
     }
-    .statement-isotipo {
-      position: absolute;
-      right: -120px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: clamp(420px, 48vw, 640px);
-      height: 130%;
-      object-fit: contain;
-      opacity: 0.065;
-      pointer-events: none;
-      z-index: 0;
-    }
     .section-label {
       font-size: 10px;
       letter-spacing: 0.2em;
@@ -380,12 +368,12 @@
       font-size: 9px;
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--grey-mid);
-      border: 1px solid var(--grey-dark);
+      color: var(--grey-light);
+      border: 1px solid var(--grey-mid);
       padding: 5px 12px;
       transition: color 0.2s, border-color 0.2s;
     }
-    .client-tag:hover { color: var(--white); border-color: var(--grey-mid); }
+    .client-tag:hover { color: var(--white); border-color: var(--grey-light); }
 
     /* ── PROYECTOS ── */
     .proyectos {
@@ -622,11 +610,14 @@
     }
     .sobre-isotipo {
       position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 900px;
+      right: -140px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: clamp(500px, 45vw, 760px);
+      height: 130%;
       max-width: none;
-      opacity: 0.035;
+      object-fit: contain;
+      opacity: 0.05;
       pointer-events: none;
       z-index: 0;
     }
@@ -1008,9 +999,6 @@
 
   <!-- STATEMENT -->
   <section class="statement" id="estudio">
-    <svg class="statement-isotipo" viewBox="0 0 856.45 856.46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
-    </svg>
     <div style="position:relative;z-index:1;">
       <div class="section-label">Nuestra postura</div>
       <!-- H2 con keyword natural -->
