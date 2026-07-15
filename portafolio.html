@@ -1308,39 +1308,31 @@
       const colWidth = (containerWidth - GAP * (cols - 1)) / cols;
 
       // Caso especial: cuando el filtro deja visibles SOLO proyectos, se
-      // muestran en 2 columnas IGUALES por fila (en vez del grid genérico de
-      // 5 columnas, donde 2+2=4 dejaba 1 columna vacía por fila). Un intento
-      // anterior mezclaba anchos de 2 y 3 columnas del grid para llenar el
-      // espacio, pero eso hacía que fotos con la misma proporción real se
-      // vieran a alturas distintas dentro de la misma fila (ancho distinto =
-      // altura distinta al mantener el ratio). Con 2 columnas exactamente
-      // iguales, todas las tarjetas de una fila quedan del mismo tamaño.
+      // muestran más chicos (1 columna en vez de 2) para que quepan varios
+      // por fila y se reduzca el total de filas — es un masonry estándar de
+      // columna angosta, no pares forzados de igual ancho. Un intento
+      // anterior forzaba pares de mismo ancho por fila, pero como cada foto
+      // conserva su propia altura real (según su proporción), la fila
+      // avanzaba según la más alta de las dos, dejando un hueco vacío enorme
+      // bajo la más baja — el masonry de columna simple no tiene ese problema
+      // porque cada columna crece de forma independiente según su propio
+      // contenido, sin pares que sincronizar.
       const allProjects = items.length > 0 && items.every(it => it.classList.contains('is-project'));
       if (allProjects && cols >= 3) {
-        const halfWidth = (containerWidth - GAP) / 2;
-        let y = GAP;
-        let idx = 0;
-        while (idx < items.length) {
-          const remaining = items.length - idx;
-          const perRow = remaining === 1 ? 1 : 2;
-          const width = perRow === 1 ? containerWidth : halfWidth;
-          let rowMaxHeight = 0;
-          let x = GAP;
-          for (let r = 0; r < perRow; r++) {
-            const item = items[idx];
-            const img = item.querySelector('img');
-            const ratio = (img && img.naturalWidth && img.naturalHeight) ? img.naturalWidth / img.naturalHeight : null;
-            const height = ratio ? width / ratio : width * (2 / 3);
-            item.style.width = width + 'px';
-            item.style.left = x + 'px';
-            item.style.top = y + 'px';
-            rowMaxHeight = Math.max(rowMaxHeight, height);
-            x += width + GAP;
-            idx++;
-          }
-          y += rowMaxHeight + GAP;
-        }
-        gallery.style.height = y + 'px';
+        const projColHeights = new Array(cols).fill(0);
+        items.forEach(item => {
+          const colIndex = projColHeights.indexOf(Math.min(...projColHeights));
+          const left = GAP + colIndex * (colWidth + GAP);
+          const top = GAP + projColHeights[colIndex];
+          const img = item.querySelector('img');
+          const ratio = (img && img.naturalWidth && img.naturalHeight) ? img.naturalWidth / img.naturalHeight : null;
+          const height = ratio ? colWidth / ratio : colWidth * (2 / 3);
+          item.style.width = colWidth + 'px';
+          item.style.left = left + 'px';
+          item.style.top = top + 'px';
+          projColHeights[colIndex] = (top - GAP) + height + GAP;
+        });
+        gallery.style.height = (Math.max(0, ...projColHeights) + GAP) + 'px';
         return;
       }
 
