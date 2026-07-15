@@ -261,7 +261,7 @@
       text-align: center;
     }
     .form-success.visible { display: block; }
-    .form-success h3 { font-family: var(--font-display); font-size: 32px; margin-bottom: 12px; }
+    .form-success h2 { font-family: var(--font-display); font-size: 32px; margin-bottom: 12px; }
     .form-success p { font-size: 13px; font-weight: 300; color: var(--grey-light); line-height: 1.7; }
 
     /* Calendly placeholder */
@@ -492,8 +492,8 @@
 
       <!-- Tabs -->
       <div class="form-tabs" role="tablist">
-        <button class="tab-btn active" data-tab="mensaje" role="tab" aria-selected="true">Escríbenos</button>
-        <button class="tab-btn" data-tab="reunion" role="tab" aria-selected="false">Agenda tu reunión</button>
+        <button class="tab-btn active" data-tab="mensaje" role="tab" aria-selected="true" aria-controls="tab-mensaje" id="tabbtn-mensaje">Escríbenos</button>
+        <button class="tab-btn" data-tab="reunion" role="tab" aria-selected="false" aria-controls="tab-reunion" id="tabbtn-reunion">Agenda tu reunión</button>
       </div>
 
       <!-- TAB 1: Formulario de contacto -->
@@ -503,7 +503,7 @@
         crea un formulario y reemplaza "YOUR_FORM_ID" en el action con tu ID.
         Ejemplo: action="https://formspree.io/f/abcdefgh"
       -->
-      <div class="form-panel active" id="tab-mensaje" role="tabpanel">
+      <div class="form-panel active" id="tab-mensaje" role="tabpanel" aria-labelledby="tabbtn-mensaje">
         <form id="formMensaje" action="https://api.web3forms.com/submit" method="POST">
           <input type="hidden" name="access_key" value="e2f133c1-ad94-45ad-b922-b354f4ce2f52">
           <input type="hidden" name="subject" value="Nuevo mensaje — Solaz Studio">
@@ -552,13 +552,13 @@
           </button>
         </form>
         <div class="form-success" id="successMensaje">
-          <h3>MENSAJE ENVIADO_</h3>
+          <h2>MENSAJE ENVIADO_</h2>
           <p>Recibimos tu mensaje. Te contactamos en menos de 24 horas hábiles.</p>
         </div>
       </div>
 
       <!-- TAB 2: Agenda reunión -->
-      <div class="form-panel" id="tab-reunion" role="tabpanel">
+      <div class="form-panel" id="tab-reunion" role="tabpanel" aria-labelledby="tabbtn-reunion">
 
         <p class="form-note">
           Una videollamada de 15 minutos, sin compromiso. Cuéntanos en qué estás y evaluamos juntos cómo podemos ayudarte. Déjanos tu disponibilidad y te confirmamos horario en menos de 24 horas.
@@ -617,7 +617,7 @@
         </form>
 
         <div class="form-success" id="successReunion">
-          <h3>RECIBIDO_</h3>
+          <h2>RECIBIDO_</h2>
           <p>Confirmamos tu reunión en menos de 24 horas hábiles.</p>
         </div>
 
