@@ -1443,10 +1443,38 @@
       img.addEventListener('error', resolve, { once: true });
     });
 
-    layoutGallery(); // primer pintado aproximado, evita parpadeo inicial
-    Promise.all(galleryImgs.map(imgReady)).then(layoutGallery);
+    // Un solo punto de disparo determinístico. Antes, Promise.all(...).then()
+    // y window.addEventListener('load', layoutGallery) corrían de forma
+    // independiente. El evento 'load' del navegador puede dispararse ANTES
+    // de que todas las imágenes reporten naturalWidth/naturalHeight reales
+    // (no es garantía de que las imágenes ya estén completamente decodificadas
+    // en todos los navegadores) — si eso pasaba, layoutGallery() corría con
+    // datos parciales, y como reordena el array con splice() según qué fotos
+    // "parecen" horizontales en ese instante, producía resultados de reorder
+    // distintos cada vez: fotos superpuestas, huecos, tamaños incorrectos,
+    // que se corregían solos recién al hacer resize (que sí recalcula todo
+    // con datos ya completos). window.load ahora es solo un fallback tardío
+    // por si Promise.all nunca resolviera (imagen que ni carga ni falla).
+    let galleryReady = false;
+    function runInitialLayout() {
+      if (galleryReady) return;
+      galleryReady = true;
+      layoutGallery();
+    }
 
-    window.addEventListener('load', layoutGallery);
+    layoutGallery(); // primer pintado aproximado, evita parpadeo inicial
+    Promise.all(galleryImgs.map(imgReady)).then(runInitialLayout);
+    window.addEventListener('load', () => setTimeout(runInitialLayout, 300));
+
+    // Restauración desde el caché de navegación (bfcache) del navegador —
+    // al volver atrás/adelante, el navegador puede restaurar la página sin
+    // volver a disparar 'load', dejando el layout calculado con el ancho o
+    // estado de scroll de la visita anterior. persisted=true indica que la
+    // página vino del bfcache; se recalcula explícitamente en ese caso.
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) layoutGallery();
+    });
+
     window.addEventListener('resize', debounce(layoutGallery, 150));
 
     // ── Filters ──
