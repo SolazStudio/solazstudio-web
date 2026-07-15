@@ -166,19 +166,15 @@
       padding: 0 48px 72px;
       overflow: hidden;
     }
-    .hero-bg {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(10,10,10,1) 0%, rgba(10,10,10,0.4) 40%, rgba(10,10,10,0.15) 100%),
-                  linear-gradient(105deg, #1a1612 0%, #0f0e0c 50%, #151310 100%);
-    }
-    /* Hero background: image or video */
+    /* Hero background: se ve mientras el video carga (o si falla). Degradado
+       cálido con textura, acorde a la paleta de marca, en vez de un color plano. */
     .hero-bg {
       position: absolute;
       inset: 0;
       z-index: 0;
       overflow: hidden;
-      background: var(--black-mid);
+      background: linear-gradient(to top, rgba(10,10,10,1) 0%, rgba(10,10,10,0.4) 40%, rgba(10,10,10,0.15) 100%),
+                  linear-gradient(105deg, #1a1612 0%, #0f0e0c 50%, #151310 100%);
     }
     .hero-video,
     .hero-image {
