@@ -591,14 +591,31 @@
       return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
     }
 
-    document.querySelectorAll('.content-item img').forEach(img => {
-      if (!(img.complete && img.naturalWidth)) {
-        img.addEventListener('load', layoutProjectGallery);
-        img.addEventListener('error', layoutProjectGallery);
+    // Esperar a que TODAS las imágenes hayan cargado (o fallado) antes de
+    // calcular el layout una sola vez. Recalcular en cada carga individual
+    // producía resultados distintos según el orden de llegada de las imágenes.
+    const galleryImgs = Array.from(document.querySelectorAll('.content-item img'));
+    const imgReady = img => new Promise(resolve => {
+      function checkReady() {
+        if (img.naturalWidth && img.naturalHeight) { resolve(); return true; }
+        return false;
       }
+      if (img.complete) {
+        if (checkReady()) return;
+        let tries = 0;
+        (function retry() {
+          if (checkReady() || ++tries > 10) { resolve(); return; }
+          requestAnimationFrame(retry);
+        })();
+        return;
+      }
+      img.addEventListener('load', () => { if (!checkReady()) requestAnimationFrame(() => { checkReady(); resolve(); }); }, { once: true });
+      img.addEventListener('error', resolve, { once: true });
     });
 
-    layoutProjectGallery();
+    layoutProjectGallery(); // primer pintado aproximado, evita parpadeo inicial
+    Promise.all(galleryImgs.map(imgReady)).then(layoutProjectGallery);
+
     window.addEventListener('load', layoutProjectGallery);
     window.addEventListener('resize', debounceProj(layoutProjectGallery, 150));
 
