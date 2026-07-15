@@ -228,6 +228,9 @@
       color: var(--white);
       margin-bottom: 8px;
     }
+    .hero-headline .hero-line {
+      display: block;
+    }
     .hero-headline .line-2 {
       color: transparent;
       -webkit-text-stroke: 1px rgba(245,243,239,0.35);
@@ -954,9 +957,9 @@
 
     <!-- H1 optimizado para SEO -->
     <h1 class="hero-headline">
-      <div>PRODUCCIÓN</div>
-      <div class="line-2">FOTOGRÁFICA &</div>
-      <div>AUDIOVISUAL_</div>
+      <span class="hero-line">PRODUCCIÓN</span>
+      <span class="hero-line line-2">FOTOGRÁFICA &</span>
+      <span class="hero-line">AUDIOVISUAL_</span>
     </h1>
 
     <div class="hero-sub">
@@ -1020,7 +1023,7 @@
         construimos piezas visuales y audiovisuales <strong>con un propósito concreto</strong>.
       </p>
       <!-- Clientes como prueba social y SEO -->
-      <div class="clients-strip" aria-label="Marcas con las que hemos trabajado">
+      <div class="clients-strip" role="group" aria-label="Marcas con las que hemos trabajado">
         <span class="client-tag">WEG Chile</span>
         <span class="client-tag">Aramark</span>
         <span class="client-tag">Johnny Rockets</span>
@@ -1341,7 +1344,7 @@
   <footer>
     <div class="footer-logo">solaz</div>
     <span class="footer-copy">© 2026 Solaz Studio &nbsp;·&nbsp; <a href="politica-privacidad.html" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Política de Privacidad</a> &nbsp;·&nbsp; <a href="terminos-uso.html" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Términos de Uso</a></span>
-    <div class="footer-links" aria-label="Enlaces secundarios">
+    <div class="footer-links" role="group" aria-label="Enlaces secundarios">
       <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">Instagram</a>
       <a href="portafolio.html">Portafolio</a>
       <a href="contacto.html">Contacto</a>
