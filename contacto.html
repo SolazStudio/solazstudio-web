@@ -95,6 +95,23 @@
       -webkit-text-stroke: 1px rgba(245,243,239,0.3);
     }
 
+    /* Stacked block headline — matches home/portafolio/proyectos treatment */
+    .stack-headline {
+      margin-bottom: 24px;
+    }
+    .stack-line {
+      display: block;
+      font-family: var(--font-display);
+      font-size: clamp(56px, 8vw, 104px);
+      line-height: 0.88;
+      letter-spacing: 0.01em;
+      color: var(--white);
+    }
+    .stack-line.ghost {
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(245,243,239,0.3);
+    }
+
     .contact-subheadline {
       font-family: var(--font-serif);
       font-style: italic;
@@ -454,8 +471,9 @@
 
       <div class="contact-eyebrow">Contacto</div>
 
-      <h1 class="contact-headline">
-        Hablemos.
+      <h1 class="stack-headline">
+        <span class="stack-line">HABLE</span>
+        <span class="stack-line">MOS_</span>
       </h1>
 
       <p class="contact-subheadline">

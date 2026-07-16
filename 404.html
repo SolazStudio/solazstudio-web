@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página no encontrada — Solaz Studio</title>
+  <meta name="description" content="La página que buscas no existe o fue movida. Vuelve al inicio de Solaz Studio.">
+  <meta name="robots" content="noindex, follow">
+  <meta property="og:title" content="Página no encontrada — Solaz Studio">
+  <meta property="og:image" content="https://solazstudio.cl/og-image.jpg">
+  <meta property="og:locale" content="es_CL">
+  <meta property="og:site_name" content="Solaz Studio">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --black: #0a0a0a; --black-soft: #111111; --black-mid: #1a1a1a;
+      --white: #f5f3ef; --grey-light: #888580; --grey-mid: #444240;
+      --grey-dark: #222220; --accent: #c8b99a;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-serif: 'DM Serif Display', serif;
+      --font-body: 'Inter', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: var(--font-body); overflow-x: hidden; }
+
+    /* NAV */
+    .main-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; background: rgba(10,10,10,0.96); backdrop-filter: blur(12px); }
+    .nav-logo { font-family: var(--font-serif); font-size: 22px; color: var(--white); letter-spacing: -0.02em; text-decoration: none; }
+    .nav-links { display: flex; gap: 40px; list-style: none; }
+    .nav-links a { color: var(--white); text-decoration: none; font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.7; transition: opacity 0.2s; }
+    .nav-links a:hover { opacity: 1; }
+    .nav-cta { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--black); background: var(--white); padding: 10px 22px; text-decoration: none; transition: background 0.2s; }
+    .nav-cta:hover { background: var(--accent); }
+
+    /* FADE */
+    .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-up.visible { opacity: 1; transform: none; }
+
+    /* ERROR PAGE */
+    .error-page {
+      position: relative;
+      overflow: hidden;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 160px 48px 80px;
+    }
+
+    .error-mountain {
+      position: absolute;
+      right: -100px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: clamp(560px, 62vw, 820px);
+      height: auto;
+      opacity: 0.06;
+      pointer-events: none;
+    }
+
+    .error-content {
+      position: relative;
+      z-index: 1;
+      max-width: 640px;
+    }
+
+    .error-eyebrow {
+      font-size: 10px; font-weight: 400; letter-spacing: 0.25em;
+      text-transform: uppercase; color: var(--accent);
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 32px;
+    }
+    .error-eyebrow::before { content: ''; display: block; width: 32px; height: 1px; background: var(--accent); }
+
+    /* Stacked block headline — matches home/portafolio/proyectos treatment */
+    .stack-headline {
+      margin-bottom: 32px;
+    }
+    .stack-line {
+      display: block;
+      font-family: var(--font-display);
+      font-size: clamp(56px, 10vw, 128px);
+      line-height: 0.88;
+      letter-spacing: 0.01em;
+      color: var(--white);
+    }
+    .stack-line.ghost {
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(245,243,239,0.3);
+    }
+
+    .error-subheadline {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: clamp(16px, 1.8vw, 22px);
+      line-height: 1.5;
+      color: var(--white);
+      margin-bottom: 20px;
+      max-width: 440px;
+    }
+
+    .error-message {
+      font-size: 14px; font-weight: 300; color: var(--grey-light);
+      line-height: 1.7; margin-bottom: 40px; max-width: 420px;
+    }
+
+    .error-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-body); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--black); background: var(--white);
+      border: none; padding: 16px 36px; text-decoration: none;
+      transition: background 0.2s;
+    }
+    .error-cta:hover { background: var(--accent); }
+    .error-cta-arrow { transition: transform 0.2s; }
+    .error-cta:hover .error-cta-arrow { transform: translateX(4px); }
+
+    /* FOOTER */
+    footer { padding: 40px 48px; border-top: 1px solid var(--grey-dark); display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+    .footer-logo { font-family: var(--font-serif); font-size: 20px; color: var(--white); opacity: 0.65; }
+    .footer-copy { font-size: 11px; font-weight: 300; color: var(--grey-light); letter-spacing: 0.06em; }
+    .footer-links { display: flex; gap: 32px; }
+    .footer-links a { font-size: 11px; font-weight: 300; color: var(--grey-light); text-decoration: none; letter-spacing: 0.08em; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--white); }
+
+    /* HAMBURGER & MOBILE MENU */
+    .nav-hamburger {
+      display: none; flex-direction: column; justify-content: center; gap: 5px;
+      background: none; border: none; cursor: pointer; padding: 6px;
+      z-index: 101; position: relative;
+    }
+    .nav-hamburger span { display: block; width: 22px; height: 1.5px; background: var(--white); transition: all 0.3s ease; transform-origin: center; }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    .mobile-menu {
+      position: fixed; inset: 0; z-index: 98; background: var(--black);
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 100px 48px 64px; opacity: 0; pointer-events: none; transition: opacity 0.35s ease;
+    }
+    .mobile-menu.open { opacity: 1; pointer-events: all; }
+    .mobile-menu-links { display: flex; flex-direction: column; gap: 0; margin-bottom: 48px; }
+    .mobile-menu-links a {
+      font-family: var(--font-display); font-size: clamp(44px, 12vw, 72px); line-height: 1.05;
+      color: var(--white); text-decoration: none; opacity: 0.45; transition: opacity 0.2s;
+      padding: 8px 0; border-bottom: 1px solid rgba(68,66,64,0.3);
+    }
+    .mobile-menu-links a:first-child { border-top: 1px solid rgba(68,66,64,0.3); }
+    .mobile-menu-links a:hover { opacity: 1; }
+    .mobile-menu-bottom { display: flex; flex-direction: column; gap: 16px; }
+    .mobile-menu-cta {
+      display: inline-block; font-family: var(--font-body); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--black); background: var(--white);
+      padding: 14px 32px; text-decoration: none; transition: background 0.2s; width: fit-content;
+    }
+    .mobile-menu-cta:hover { background: var(--accent); }
+    .mobile-menu-instagram {
+      font-size: 11px; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--grey-light); text-decoration: none; transition: color 0.2s;
+    }
+    .mobile-menu-instagram:hover { color: var(--white); }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      nav { padding: 20px 24px; }
+      .error-page { padding: 130px 24px 64px; }
+      footer { padding: 32px 24px; flex-direction: column; align-items: flex-start; gap: 20px; }
+    }
+    @media (max-width: 640px) {
+      .nav-hamburger { display: flex; }
+      .nav-links { display: none !important; }
+    }
+  </style>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="main-nav" aria-label="Navegación principal">
+    <a href="/" class="nav-logo">solaz</a>
+    <ul class="nav-links">
+      <li><a href="/portafolio.html">Portafolio</a></li>
+      <li><a href="/servicios.html">Servicios</a></li>
+      <li><a href="/nosotros.html">Nosotros</a></li>
+    </ul>
+    <a href="/contacto.html" class="nav-cta">Contacto</a>
+
+    <button class="nav-hamburger" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-menu-links">
+      <a href="/portafolio.html">Portafolio</a>
+      <a href="/servicios.html">Servicios</a>
+      <a href="/nosotros.html">Nosotros</a>
+    </div>
+    <div class="mobile-menu-bottom">
+      <a href="/contacto.html" class="mobile-menu-cta">Contacto →</a>
+      <a href="https://www.instagram.com/solazstudio/" class="mobile-menu-instagram" target="_blank" rel="noopener">Instagram ↗</a>
+    </div>
+  </div>
+
+  <main class="error-page">
+
+    <svg class="error-mountain" viewBox="0 0 856.45 856.46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
+    </svg>
+
+    <div class="error-content fade-up visible">
+      <div class="error-eyebrow">Error 404</div>
+
+      <h1 class="stack-headline">
+        <span class="stack-line">PÁGINA NO</span>
+        <span class="stack-line ghost">ENCON</span>
+        <span class="stack-line">TRADA_</span>
+      </h1>
+
+      <p class="error-subheadline">Parece que este camino no lleva a ningún lado.</p>
+
+      <p class="error-message">
+        El enlace puede estar roto o la página fue movida. Vuelve al inicio y sigue explorando nuestro trabajo.
+      </p>
+
+      <a href="/" class="error-cta">
+        Volver al inicio
+        <span class="error-cta-arrow">→</span>
+      </a>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">solaz</div>
+    <span class="footer-copy">© 2026 Solaz Studio — Chile &nbsp;·&nbsp; <a href="/politica-privacidad.html" style="color:inherit;text-decoration:none;opacity:.7;transition:opacity .2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Política de Privacidad</a> &nbsp;·&nbsp; <a href="/terminos-uso.html" style="color:inherit;text-decoration:none;opacity:.7;transition:opacity .2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Términos de Uso</a></span>
+    <div class="footer-links">
+      <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">Instagram</a>
+      <a href="/portafolio.html">Portafolio</a>
+      <a href="/servicios.html">Servicios</a>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu
+    const navToggle = document.getElementById('navToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (navToggle && mobileMenu) {
+      navToggle.addEventListener('click', () => {
+        const isOpen = mobileMenu.classList.toggle('open');
+        navToggle.classList.toggle('open');
+        mobileMenu.setAttribute('aria-hidden', String(!isOpen));
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+      });
+      mobileMenu.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          mobileMenu.classList.remove('open');
+          navToggle.classList.remove('open');
+          mobileMenu.setAttribute('aria-hidden', 'true');
+          document.body.style.overflow = '';
+        });
+      });
+    }
+  </script>
+</body>
+</html>
