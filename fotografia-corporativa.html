@@ -14,7 +14,12 @@
   <meta property="og:image" content="https://solazstudio.cl/og-image.jpg">
   <meta property="og:locale" content="es_CL">
   <meta property="og:site_name" content="Solaz Studio">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fotografía Corporativa Santiago | Headshots | Solaz Studio">
+  <meta name="twitter:description" content="Fotografía corporativa y headshots para empresas en Santiago Chile. Retratos para LinkedIn, web y prensa. Vamos a tus dependencias o te recibimos en estudio.">
+  <meta name="twitter:image" content="https://solazstudio.cl/og-image.jpg">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Service","name":"Fotografía Corporativa Santiago | Headshots | Solaz Studio","url":"https://solazstudio.cl/fotografia-corporativa","provider":{"@type":"Organization","name":"Solaz Studio","url":"https://solazstudio.cl"},"serviceType":"Fotografía Corporativa","areaServed":"Chile"}</script>
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://solazstudio.cl/"}, {"@type": "ListItem", "position": 2, "name": "Servicios", "item": "https://solazstudio.cl/servicios"}, {"@type": "ListItem", "position": 3, "name": "Fotografía Corporativa", "item": "https://solazstudio.cl/fotografia-corporativa"}]}</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -153,11 +158,11 @@
     </ul>
     <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Instagram"><span class="ig-full">Instagram</span><span class="ig-short">IG</span></a>
     <a href="/contacto" class="nav-cta">Contacto</a>
-    <button class="nav-hamburger" id="navToggle" aria-label="Abrir menú">
+    <button type="button" class="nav-hamburger" id="navToggle" aria-label="Abrir menú">
       <span></span><span></span><span></span>
     </button>
   </nav>
-  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true" inert>
     <div class="mobile-menu-links">
       <a href="/portafolio">Portafolio</a>
       <a href="/servicios">Servicios</a>
@@ -169,8 +174,11 @@
     </div>
   </div>
 
+  <main>
+
+
   <header class="page-hero">
-    <video class="page-hero-video" autoplay muted loop playsinline aria-hidden="true">
+    <video class="page-hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
       <source src="https://pub-873977c67dcc44f4adc72e70431c68ae.r2.dev/hero/hero-fotografia-corporativa.mp4" type="video/mp4">
       <img src="img/fotografia-corporativa.jpg" alt="" aria-hidden="true">
     </video>
@@ -243,6 +251,8 @@
       <a href="/servicios" class="back-link">← Ver todos los servicios</a>
     </div>
   </section>
+    </main>
+
   <footer>
     <div class="footer-logo">solaz</div>
     <span class="footer-copy">© 2026 Solaz Studio &nbsp;·&nbsp; <a href="/politica-privacidad" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Política de Privacidad</a> &nbsp;·&nbsp; <a href="/terminos-uso" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Términos de Uso</a></span>
@@ -257,7 +267,7 @@
     
     
     const t=document.getElementById('navToggle'),m=document.getElementById('mobileMenu');
-    if(t&&m){t.addEventListener('click',()=>{const o=m.classList.toggle('open');t.classList.toggle('open');m.setAttribute('aria-hidden',String(!o));document.body.style.overflow=o?'hidden':'';});m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{m.classList.remove('open');t.classList.remove('open');m.setAttribute('aria-hidden','true');document.body.style.overflow='';}));}
+    if(t&&m){t.addEventListener('click',()=>{const o=m.classList.toggle('open');t.classList.toggle('open');m.setAttribute('aria-hidden',String(!o));m.toggleAttribute('inert',!o);document.body.style.overflow=o?'hidden':'';});m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{m.classList.remove('open');t.classList.remove('open');m.setAttribute('aria-hidden','true');m.toggleAttribute('inert',true);document.body.style.overflow='';}));}
     const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.08});
     document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
   </script>

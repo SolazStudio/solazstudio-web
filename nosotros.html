@@ -8,10 +8,15 @@
   <link rel="canonical" href="https://solazstudio.cl/nosotros">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Nosotros — Solaz Studio | Estudio Fotográfico Chile">
+  <meta property="og:description" content="Solaz Studio: fotografía comercial y video para marcas en Chile. Con base en Santiago, cubrimos proyectos en todo el país.">
   <meta property="og:url" content="https://solazstudio.cl/nosotros">
   <meta property="og:image" content="https://solazstudio.cl/og-image.jpg">
   <meta property="og:locale" content="es_CL">
   <meta property="og:site_name" content="Solaz Studio">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Nosotros — Solaz Studio | Estudio Fotográfico Chile">
+  <meta name="twitter:description" content="Solaz Studio: fotografía comercial y video para marcas en Chile. Con base en Santiago, cubrimos proyectos en todo el país.">
+  <meta name="twitter:image" content="https://solazstudio.cl/og-image.jpg">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -353,12 +358,12 @@
     <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Solaz Studio en Instagram"><span class="ig-full">Instagram</span><span class="ig-short">IG</span></a>
     <a href="/contacto" class="nav-cta">Contacto</a>
   
-    <button class="nav-hamburger" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+    <button type="button" class="nav-hamburger" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
   </nav>
 
-  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true" inert>
     <div class="mobile-menu-links">
       <a href="/portafolio">Portafolio</a>
       <a href="/servicios">Servicios</a>
@@ -667,6 +672,7 @@
         const isOpen = mobileMenu.classList.toggle('open');
         navToggle.classList.toggle('open');
         mobileMenu.setAttribute('aria-hidden', String(!isOpen));
+        mobileMenu.toggleAttribute('inert', !isOpen);
         document.body.style.overflow = isOpen ? 'hidden' : '';
       });
       mobileMenu.querySelectorAll('a').forEach(a => {
@@ -674,6 +680,7 @@
           mobileMenu.classList.remove('open');
           navToggle.classList.remove('open');
           mobileMenu.setAttribute('aria-hidden', 'true');
+          mobileMenu.toggleAttribute('inert', true);
           document.body.style.overflow = '';
         });
       });

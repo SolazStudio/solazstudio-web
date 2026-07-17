@@ -8,10 +8,15 @@
   <link rel="canonical" href="https://solazstudio.cl/portafolio">
   <meta name="robots" content="index, follow">
   <meta property="og:title" content="Portafolio — Solaz Studio | Foto y Video Comercial Chile">
+  <meta property="og:description" content="Portafolio de fotografía comercial, producción audiovisual y contenido para marcas. Trabajos para Pullman Hotels, WEG Chile, Ariztía y más empresas en Chile.">
   <meta property="og:url" content="https://solazstudio.cl/portafolio">
   <meta property="og:image" content="https://solazstudio.cl/og-image.jpg">
   <meta property="og:locale" content="es_CL">
   <meta property="og:site_name" content="Solaz Studio">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Portafolio — Solaz Studio | Foto y Video Comercial Chile">
+  <meta name="twitter:description" content="Portafolio de fotografía comercial, producción audiovisual y contenido para marcas. Trabajos para Pullman Hotels, WEG Chile, Ariztía y más empresas en Chile.">
+  <meta name="twitter:image" content="https://solazstudio.cl/og-image.jpg">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -656,12 +661,12 @@
     <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Solaz Studio en Instagram"><span class="ig-full">Instagram</span><span class="ig-short">IG</span></a>
     <a href="/contacto" class="nav-cta">Contacto</a>
   
-    <button class="nav-hamburger" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+    <button type="button" class="nav-hamburger" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
   </nav>
 
-  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true" inert>
     <div class="mobile-menu-links">
       <a href="/portafolio" class="active">Portafolio</a>
       <a href="/servicios">Servicios</a>
@@ -684,15 +689,15 @@
 
   <!-- FILTERS -->
   <div class="filters" role="tablist" aria-label="Filtrar portafolio">
-    <button class="filter-btn active" data-filter="all" role="tab">Todo</button>
-    <button class="filter-btn" data-filter="arquitectura" role="tab">Arquitectura</button>
-    <button class="filter-btn" data-filter="eventos" role="tab">Eventos</button>
-    <button class="filter-btn" data-filter="gastronomia" role="tab">Gastronómica</button>
-    <button class="filter-btn" data-filter="industrial" role="tab">Industrial</button>
-    <button class="filter-btn" data-filter="publicitaria" role="tab">Publicitaria</button>
-    <button class="filter-btn" data-filter="retratos" role="tab">Retratos</button>
-    <button class="filter-btn" data-filter="video" role="tab">Video</button>
-    <button class="filter-btn" data-filter="proyecto" role="tab">Proyectos</button>
+    <button type="button" class="filter-btn active" data-filter="all" role="tab">Todo</button>
+    <button type="button" class="filter-btn" data-filter="arquitectura" role="tab">Arquitectura</button>
+    <button type="button" class="filter-btn" data-filter="eventos" role="tab">Eventos</button>
+    <button type="button" class="filter-btn" data-filter="gastronomia" role="tab">Gastronómica</button>
+    <button type="button" class="filter-btn" data-filter="industrial" role="tab">Industrial</button>
+    <button type="button" class="filter-btn" data-filter="publicitaria" role="tab">Publicitaria</button>
+    <button type="button" class="filter-btn" data-filter="retratos" role="tab">Retratos</button>
+    <button type="button" class="filter-btn" data-filter="video" role="tab">Video</button>
+    <button type="button" class="filter-btn" data-filter="proyecto" role="tab">Proyectos</button>
   </div>
 
   <!-- GALLERY -->
@@ -1266,9 +1271,9 @@
 
   <!-- LIGHTBOX -->
   <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Visor de imagen">
-    <button class="lightbox-close" id="lbClose" aria-label="Cerrar">✕</button>
-    <button class="lightbox-nav lightbox-prev" id="lbPrev" aria-label="Anterior">←</button>
-    <button class="lightbox-nav lightbox-next" id="lbNext" aria-label="Siguiente">→</button>
+    <button type="button" class="lightbox-close" id="lbClose" aria-label="Cerrar">✕</button>
+    <button type="button" class="lightbox-nav lightbox-prev" id="lbPrev" aria-label="Anterior">←</button>
+    <button type="button" class="lightbox-nav lightbox-next" id="lbNext" aria-label="Siguiente">→</button>
     <div class="lightbox-inner" id="lbInner"></div>
     <div class="lightbox-counter" id="lbCounter"></div>
   </div>
@@ -1714,6 +1719,7 @@
         const isOpen = mobileMenu.classList.toggle('open');
         navToggle.classList.toggle('open');
         mobileMenu.setAttribute('aria-hidden', String(!isOpen));
+        mobileMenu.toggleAttribute('inert', !isOpen);
         document.body.style.overflow = isOpen ? 'hidden' : '';
       });
       mobileMenu.querySelectorAll('a').forEach(a => {
@@ -1721,6 +1727,7 @@
           mobileMenu.classList.remove('open');
           navToggle.classList.remove('open');
           mobileMenu.setAttribute('aria-hidden', 'true');
+          mobileMenu.toggleAttribute('inert', true);
           document.body.style.overflow = '';
         });
       });
