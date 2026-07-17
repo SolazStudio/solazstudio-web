@@ -112,16 +112,6 @@
     <priority>0.6</priority>
   </url>
 
-  <!-- Páginas legales -->
-  <url>
-    <loc>https://solazstudio.cl/politica-privacidad</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  <url>
-    <loc>https://solazstudio.cl/terminos-uso</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
-  </url>
+  <!-- Páginas legales (noindex — excluidas del sitemap intencionalmente) -->
 
 </urlset>
