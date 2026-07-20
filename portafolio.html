@@ -1585,6 +1585,14 @@
     Promise.all(galleryImgs.map(imgReady)).then(runInitialLayout);
     window.addEventListener('load', () => setTimeout(runInitialLayout, 300));
 
+    // Misma corrección que en las páginas de proyecto: recalcular cuando
+    // cualquier imagen individual termine de cargar, para no depender solo
+    // del fallback de load+300ms ni de un resize accidental.
+    const debouncedRelayoutOnImgLoad = debounce(layoutGallery, 150);
+    galleryImgs.forEach(img => {
+      img.addEventListener('load', debouncedRelayoutOnImgLoad);
+    });
+
     // Las fuentes web (Google Fonts con display=swap) pueden terminar de
     // cargar DESPUÉS de que las imágenes ya resolvieron, cambiando el ancho
     // real del contenedor (texto con distinto ancho/altura de línea que la
