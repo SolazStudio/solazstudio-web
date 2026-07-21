@@ -21,6 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <style>
     :root {
@@ -528,6 +529,7 @@
         <form id="formMensaje" action="https://api.web3forms.com/submit" method="POST">
           <input type="hidden" name="access_key" value="e2f133c1-ad94-45ad-b922-b354f4ce2f52">
           <input type="hidden" name="subject" value="Nuevo mensaje — Solaz Studio">
+          <input type="hidden" name="form_type" value="mensaje">
           <input type="checkbox" name="botcheck" style="display:none">
 
           <div class="form-row">
@@ -567,6 +569,8 @@
             <label for="consent-marketing">Acepto recibir información comercial ocasional de Solaz Studio, como promociones o novedades. Este consentimiento es opcional y puede retirarse en cualquier momento escribiendo a <a href="mailto:hola@solazstudio.cl">hola@solazstudio.cl</a>.</label>
           </div>
 
+          <div class="cf-turnstile" data-sitekey="0x4AAAAAAD6I7K_Sk2CdA1wu" style="margin-bottom: 24px;"></div>
+
           <button type="submit" class="form-submit">
             Enviar mensaje
             <span class="form-submit-arrow">→</span>
@@ -588,6 +592,7 @@
         <form id="formReunion" action="https://api.web3forms.com/submit" method="POST">
           <input type="hidden" name="access_key" value="e2f133c1-ad94-45ad-b922-b354f4ce2f52">
           <input type="hidden" name="subject" value="Solicitud de reunión — Solaz Studio">
+          <input type="hidden" name="form_type" value="reunion">
           <input type="checkbox" name="botcheck" style="display:none">
 
           <div class="form-row">
@@ -631,6 +636,8 @@
             </div>
           </div>
 
+          <div class="cf-turnstile" data-sitekey="0x4AAAAAAD6I7K_Sk2CdA1wu" style="margin-bottom: 24px;"></div>
+
           <button type="submit" class="form-submit">
             Confirmar disponibilidad
             <span class="form-submit-arrow">→</span>
@@ -673,7 +680,10 @@
       });
     });
 
-    // Form submission (Web3Forms async)
+    // Form submission: primero /api/contact (D1, fuente de verdad),
+    // y solo si eso funciona, se manda también a Web3Forms para el
+    // correo de aviso (best-effort — si Web3Forms falla, el contacto
+    // igual quedó guardado, solo se pierde la notificación por correo).
     function handleForm(formId, successId) {
       const form = document.getElementById(formId);
       const success = document.getElementById(successId);
@@ -683,15 +693,26 @@
         const btn = form.querySelector('.form-submit');
         btn.textContent = 'Enviando…';
         btn.disabled = true;
+
+        const formData = new FormData(form);
+
         try {
-          const res = await fetch(form.action, {
+          const res = await fetch('/api/contact', {
             method: 'POST',
-            body: new FormData(form),
-            headers: { 'Accept': 'application/json' }
+            body: formData,
           });
-          if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+
+          if (res.ok && data.ok) {
             form.style.display = 'none';
             success.classList.add('visible');
+
+            // Notificación por correo, best-effort — no bloquea el éxito.
+            fetch(form.action, {
+              method: 'POST',
+              body: formData,
+              headers: { 'Accept': 'application/json' },
+            }).catch(() => {});
           } else {
             btn.textContent = 'Error al enviar. Intenta de nuevo.';
             btn.disabled = false;
