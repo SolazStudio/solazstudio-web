@@ -708,9 +708,16 @@
             success.classList.add('visible');
 
             // Notificación por correo, best-effort — no bloquea el éxito.
+            // Ojo: Web3Forms nunca esperó los campos "form_type" ni
+            // "cf-turnstile-response" (son nuevos, agregados para /api/contact).
+            // Se sacan antes de mandarle los datos, por si Web3Forms descarta
+            // en silencio los envíos con campos que no reconoce.
+            const formDataWeb3 = new FormData(form);
+            formDataWeb3.delete('form_type');
+            formDataWeb3.delete('cf-turnstile-response');
             fetch(form.action, {
               method: 'POST',
-              body: formData,
+              body: formDataWeb3,
               headers: { 'Accept': 'application/json' },
             }).catch(() => {});
           } else {
