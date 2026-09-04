@@ -1,0 +1,6 @@
+const PRODUCTION_TURNSTILE_SITE_KEY = "0x4AAAAAAD6I7K_Sk2CdA1wu";
+
+export default {
+  turnstileSiteKey:
+    process.env.TURNSTILE_SITE_KEY || PRODUCTION_TURNSTILE_SITE_KEY
+};

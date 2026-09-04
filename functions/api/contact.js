@@ -9,6 +9,7 @@ const ORIGENES_PERMITIDOS = new Set([
   'https://solazstudio.cl',
   'https://www.solazstudio.cl',
 ]);
+const PAGES_PREVIEW_SUFFIX = '.solazstudio-web.pages.dev';
 
 const SERVICE_CODES = new Set(services.map(({ code }) => code));
 
@@ -79,13 +80,42 @@ function validarToken(valor, maxLargo) {
   return token && TOKEN_PATTERN.test(token) ? token : null;
 }
 
-function obtenerContextoOrigen(sourcePage, referer) {
+function esOrigenPermitido(origin, requestUrl) {
+  if (ORIGENES_PERMITIDOS.has(origin)) return true;
+
+  try {
+    const originUrl = new URL(origin);
+    const requestOrigin = new URL(requestUrl).origin;
+    return (
+      originUrl.protocol === 'https:' &&
+      originUrl.hostname.endsWith(PAGES_PREVIEW_SUFFIX) &&
+      originUrl.origin === origin &&
+      originUrl.origin === requestOrigin
+    );
+  } catch {
+    return false;
+  }
+}
+
+function esRefererPermitido(origin, requestUrl) {
+  try {
+    const requestOrigin = new URL(requestUrl).origin;
+    if (ORIGENES_PERMITIDOS.has(origin)) {
+      return ORIGENES_PERMITIDOS.has(requestOrigin);
+    }
+    return esOrigenPermitido(origin, requestUrl);
+  } catch {
+    return false;
+  }
+}
+
+function obtenerContextoOrigen(sourcePage, referer, requestUrl) {
   let sourcePagePersistido = sourcePage;
 
   if (!sourcePagePersistido) {
     try {
       const url = new URL(referer || '');
-      if (ORIGENES_PERMITIDOS.has(url.origin)) {
+      if (esRefererPermitido(url.origin, requestUrl)) {
         sourcePagePersistido = validarPathInterno(url.pathname);
       }
     } catch {
@@ -128,7 +158,7 @@ export async function onRequestPost(context) {
 
   // 1. Validar Origin para impedir el uso directo desde otros sitios.
   const origin = request.headers.get('Origin') || '';
-  if (origin && !ORIGENES_PERMITIDOS.has(origin)) {
+  if (origin && !esOrigenPermitido(origin, request.url)) {
     return respuestaJson({ ok: false, error: 'origen_no_permitido' }, 403);
   }
 
@@ -234,7 +264,8 @@ export async function onRequestPost(context) {
   const consentMarketing = datos.consent_marketing === 'si' ? 1 : 0;
   const contextoOrigen = obtenerContextoOrigen(
     sourcePage,
-    request.headers.get('Referer')
+    request.headers.get('Referer'),
+    request.url
   );
 
   // 5. Inserción atómica e idempotente usando la columna id existente.
