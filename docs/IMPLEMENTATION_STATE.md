@@ -1,15 +1,95 @@
 # Estado de implementación
 
 - Fecha: 2026-09-04
-- Fase/lote: F1.4 — Preview funcional aislada
+- Fase/lote: F2.1 — Inventario real del circuito post-D1
 - Estado: COMPLETADO PARA REVISIÓN DE CHATGPT
 - Rama: `develop`
-- Commit base: `3ede11ea52596c526e4b855bcf60b2141004d81e`
-- Commits del lote: funcional `595ce30b312a0366659a96b4377db42f39c1bfa4` (`feat: add isolated functional preview`) y commit documental que contiene este informe
+- Commit base: `f006a37c3aa9fc20f1230112c25e6471b223596f`
+- Commit del lote: único commit documental que contiene este informe, con mensaje `docs: record F2.1 post-D1 inventory`
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Preview / Cloudflare / recursos reales: Preview funcional aislada; D1 `solaz-contactos-preview` y configuración Preview únicamente
+- Cloudflare / recursos reales: inventario de solo lectura; cero escrituras remotas
 - Bloqueadores: ninguno
 - Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización
+
+## Cierre de F1 por revisión de ChatGPT
+
+- F1.4 fue revisado por ChatGPT y F1 se declara **CERRADO**.
+- La frase histórica “F1 sigue abierto” registrada al cierre técnico de F1.4 expresaba el estado provisional anterior a esa revisión.
+- El cierre de F1 no requirió ni produjo escrituras adicionales en Cloudflare, D1, Queue, Worker, Notion, email, Preview o Production.
+- Queue, Worker, fallos y resiliencia pasan a F2. F2.1 solo inventaría el sistema actual; no construye F2.2.
+
+## F2.1 — Inventario real del circuito post-D1
+
+F2.1 reconstruyó en modo solo lectura el circuito posterior a la persistencia, separando evidencia directa, inferencias sustentadas y elementos no verificables con las interfaces disponibles.
+
+Fuentes inspeccionadas:
+
+- Repositorio completo relevante y `functions/api/contact.js`.
+- Configuración Pages descargada mediante Wrangler antes/después, con valores sensibles omitidos.
+- Inventarios Wrangler de D1, Queue, Worker, deployments, versiones, secrets por nombre/tipo y Workflows.
+- Metadata de Queue y versión activa del consumidor.
+- Esquema e indicadores agregados de D1 real, sin filas individuales ni PII.
+- Documentación oficial vigente de Cloudflare para [configuración de Queue](https://developers.cloudflare.com/queues/configuration/configure-queues/), [batching/retries](https://developers.cloudflare.com/queues/configuration/batching-retries/) y versiones/deployments de Workers.
+
+Mapa factual:
+
+| Componente | Estado | Evidencia y rol actual | Fallo / recuperación verificable |
+| --- | --- | --- | --- |
+| Pages Function | EXISTE | `functions/api/contact.js` inserta una fila `pending` en D1 y, solo si es nueva, ejecuta `CONTACT_QUEUE.send({ id: submissionId })`. | El envío es best-effort: cualquier excepción de Queue se captura y la respuesta sigue siendo éxito; no reencola ni marca error. |
+| D1 real | EXISTE | Binding Production `DB` apunta por ID a `solaz-contactos`; tabla `contacts` de 23 columnas. | Conserva estado durable, pero el repo web no contiene recuperación de filas `pending`/`failed`. |
+| Binding `CONTACT_QUEUE` | EXISTE | Pages Production lo enlaza a `solaz-contactos-sync`. | No posee fallback en el productor. |
+| Queue real | EXISTE | `solaz-contactos-sync`, ID `dac558e81fd745f8b5b0f6fe97d7e380`; Wrangler informa 2 productores y 1 consumidor. | Cloudflare Queues soporta retries de entrega; política numérica/delay activa no es visible en la CLI disponible. |
+| Consumer | EXISTE | Único consumidor push: Worker `solaz-contact-worker`. | La semántica exacta de ack/retry/catch no es verificable sin el source desplegado. |
+| Worker | EXISTE | Deployment activo `1d21bf44-6d1c-472a-aba7-345ddf6c3172`; versión 6 `c1224de0-a9be-4aac-8143-aa2a5bd12ab7` al 100%, desplegada el 2026-07-21T06:41:47Z. | Exporta handlers `queue` y `scheduled`; el código desplegado no está disponible mediante Wrangler 4.112.0. |
+| Bindings Worker | EXISTEN | Queue real, D1 real, envío de email, identificador Notion como `plain_text` y token Notion como `secret_text`. | No se leyeron valores secretos. El rol exacto del email y la secuencia de escrituras requieren el source. |
+| Destino operativo | INFERIDO CON EVIDENCIA CONVERGENTE | Notion: el Worker tiene bindings Notion y 8/8 filas `synced` contienen `notion_page_id` y `synced_at`. | No se accedió a Notion porque la consulta segura disponible no garantizaba excluir páginas/leads. |
+| Retry Queue | EXISTE COMO MECANISMO DE PLATAFORMA | El consumidor es push y Cloudflare reintenta entregas fallidas/no reconocidas hasta la política del consumidor. | `max_retries`, delay/backoff, batch size, batch timeout y concurrencia reales no son verificables con la salida CLI disponible; tampoco se verificó si el código fuerza `retry()`. |
+| DLQ | NO EXISTE COMO RECURSO SEPARADO | El inventario de cuenta contiene únicamente `solaz-contactos-sync`; una DLQ de Cloudflare debe ser otra Queue. | Tras agotar retries, sin DLQ separada, la plataforma descarta el mensaje; el máximo real no fue visible. |
+| Cron / reconciliación | NO VERIFICABLE | La versión activa contiene handler `scheduled`, pero Wrangler no ofrece lectura de schedules y el Dashboard no tenía sesión disponible. No hay código de reconciliación en este repo. | No puede afirmarse que exista un cron activo ni que el handler recupere `pending`/`failed`. |
+| Workflows | NO EXISTEN | `wrangler workflows list` informó cero Workflows desplegados en la cuenta. | No aportan recuperación. |
+| Alertas | NO VERIFICABLE | Existe binding de email y columna `alerted`; el agregado actual es cero. | No se verificó qué condición envía alertas ni quién actualiza `alerted`. |
+
+Configuración real relevante:
+
+- Pages Production: `DB → solaz-contactos` (`cc1a1efa-7e4a-4e12-a9d9-d65b5cd56380`) y `CONTACT_QUEUE → solaz-contactos-sync`.
+- Queue: `solaz-contactos-sync`; 2 productores verificados por bindings — Pages Production y el Worker — y 1 consumidor `solaz-contact-worker`.
+- Worker activo: versión 6, compatibility date `2026-07-01`, usage model `standard`, handlers `queue` y `scheduled`.
+- Worker no expone handler `fetch` en la versión activa. Las rutas no son verificables con la salida disponible.
+- Bindings/variables se registran solo por nombre y tipo; no se documentan valores Notion, destino de email ni secretos.
+- No apareció binding/secret explícito de Make o Resend. Sin source desplegado no puede excluirse una referencia embebida, por lo que su participación exacta queda no verificable; no se realizó ninguna llamada externa.
+
+Agregados D1 reales:
+
+- `COUNT(*) = 8` antes y después.
+- Por estado: `synced = 8`; `pending = 0`, `syncing = 0`, `failed = 0`.
+- Rango agregado `created_at` de los registros `synced`: 2026-07-21 04:21:01 a 2026-08-24 16:39:07.
+- `retry_count > 0 = 0`; `MAX(retry_count) = 0`.
+- `last_error IS NOT NULL = 0`.
+- `notion_page_id IS NOT NULL = 8`.
+- `synced_at IS NOT NULL = 8`.
+- `alerted != 0 = 0`.
+- Esquema antes/después: 23 columnas, mismos tres índices incluida la PK automática, cero triggers y cero escrituras reportadas.
+
+Respuestas factuales A–H:
+
+- **A. Después de `CONTACT_QUEUE.send({ id })`:** la Queue entrega al único consumidor `solaz-contact-worker`. Su versión activa tiene D1, Notion y email disponibles; la evidencia histórica final es 8/8 filas `synced` con referencia Notion y fecha de sincronización. La secuencia interna exacta no es verificable sin source.
+- **B. Si falla el consumidor:** una entrega fallida/no reconocida entra en el retry de Cloudflare hasta el máximo configurado; la política exacta y el manejo del Worker no son visibles. No existe DLQ separada, de modo que un mensaje agotado se descarta en la plataforma.
+- **C. Quién cambia `sync_status`:** la Function web solo escribe `pending`. El único componente desplegado con consumo de Queue y binding D1 es `solaz-contact-worker`; por eliminación y evidencia agregada, es el actor sustentado que lleva filas a `synced`, aunque sus sentencias exactas no pudieron inspeccionarse.
+- **D. Retry real:** existe retry de entrega de Cloudflare para el consumidor push, pero no se verificaron número, delay, backoff ni llamadas explícitas `retry()`. No hay evidencia actual de retry aplicativo en D1: todos los contadores están en cero.
+- **E. DLQ:** no existe una Queue separada que pueda cumplir ese rol.
+- **F. Reconciliación periódica:** desconocida. Existe un handler `scheduled`, pero no pudo verificarse un Cron Trigger activo ni su lógica; no hay Workflow ni reconciliador versionado aquí.
+- **G. Recuperación de un lead que queda `pending` si falla silenciosamente el envío:** no existe una vía demostrada. La Function oculta el fallo de Queue y no marca/reintenta; el posible handler programado no basta para probar recuperación.
+- **H. Gap para F2.2:** debe cerrarse específicamente la recuperación durable y observable de `pending`/`failed` entre D1 y Queue/consumer, y hacer verificables la política de retry, DLQ/agotamiento, transiciones de estado y alertas. El diseño concreto queda pendiente de F2.2.
+
+Validación de cero escrituras remotas:
+
+- Solo se ejecutaron listados, descargas de configuración, `info`, `status`, `view`, consultas SQL de esquema/agregados y navegación GET a una pantalla de login no autenticada.
+- D1 repitió `total = 8`, esquema/índices idénticos y metadata `rows_written = 0`, `changes = 0`, `changed_db = false`.
+- Configuración Pages normalizada antes/después: idéntica, SHA-256 `1b6d3c62001102e6b4c08fba548e127f1b9f1257e72fe6b2de5ac3b4752ee430`.
+- Deployment Pages Production canónica: `d5ae0595-dbdf-4b50-9208-f3ab5aa64e22`, rama `main`, source `8806104`; intacta.
+- Queue conservó ID, timestamps, 2 productores y 1 consumidor.
+- Worker conservó deployment activo y versión 6 al 100%.
+- `origin/develop` siguió en la base F2.1 y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d` antes de documentar.
 
 ## F1.4 — Preview funcional aislada
 
@@ -135,15 +215,15 @@ Formulario
 
 F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matriz frontend/backend, contexto interno seguro, idempotencia sobre `id`, Turnstile individual y feedback accesible. F1.2 añadió el esquema local versionado y los bindings backend de contexto; F1.3 aplicó únicamente ese esquema aditivo a la D1 real. F1.4 añadió configuración de build para Turnstile, aceptación estricta de orígenes Pages del proyecto y una Preview funcional aislada con D1 propia.
 
-**F1 SIGUE ABIERTO.** La migración ya fue aplicada a D1 real y el circuito funcional fue probado de extremo a extremo solo en Preview. El release a Production, un POST de Production, Queue, integraciones, atribución externa y QA visual/manual quedan para lotes posteriores expresamente autorizados.
+El cierre técnico de F1.4 registró provisionalmente **F1 SIGUE ABIERTO**. Tras la revisión de ChatGPT que autorizó F2.1, **F1 QUEDA CERRADO** sin nuevas escrituras ni pruebas funcionales. Queue, Worker y resiliencia se investigan desde F2.
 
 ## Archivos afectados
 
-- Creados: 2: `src/_data/environment.js` y `tools/preview/bootstrap_contacts.sql`.
-- Modificados: 3: `functions/api/contact.js`, `src/contacto.njk` y `docs/IMPLEMENTATION_STATE.md`.
+- Creados: 0.
+- Modificados: 1: `docs/IMPLEMENTATION_STATE.md`.
 - Eliminados: 0.
-- Archivos temporales versionados: 0; el harness dirigido y los outputs temporales no se incluyeron en Git.
-- `migrations/0001_add_contact_context.sql`, `src/_data/services.js`, `package.json`, `package-lock.json`, QA/paridad, configuración global, rutas públicas, demás templates y media: intactos.
+- Archivos temporales versionados: 0; las dos copias de configuración usadas para comparar se mantuvieron fuera del repositorio y se eliminan al cierre.
+- Código funcional, migraciones, templates, configuración, `package.json`, `package-lock.json`, QA/paridad, rutas públicas y media: intactos.
 
 ## Comportamiento implementado
 
@@ -211,7 +291,19 @@ F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matri
 - Cada formulario posee error persistente con `role=alert` y éxito con `role=status`/`aria-live=polite`, ambos enfocables programáticamente; el foco se mueve al resultado relevante.
 - El botón se deshabilita durante el envío y recupera su contenido/estado para reintentar.
 
-## Pruebas y resultados de F1
+## Pruebas y resultados acumulados
+
+### F2.1 — Inventario real del circuito post-D1
+
+- Precheck Git/Cloudflare: PASS exacto; base `f006a37c3aa9fc20f1230112c25e6471b223596f`, rama `develop`, árbol limpio, una cuenta autenticada y proyecto Pages `solazstudio-web` inequívoco.
+- Inventario repo: PASS; productor e inserción `pending` verificados, consumidor ausente del repositorio.
+- Pages Production: PASS; bindings reales `DB` y `CONTACT_QUEUE` identificados sin leer secrets.
+- Queue: PASS; una Queue exacta, dos productores y un consumidor identificados sin leer mensajes.
+- Worker: PASS; deployment, versión activa, handlers, runtime y bindings identificados; source y schedules no verificables con Wrangler disponible.
+- Workflows: PASS; ninguno desplegado.
+- D1: PASS; solo esquema/agregados, 8 filas `synced`, cero retries/errores/alertas, 8 referencias Notion y 8 fechas de sincronización; cero PII.
+- Cero escrituras: PASS; D1, Pages, Queue, Worker y refs permanecieron iguales antes/después.
+- Pruebas funcionales/build: no ejecutadas, conforme al carácter exclusivamente diagnóstico/documental de F2.1.
 
 ### F1.4 — Preview funcional aislada
 
@@ -320,7 +412,7 @@ F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matri
 
 ## Cambios visuales
 
-F1.4 no introduce cambios de diseño ni UX. Diseño, estilos, campos, mensajes, estados, tabs, accesibilidad y contexto visible permanecen iguales; únicamente la build Preview muestra y usa la sitekey oficial de prueba de Turnstile, mientras el fallback Production conserva la sitekey pública preexistente.
+F2.1 no introduce cambios visuales, funcionales ni de UX. No ejecutó build, prueba funcional ni deployment manual; el único efecto de publicación permitido es la Preview automática derivada del commit documental.
 
 ### Cambios visibles acumulados del F1.1 original
 
@@ -334,20 +426,25 @@ No se rediseñó la página ni se modificaron identidad, navegación, footer, pr
 
 ## Limitaciones, pendientes y prohibiciones vigentes
 
-- No hubo QA visual/manual, responsive manual ni lector de pantalla; el foco y ARIA se verificaron por análisis local y la Preview por HTTP/HTML y pruebas funcionales dirigidas.
-- Turnstile y los POST se probaron únicamente en Preview con claves oficiales de prueba y datos sintéticos. No se probó Turnstile Production, no hubo POST Production ni escritura nueva en D1 real.
-- Se desplegó solo Preview por integración Git desde `develop`; no hubo deployment Production. DNS, Ads, analítica y demás recursos externos permanecieron intactos.
-- La migración versionada ya está aplicada en D1 real y el esquema fue verificado. La persistencia de los cuatro bindings se demostró en D1 Preview, no en Production.
-- Falta decidir la atribución externa completa bajo reglas de privacidad.
-- Faltan el release y validación autorizada de Production, Queue real, Worker consumidor, Notion, Resend, reemplazo posterior de Make y QA visual/manual.
+- El source del Worker desplegado no pudo obtenerse mediante Wrangler 4.112.0; el Dashboard no tenía sesión disponible y no se inició login ni se extrajo OAuth.
+- La CLI no expuso la configuración real de `max_retries`, delay/backoff, batch size, batch timeout o concurrencia del consumer.
+- La existencia de handler `scheduled` está verificada, pero el Cron Trigger y su lógica no son verificables con la interfaz segura disponible.
+- Notion es el destino operativo sustentado por bindings y agregados; no se consultó su base porque no existía garantía de excluir páginas/leads y PII.
+- No hay evidencia verificable de recuperación del gap D1 `pending` → fallo silencioso de `Queue.send`.
+- F2.2 debe abordar los gaps objetivos de resiliencia solo después de revisión y autorización; F2.1 no define todavía su diseño detallado.
 - No crear página/URL/oferta de IA, landings, subservicios, tracking o nuevas rutas sin autorización.
-- No iniciar otro lote ni F2, modificar `main`, hacer merge/PR/rama/force push o tocar Production/Cloudflare/recursos reales sin nueva autorización.
+- No iniciar F2.2, modificar `main`, hacer merge/PR/rama/force push o tocar Production/Cloudflare/recursos reales sin nueva autorización.
 
 ## Rollback
 
-La base Git de F1.4 es `3ede11ea52596c526e4b855bcf60b2141004d81e`. Un rollback autorizado debe revertir únicamente los dos commits F1.4; retirar solo el binding `DB` y las dos variables añadidas a `deployment_configs.preview`; y eliminar únicamente `solaz-contactos-preview` si se autoriza expresamente y continúa siendo seguro. No debe modificar D1 real, Queue, secretos Production, configuración/deployment Production, `main` ni ningún otro recurso. No ejecutar este rollback sin instrucción expresa y un nuevo precheck.
+F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir únicamente el commit documental F2.1 sobre la base `f006a37c3aa9fc20f1230112c25e6471b223596f`. No revertir F1.4, no modificar Cloudflare y no tocar D1, Queue, Worker, Preview, Production ni `main`.
 
 ## Evidencia durable anterior
+
+### F1.4
+
+- Commits: `595ce30b312a0366659a96b4377db42f39c1bfa4` (`feat: add isolated functional preview`) y `f006a37c3aa9fc20f1230112c25e6471b223596f` (`docs: record F1.4 isolated preview evidence`).
+- Demostró los dos formularios, persistencia D1 Preview, contexto, idempotencia, Turnstile y aislamiento. ChatGPT lo revisó y declaró F1 cerrado antes de F2.1.
 
 ### F1.3
 
@@ -388,30 +485,36 @@ La base Git de F1.4 es `3ede11ea52596c526e4b855bcf60b2141004d81e`. Un rollback a
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F1.4 — Preview funcional aislada.
+- Lote: F2.1 — Inventario real del circuito post-D1.
 - Fecha: 2026-09-04.
-- Objetivo: crear y demostrar exclusivamente el circuito `Formulario Preview → /api/contact Preview → D1 solaz-contactos-preview`, sin conectar ni escribir recursos Production.
-- Precheck: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, árbol limpio, HEAD local y `origin/develop` en la base `3ede11ea52596c526e4b855bcf60b2141004d81e`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`. OAuth, cuenta única, proyecto Pages y aislamiento inicial también pasaron.
-- Archivos: 2 creados (`src/_data/environment.js`, `tools/preview/bootstrap_contacts.sql`), 3 modificados (`functions/api/contact.js`, `src/contacto.njk`, `docs/IMPLEMENTATION_STATE.md`) y 0 eliminados. No se versionaron temporales.
-- Infraestructura creada: D1 `solaz-contactos-preview`, ID `234b26b3-813f-46c8-9784-36ccf3037abc`, región ENAM; bootstrap exclusivo Preview, 23 columnas, dos índices funcionales y cero filas iniciales.
-- Configuración Preview final: binding `DB → solaz-contactos-preview`; `CONTACT_QUEUE` ausente; `TURNSTILE_SITE_KEY` de prueba como `plain_text`; `TURNSTILE_SECRET_KEY` de prueba como `secret_text`; ningún secreto Production leído, copiado o registrado.
-- Deployment funcional nueva: <https://42acd5df.solazstudio-web.pages.dev/>, ID `42acd5df-fae0-4671-9c54-416fb7a6571e`, generada por auto-deploy Git de Pages desde `develop` y el commit funcional `595ce30b312a0366659a96b4377db42f39c1bfa4`.
-- Pruebas locales: PASS en `npm ci`, builds Production-fallback y Preview, sintaxis y harness dirigido de orígenes/Referer, ausencia de Queue y bootstrap. `qa:assets` no existe; la paridad histórica no se ejecutó por no aplicar a cambios F1 intencionales.
-- GET remoto: PASS; `/` y `/contacto/` HTTP 200, con 2/2 sitekeys de prueba y 0 sitekeys Production en Contacto.
-- Contacto general: PASS; envío sintético ID `f1400000-0000-4000-8000-000000000001`, HTTP 200, `ok=true`, `deduplicated=false` y primera fila Preview.
-- Solicitud de reunión: PASS; envío sintético ID `f1400000-0000-4000-8000-000000000002`, HTTP 200, `ok=true`, `deduplicated=false` y segunda fila Preview.
-- Evidencia D1 Preview: PASS sin exponer PII; `submission_id`, `form_type`, `service_code`, `source_page`, `case_id`, `cta_id`, `sync_status` y presencia de campos propios de cada recorrido coincidieron.
-- Conteo final D1 Preview: exactamente `2` filas sintéticas QA.
-- Idempotencia: PASS; reenvío del primer ID respondió HTTP 200 y `deduplicated=true`, sin tercera fila.
-- Turnstile negativo: PASS; token ausente respondió HTTP 400 y `verificacion_fallida`, sin fila adicional.
-- Origin ajeno: PASS; `https://example.com` respondió HTTP 403 y `origen_no_permitido`, sin fila adicional.
-- D1 real: sin escrituras atribuibles a F1.4 y sin POST; permaneció con 23 columnas, los mismos índices y `total = 8`. Los bookmarks de Time Travel avanzaron por su naturaleza temporal automática y no se usaron aisladamente como evidencia de mutación.
-- Integraciones excluidas: no hubo Queue message, Worker, email, Make, Notion, Resend, analítica ni Ads; Preview no tiene el binding de Queue.
-- Production: configuración idéntica antes/después, hash `71d5fcb4f5f94881eaca99c6c0bac757479d06020e5f554b83b1e2bab890227b`; deployment canónica `d5ae0595-dbdf-4b50-9208-f3ab5aa64e22` en `880610411ecb4d66f652e8bfaf89e5794231409d`; sin deployment Production.
-- Commits: funcional `595ce30b312a0366659a96b4377db42f39c1bfa4` (`feat: add isolated functional preview`) y commit documental que contiene este informe; máximo de dos respetado.
-- Push: exclusivamente a `origin/develop`; la comprobación final de refs y árbol limpio se registra en el informe externo porque el commit no puede contener su propio SHA.
-- `origin/main`: debe permanecer exactamente en `880610411ecb4d66f652e8bfaf89e5794231409d` tras el push final.
-- Desviaciones/incidencias no materiales: dos bloqueos `EBUSY` de outputs generados durante instalación/build, resueltos apartando únicamente esas carpetas; un primer query estructural D1 con quoting incorrecto falló antes de leer o escribir; una variable PowerShell protegida usada por error interrumpió el primer chequeo GET antes de asignar Home. Todos se corrigieron de forma acotada, sin cambios versionados ni recursos fuera de alcance. No hubo desviaciones materiales.
-- Rollback disponible: revertir solo los dos commits F1.4; retirar únicamente binding/variables Preview añadidos; eliminar solo `solaz-contactos-preview` si hay autorización expresa y es seguro; nunca tocar D1 real, Queue, Production ni `main`.
-- Estado de F1: ABIERTO.
+- Precheck: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, árbol limpio, HEAD local y `origin/develop` en `f006a37c3aa9fc20f1230112c25e6471b223596f`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`; Wrangler 4.112.0 autenticado, una cuenta y proyecto Pages inequívoco.
+- Cierre F1: registrado; F1.4 fue revisado por ChatGPT y F1 queda CERRADO sin escrituras adicionales. Queue/Worker/resiliencia pasan a F2.
+- Archivos: 0 creados, 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados; ningún temporal versionado.
+- Circuito real: Pages Function inserta `pending` en D1, intenta `CONTACT_QUEUE.send({ id })`, Queue `solaz-contactos-sync` entrega al Worker `solaz-contact-worker`; Notion es el destino operativo sustentado y existe binding de email cuyo uso exacto no pudo verificarse.
+- Queue: ID `dac558e81fd745f8b5b0f6fe97d7e380`, 2 productores y 1 consumidor push.
+- Consumer/Worker: `solaz-contact-worker`; deployment activo `1d21bf44-6d1c-472a-aba7-345ddf6c3172`, versión 6 `c1224de0-a9be-4aac-8143-aa2a5bd12ab7` al 100%, handlers `queue` y `scheduled`, runtime estándar y compatibility date `2026-07-01`.
+- Bindings Worker: Queue, D1, email, variable Notion `plain_text` y secret Notion `secret_text`; ningún valor sensible se registra.
+- Destino: Notion inferido con evidencia convergente — bindings directos más 8/8 contactos `synced` con referencia Notion y `synced_at`. No se leyeron páginas/leads de Notion.
+- Retry: Cloudflare provee retry de entrega al consumidor push, pero la política activa (`max_retries`, delay/backoff, batch y concurrencia) y el uso explícito de ack/retry no son verificables mediante la CLI disponible.
+- DLQ: no existe Queue separada; el inventario contiene una sola Queue. Un mensaje que agote retries no tiene DLQ demostrada y la plataforma lo descarta.
+- Cron/reconciliación: handler `scheduled` presente, pero Cron Trigger y código no verificables; cero Workflows desplegados y ningún reconciliador en este repositorio.
+- D1 agregado: `total=8`; `synced=8`; restantes estados 0; retry_count positivo 0; máximo 0; last_error no nulo 0; notion_page_id no nulo 8; synced_at no nulo 8; alerted distinto de 0 igual a 0.
+- A — Después del send: Queue entrega al único consumer y la evidencia histórica termina en Notion/`synced`; secuencia interna no verificable.
+- B — Ante fallo de consumer: aplica retry de plataforma si la entrega falla/no se reconoce; política y transiciones D1 exactas desconocidas; sin DLQ separada.
+- C — Quién cambia `sync_status`: la web solo escribe `pending`; el único actor desplegado con Queue + D1 es el Worker, por lo que es el actor sustentado para `synced`, aunque no se inspeccionó su SQL.
+- D — Retry real: existe a nivel de entrega Cloudflare; configuración concreta y retry aplicativo no verificables. D1 no registra retries en las ocho filas actuales.
+- E — DLQ: no existe como recurso separado.
+- F — Reconciliación: no demostrada; handler programable presente, cron/lógica desconocidos y sin Workflow.
+- G — Recuperación de `pending` tras fallo silencioso de envío: no existe vía verificable; es el gap crítico.
+- H — Gap F2.2: recuperación durable/observable de `pending`/`failed`, política de retry/agotamiento, DLQ y alertas verificables; diseño pendiente de autorización.
+- Elementos no verificables: source desplegado, schedules/cron, configuración detallada del consumer, ack/retry del código, rol exacto del email y posible referencia embebida a servicios sin binding.
+- Cero escrituras remotas: PASS; D1 reportó `rows_written=0`, `changes=0`, `changed_db=false`; Pages tuvo hash normalizado idéntico antes/después; Queue y Worker conservaron metadata/deployment; no hubo POST funcional, mensajes, purge, trigger, logs, llamadas Notion/Make/Resend/email ni cambios Cloudflare.
+- Pruebas de código/build: no ejecutadas, conforme al lote documental.
+- Commit: único commit documental con mensaje `docs: record F2.1 post-D1 inventory`; el SHA se verifica en el informe externo porque un commit no puede contener su propio identificador.
+- Push: exclusivamente a `origin/develop`, sujeto a verificación final; una Preview automática documental está autorizada sin pruebas ni cambios de bindings.
+- Main/Production: `origin/main` debe permanecer en `880610411ecb4d66f652e8bfaf89e5794231409d`; deployment Pages Production canónica `d5ae0595-dbdf-4b50-9208-f3ab5aa64e22`, configuración Pages, Queue y Worker deben permanecer intactos tras el push.
+- Desviaciones/incidencias no materiales: el Dashboard no tenía sesión y no se inició login; Wrangler no expuso source/schedules/settings detallados; `versions view` emitió metadata `plain_text` adicional no seleccionable, que no se reutilizó ni documentó; una ayuda CLI no pudo escribir su log local por `EPERM`, sin efecto remoto. No hubo desviación material ni escritura remota.
+- Rollback: revertir únicamente el commit documental F2.1; no revertir F1.4 ni modificar Cloudflare, D1, Queue, Worker, Preview, Production o `main`.
+- Siguiente lote: pendiente de revisión de ChatGPT y autorización expresa; no iniciar F2.2.
+- Estado de F1: CERRADO.
 - Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
