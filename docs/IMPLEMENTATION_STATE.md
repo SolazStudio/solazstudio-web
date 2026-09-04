@@ -1,30 +1,66 @@
 # Estado de implementación
 
 - Fecha: 2026-09-04
-- Fase/lote: F1.1 — Formulario, contexto y validación local
+- Fase/lote: F1.1-CORRECCIÓN — eliminar Web3Forms
 - Estado: COMPLETADO PARA REVISIÓN DE CHATGPT
 - Rama: `develop`
-- Commit base: `ea23b35f12bff012269ce4eda2ad43154252334b`
-- Commit del lote: único commit que contiene este documento, con mensaje `feat: implement F1 contact flow foundation`
+- Commit base: `b0c78bc3e75fb98ee8c316d84c465dee3f81f9e9`
+- Commit del lote: único commit que contiene este documento, con mensaje `fix: remove Web3Forms from contact flow`
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
 - Preview / Cloudflare / recursos reales: sin acciones en este lote
 - Bloqueadores: ninguno
 - Siguiente lote: F1.2, sujeto a revisión de ChatGPT y nueva autorización
 
-## Alcance y estado de F1.1
+## Revisión de ChatGPT y corrección definitiva
 
-F1.1 implementa la base local del nuevo flujo de contacto. Conserva los dos recorridos existentes, hace obligatoria la clasificación por servicio, alinea la matriz frontend/backend, transporta contexto interno seguro, incorpora idempotencia sobre la columna `id` existente y hace recuperables los dos widgets Turnstile.
+F1.1 original fue marcado **REQUIERE CORRECCIÓN** porque el honeypot backend responde éxito neutro sin persistir ni encolar, pero el frontend todavía podía interpretar ese éxito como autorización para enviar por la vía secundaria Web3Forms. La decisión arquitectónica no fue añadir otra condición especial, sino retirar Web3Forms por completo del flujo ejecutable.
+
+Arquitectura implementada después de esta corrección:
+
+```text
+Formulario
+→ /api/contact
+→ validación / Turnstile / idempotencia
+→ D1
+→ CONTACT_QUEUE
+```
+
+No existe un segundo proveedor client-side. Ambos formularios apuntan a `/api/contact`; se eliminaron los campos exclusivos de Web3Forms, su access key pública histórica y el segundo `fetch`. Un `ok=true` ejecuta únicamente el flujo visual de éxito ya existente.
+
+## Decisión aprobada para la arquitectura futura
+
+La siguiente topología está **APROBADA COMO OBJETIVO, PERO NO IMPLEMENTADA AÚN**:
+
+```text
+Formulario
+→ /api/contact
+→ D1
+→ CONTACT_QUEUE
+→ Worker
+   ├─→ Notion
+   └─→ Resend
+```
+
+- Notion continúa siendo el CRM operativo.
+- Resend se adoptará server-side detrás de Worker/Queue; nunca desde el navegador.
+- Make está aprobado para salir del camino crítico en un lote posterior, pero no debe desconectarse hasta disponer del reemplazo Worker → Notion probado y con rollback.
+- El mecanismo actual detrás de `CONTACT_QUEUE`, Make, Worker, Notion y Resend no fue modificado ni probado en esta corrección.
+- La referencia `sebaogalde.cl` aporta patrones de integración server-side, secretos privados, idempotencia, Notion API, Resend API y escape de contenido. Solaz no copiará exactamente esa topología: conserva D1 + Queue como capa adicional de resiliencia.
+
+## Alcance y estado acumulado de F1.1
+
+F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matriz frontend/backend, contexto interno seguro, idempotencia sobre `id`, Turnstile individual y feedback accesible. Esta corrección cambia solo el transporte ejecutable del formulario y su documentación; no cambia la carrocería ni el backend.
 
 **F1 NO ESTÁ CERRADO.** No se verificó ni modificó infraestructura real. La persistencia estructurada de `service_code`, `case_id` y `cta_id`, la decisión sobre persistencia estructurada adicional de `source_page`, la atribución externa y las pruebas en Preview/Cloudflare quedan para lotes posteriores expresamente autorizados.
 
 ## Archivos afectados
 
 - Creados: 0.
-- Modificados: 11: `src/contacto.njk`, `src/_data/pages.js`, `functions/api/contact.js`, los siete templates de servicio autorizados y `docs/IMPLEMENTATION_STATE.md`.
+- Modificados: 2: `src/contacto.njk` y `docs/IMPLEMENTATION_STATE.md`.
 - Eliminados: 0.
-- Archivos temporales: 0 al cierre; los dos artefactos locales de comprobación fueron eliminados antes del commit.
-- `src/_data/services.js`: leído e importado, no modificado.
-- `package.json`, `package-lock.json`, configuración, QA, rutas no autorizadas, media y demás archivos: intactos.
+- Archivos temporales: 0 al cierre; los artefactos locales de comprobación fueron eliminados antes del commit.
+- `functions/api/contact.js` y `src/_data/services.js`: leídos y comprobados, no modificados.
+- `package.json`, `package-lock.json`, configuración, QA, rutas, templates de servicios, media y demás archivos: intactos.
 
 ## Comportamiento implementado
 
@@ -76,7 +112,7 @@ F1.1 implementa la base local del nuevo flujo de contacto. Conserva los dos reco
 - La inserción usa una única sentencia `INSERT ... SELECT ... WHERE NOT EXISTS`; el resultado de D1 determina si se insertó la fila.
 - Una primera inserción encola una vez y responde `deduplicated=false`; un reintento con el mismo UUID no inserta ni encola de nuevo y responde `deduplicated=true`.
 - D1 sigue siendo la primera persistencia y Queue se ejecuta después como entrega best-effort; un fallo de Queue posterior no invalida el guardado.
-- Web3Forms permanece en frontend como aviso secundario best-effort solo después del éxito D1, no se reenvía al deduplicar y excluye `cf-turnstile-response`, `submission_id`, `form_type` y `botcheck`.
+- Web3Forms fue eliminado del flujo activo: no queda endpoint, credencial, campo exclusivo ni segundo envío en el frontend.
 - Honeypot conserva respuesta neutra sin Turnstile, INSERT ni Queue.
 - No se creó migración ni se cambió esquema o binding. `service_code`, `case_id` y `cta_id` se capturan y validan, pero **todavía no se persisten estructuralmente**. `source_page` solo aprovecha `origen_url` existente.
 
@@ -92,7 +128,27 @@ F1.1 implementa la base local del nuevo flujo de contacto. Conserva los dos reco
 
 ## Pruebas y resultados de F1.1
 
-### Precheck antes de escribir
+### F1.1-CORRECCIÓN definitiva
+
+- Precheck Git: PASS exacto. Repositorio `SolazStudio/solazstudio-web`, rama `develop`, working tree limpio, HEAD local y `origin/develop` en `b0c78bc3e75fb98ee8c316d84c465dee3f81f9e9`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Lecturas obligatorias: PASS; estado durable, Contacto, backend y taxonomía revisados antes de escribir.
+- `npm ci`: PASS prewrite; 129 paquetes instalados, sin errores.
+- `npm run build` prewrite: PASS; 24 páginas y 742 archivos copiados.
+- `npm run build` posterior: PASS; 24 HTML, 742 archivos copiados y 766 archivos públicos, sin rutas nuevas.
+- Ausencia de Web3Forms: PASS en `src/contacto.njk` y `_site/contacto.html`; sin dominio, `access_key`, access key histórica, `formDataWeb3` ni segundo fetch.
+- Flujo frontend estático: PASS; 2/2 formularios con `action="/api/contact"`, `method="POST"`, submit interceptado, un único fetch a `/api/contact`, éxito visual existente y Turnstile intacto.
+- `node --check functions/api/contact.js`: PASS; backend sin cambios.
+- JavaScript inline funcional extraído desde `_site/contacto.html`: PASS en `node --check`; temporal eliminado.
+- Mock backend A — honeypot: PASS; 0 Siteverify, 0 D1, 0 Queue y `ok=true`.
+- Mock backend B — lead nuevo: PASS; 1 Siteverify, 1 INSERT, 1 Queue, `ok=true` y `deduplicated=false`.
+- Mock backend C — duplicado: PASS; 1 intento D1, 0 Queue, `ok=true` y `deduplicated=true`.
+- Mock backend D — Turnstile inválido: PASS; 1 Siteverify, 0 D1, 0 Queue y HTTP 400.
+- No regresión F1.1: PASS acotado; dos selectores con opción vacía + 9 servicios, teléfono opcional, matriz general/reunión, “Solicitar reunión”, contexto, UUID, preselección, derivación de caso, Turnstile explícito/individual/reset, estados accesibles, idempotencia backend y 7 CTA parametrizados permanecen intactos.
+- Control de alcance: PASS; solo `src/contacto.njk` y `docs/IMPLEMENTATION_STATE.md`.
+- `package-lock.json`: intacto, SHA-256 `F7411FAE482A3FDC543C26245DDFD8F18B56897757D3573CD755D31CF37B671C`.
+- Recursos externos: no hubo POST real, Preview, Cloudflare, D1/Queue/Turnstile reales, Make, Notion, Worker ni Resend.
+
+### Evidencia del lote F1.1 original
 
 - Git: PASS exacto. Repositorio `SolazStudio/solazstudio-web`, rama `develop`, working tree limpio, HEAD local y `origin/develop` en `ea23b35f12bff012269ce4eda2ad43154252334b`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
 - Lecturas obligatorias: PASS; estado durable, taxonomía, Contacto, backend y siete templates revisados antes de modificar.
@@ -120,7 +176,11 @@ F1.1 implementa la base local del nuevo flujo de contacto. Conserva los dos reco
 - Alcance, diff completo, estadística y nombres: PASS; solo los 11 archivos autorizados.
 - `package-lock.json`: intacto después de instalación y pruebas.
 
-## Cambios intencionales visibles
+## Cambios visuales
+
+Esta corrección no introduce cambios visuales ni de UX: diseño, estilos, campos, mensajes, estados, tabs, accesibilidad, contexto y Turnstile permanecen iguales. Los únicos cambios ejecutables son internos: destino nativo del formulario y eliminación de la segunda vía client-side.
+
+### Cambios visibles acumulados del F1.1 original
 
 - Dos selectores de servicio integrados con el estilo actual.
 - Teléfono marcado como opcional.
@@ -133,7 +193,7 @@ No se rediseñó la página ni se modificaron identidad, navegación, footer, pr
 ## Limitaciones, pendientes y prohibiciones vigentes
 
 - No hubo prueba visual/manual en navegador, responsive manual ni lector de pantalla; el foco y ARIA se verificaron por análisis local.
-- No se probó Turnstile real, POST real, Web3Forms real, D1 real ni Queue real.
+- No se probó Turnstile real, POST real, D1 real ni Queue real.
 - No se desplegó en Preview ni Production; no hubo acciones en Cloudflare, DNS, Ads, analítica o recursos externos.
 - Antes de cerrar F1 falta verificar el esquema D1 real y definir/aplicar la persistencia estructurada de `service_code`, `source_page` si corresponde, `case_id` y `cta_id`.
 - Falta decidir la atribución externa completa bajo reglas de privacidad.
@@ -143,9 +203,14 @@ No se rediseñó la página ni se modificaron identidad, navegación, footer, pr
 
 ## Rollback
 
-Todo F1.1 queda contenido en un único commit de `develop`. Rollback previsto: revertir ese commit; no ejecutarlo salvo instrucción posterior.
+Esta corrección queda contenida en un único commit de `develop` con mensaje `fix: remove Web3Forms from contact flow`. Rollback previsto: revertir únicamente ese commit; no ejecutarlo salvo instrucción posterior.
 
 ## Evidencia durable anterior
+
+### F1.1 original
+
+- Commit: `b0c78bc3e75fb98ee8c316d84c465dee3f81f9e9` (`feat: implement F1 contact flow foundation`).
+- Implementó formulario, contexto, validación local, Turnstile individual e idempotencia, pero ChatGPT exigió esta corrección por la vía secundaria Web3Forms activable tras el éxito neutro del honeypot.
 
 ### F0 + C0.2
 
@@ -166,26 +231,35 @@ Todo F1.1 queda contenido en un único commit de `develop`. Rollback previsto: r
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F1.1 — Formulario, contexto y validación local.
+- Lote: F1.1-CORRECCIÓN — eliminar Web3Forms.
 - Fecha: 2026-09-04.
-- Precheck: PASS exacto; repo/rama/limpieza y refs coincidieron, lecturas completas, `npm ci` PASS final y `npm run qa` prewrite PASS.
-- Base exacta: `develop`/`origin/develop` en `ea23b35f12bff012269ce4eda2ad43154252334b`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
-- Trabajo realizado: taxonomía conectada a ambos formularios; matriz alineada; teléfono opcional; reunión como solicitud; contexto interno seguro; siete CTA parametrizados; UUID/idempotencia; Turnstile explícito e individual; feedback accesible; D1/Queue/Web3Forms ordenados según contrato.
-- Archivos: 0 creados, 11 modificados y 0 eliminados; temporales eliminados.
-- Decisiones técnicas: data global única; validación frontend/backend; path interno canónico; `contacts.id` para UUID; inserción condicional atómica; Queue solo tras inserción; aviso secundario omitido al deduplicar; sin migración.
-- Referencia `sebaogalde.cl`: ref `main` accesible, pero sin los tres paths solicitados; referencia exacta no disponible y ningún código copiado.
-- Comandos: verificaciones Git/remoto; lecturas; `npm ci`; `npm run qa` prewrite; `npm run build`; dos `node --check`; extracción/check/eliminación de JS inline; import backend; prueba local temporal; controles de diff, lockfile y salida.
-- Pruebas: build/inventario PASS; sintaxis/import PASS; taxonomía 2/2 PASS; matriz/contexto/reunión/Turnstile estático PASS; CTA 7/7 PASS; mock backend 10/10 PASS; límites adicionales 6/6 PASS; diff/alcance/lock PASS.
-- Mock backend: Siteverify, D1 y Queue fueron mocks locales; ninguna petición real. Se cubrieron los diez casos obligatorios, incluidos honeypot y deduplicación sin segunda escritura/Queue.
-- Errores: `npm ci` encontró bloqueos locales `EBUSY` en `node_modules/`; se eliminó solo esa carpeta generada autorizada y la repetición pasó. La referencia exacta no contenía los paths solicitados.
-- Limitaciones: sin navegador/QA visual real, Preview, Cloudflare, Turnstile/Web3Forms/D1/Queue reales ni persistencia estructurada completa de contexto.
-- Desviaciones: ninguna material de alcance; no se modificaron archivos ni recursos fuera de los autorizados.
-- Cambios visibles intencionales: selectores de servicio, teléfono opcional, copy funcional de reunión y estados accesibles; href contextual de siete CTA con texto intacto.
-- Expresamente no implementado: F1.2/F2, migraciones/columnas, atribución externa/tracking, página IA, rutas/CTA nuevos, agenda real, action/hostname Turnstile, deploy, PR, merge o cambios a `main`/Production.
-- Commit: único commit del lote con mensaje `feat: implement F1 contact flow foundation`; el SHA se verifica en el informe final externo porque un commit no puede registrar dentro de sí su propio identificador.
+- Precheck: PASS exacto; repositorio, rama, limpieza y refs coincidieron; lecturas obligatorias completas; `npm ci` y build prewrite PASS.
+- Repositorio: `SolazStudio/solazstudio-web`.
+- Rama: `develop`.
+- Base exacta: HEAD local y `origin/develop` en `b0c78bc3e75fb98ee8c316d84c465dee3f81f9e9`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Defecto corregido: el éxito neutro del honeypot podía habilitar el aviso secundario Web3Forms desde el frontend.
+- Decisión arquitectónica: eliminar completamente Web3Forms del navegador; flujo implementado `Formulario → /api/contact → D1 → CONTACT_QUEUE`.
+- Archivos: 0 creados, 2 modificados (`src/contacto.njk` y este documento) y 0 eliminados; temporales eliminados.
+- Cambios exactos: 2/2 formularios ahora usan `action="/api/contact"`; se retiraron dos `access_key`, dos `subject` exclusivos, la access key histórica, `formDataWeb3`, el segundo fetch y comentarios que describían Web3Forms como activo.
+- Cambios visuales: ninguno. Campos, required, copy visible, éxito/error, estilos, tabs, contexto, Turnstile e identidad permanecen intactos.
+- Ausencia de Web3Forms: PASS total en fuente y HTML generado; no queda dominio, credencial, campo exclusivo ni vía secundaria ejecutable.
+- Build: PASS prewrite y posterior; 24 HTML, 742 archivos copiados y 766 públicos, sin rutas nuevas.
+- Sintaxis: backend PASS sin modificación; JavaScript inline generado PASS y temporal eliminado.
+- Mocks A/B/C/D: PASS. A honeypot = 0 Siteverify/0 D1/0 Queue/`ok=true`; B nuevo = 1/1/1/`deduplicated=false`; C duplicado = 1 intento D1/0 Queue/`deduplicated=true`; D Turnstile inválido = 1 Siteverify/0 D1/0 Queue/HTTP 400.
+- No regresión: PASS acotado sobre los controles F1.1 requeridos, incluidos taxonomía, matriz, contexto, Turnstile, accesibilidad, idempotencia y siete CTA.
+- `package-lock.json`: intacto, SHA-256 `F7411FAE482A3FDC543C26245DDFD8F18B56897757D3573CD755D31CF37B671C`.
+- Make: no tocado ni desactivado. Está aprobado para salir del camino crítico solo en un lote posterior con reemplazo probado.
+- Notion: no tocado; sigue siendo el CRM operativo.
+- Resend: no implementado; objetivo futuro server-side detrás de Worker/Queue.
+- Recursos reales: Cloudflare, Preview, Production, D1, Queue, Turnstile, Worker y demás integraciones no fueron tocados ni probados.
+- Errores encontrados: ninguno en producto, instalación o build. La primera ejecución del verificador temporal contó también una referencia JavaScript al selector Turnstile como si fuese un tercer contenedor; se acotó el conteo a elementos `<div>`, la repetición pasó y el temporal fue eliminado.
+- Desviaciones: ninguna.
+- Limitaciones: pruebas locales/estáticas y mocks; sin POST real, navegador/QA visual manual, infraestructura o integraciones reales.
+- Pendientes: persistencia estructurada de `service_code`, `case_id`, `cta_id`; decisión sobre `source_page`; atribución bajo privacidad; Preview; Turnstile/POST reales; evidencia D1/Queue; Worker → Notion/Resend; migración posterior de Make; QA visual/manual.
+- Commit: único commit correctivo con mensaje `fix: remove Web3Forms from contact flow`; el SHA se verifica en el informe final externo porque un commit no puede registrar dentro de sí su propio identificador.
 - Push: exclusivamente a `origin/develop`, sujeto a la verificación final posterior al commit.
 - Working tree final: debe quedar limpio tras el commit/push y se verifica en el informe final externo.
 - Estado de main: debe permanecer en `880610411ecb4d66f652e8bfaf89e5794231409d` y se verifica después del push.
-- Criterio de cierre del sublote: cumplido localmente; F1.1 queda listo para revisión de ChatGPT cuando terminen commit, push y comprobaciones remotas.
-- Pendientes F1.2: esquema/persistencia estructurada D1, atribución bajo privacidad, Preview, recursos reales controlados y QA visual/manual, todo sujeto a nueva autorización.
+- Estado de F1: ABIERTO. Esta corrección no inicia F1.2, migración Make, Worker ni Resend.
+- Criterio de cierre: corrección local cumplida; queda lista para revisión de ChatGPT tras commit, push y verificación remota.
 - Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT

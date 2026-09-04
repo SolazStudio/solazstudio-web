@@ -498,11 +498,9 @@ permalink: "contacto.html"
         <button type="button" class="tab-btn" data-tab="reunion" aria-pressed="false" aria-controls="tab-reunion" id="tabbtn-reunion">Solicitar reunión</button>
       </div>
 
-      <!-- TAB 1: Formulario de contacto (Web3Forms) -->
+      <!-- TAB 1: Formulario de contacto -->
       <div class="form-panel active" id="tab-mensaje">
-        <form id="formMensaje" action="https://api.web3forms.com/submit" method="POST">
-          <input type="hidden" name="access_key" value="e2f133c1-ad94-45ad-b922-b354f4ce2f52">
-          <input type="hidden" name="subject" value="Nuevo mensaje — Solaz Studio">
+        <form id="formMensaje" action="/api/contact" method="POST">
           <input type="hidden" name="form_type" value="mensaje">
           <input type="hidden" name="source_page" value="">
           <input type="hidden" name="case_id" value="">
@@ -579,9 +577,7 @@ permalink: "contacto.html"
           Una videollamada de 15 minutos, sin compromiso. Cuéntanos en qué estás y evaluamos juntos cómo podemos ayudarte. Envíanos tu disponibilidad y confirmaremos el horario después; esta solicitud no constituye una reserva automática.
         </p>
 
-        <form id="formReunion" action="https://api.web3forms.com/submit" method="POST">
-          <input type="hidden" name="access_key" value="e2f133c1-ad94-45ad-b922-b354f4ce2f52">
-          <input type="hidden" name="subject" value="Solicitud de reunión — Solaz Studio">
+        <form id="formReunion" action="/api/contact" method="POST">
           <input type="hidden" name="form_type" value="reunion">
           <input type="hidden" name="source_page" value="">
           <input type="hidden" name="case_id" value="">
@@ -851,7 +847,7 @@ permalink: "contacto.html"
       return true;
     }
 
-    // D1 es la fuente de verdad; Web3Forms permanece como aviso secundario.
+    // El envío se procesa exclusivamente en /api/contact; D1 es la fuente de verdad.
     function handleForm(formId, successId) {
       const form = document.getElementById(formId);
       const success = document.getElementById(successId);
@@ -888,19 +884,6 @@ permalink: "contacto.html"
             );
             resetTurnstile(form, verificationFailed ? 'Completa nuevamente la verificación antispam.' : '');
             return;
-          }
-
-          if (!data.deduplicated) {
-            const formDataWeb3 = new FormData(form);
-            formDataWeb3.delete('form_type');
-            formDataWeb3.delete('cf-turnstile-response');
-            formDataWeb3.delete('submission_id');
-            formDataWeb3.delete('botcheck');
-            fetch(form.action, {
-              method: 'POST',
-              body: formDataWeb3,
-              headers: { 'Accept': 'application/json' },
-            }).catch(() => {});
           }
 
           form.hidden = true;
