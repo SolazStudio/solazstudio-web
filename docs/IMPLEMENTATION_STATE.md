@@ -1,19 +1,44 @@
 # Estado de implementación
 
 - Fecha: 2026-09-04
-- Fase/lote: F1.2 — Persistencia estructurada del contexto del lead
+- Fase/lote: F1.3 — Aplicación controlada de migración en D1 real
 - Estado: COMPLETADO PARA REVISIÓN DE CHATGPT
 - Rama: `develop`
-- Commit base: `c21d4be162952e367850bea91c465ad7eb0ec08b`
-- Commit del lote: único commit que contiene este documento, con mensaje `feat: persist contact context in D1`
+- Commit base: `cb2ddb768a59d293cc280791de7251b1ce2168c2`
+- Commit del lote: único commit que contiene este documento, con mensaje `ops: apply contact context migration to D1`
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Preview / Cloudflare / recursos reales: sin acciones en este lote
+- Preview / Cloudflare / recursos reales: únicamente D1 `solaz-contactos`; Preview, Production web y demás recursos intactos
 - Bloqueadores: ninguno
 - Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización
 
+## F1.3 — Aplicación controlada de migración en D1 real
+
+F1.3 aplicó una sola vez la migración aditiva versionada `migrations/0001_add_contact_context.sql` sobre la D1 real `solaz-contactos`. No se ejecutó `migrations apply`, no se desplegó código y no se modificó ningún otro recurso de Cloudflare o integración externa.
+
+Evidencia previa a la escritura:
+
+- Base Git exacta y árbol limpio: HEAD local y `origin/develop` en `cb2ddb768a59d293cc280791de7251b1ce2168c2`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Wrangler autenticado mediante OAuth y una sola cuenta disponible.
+- Inventario D1: una sola base, con nombre exacto `solaz-contactos`.
+- Bookmark de Time Travel previo: `000019ae-00000000-000050dc-66e15a75728c69361e3adb40fa94e7b1`.
+- `PRAGMA table_info("contacts")`: las 19 columnas conocidas estaban presentes y `service_code`, `source_page`, `case_id` y `cta_id` no existían.
+- `SELECT COUNT(*) AS total FROM contacts;`: `total = 8`.
+
+Aplicación y evidencia posterior:
+
+- Comando único de escritura: `npx wrangler d1 execute solaz-contactos --remote --file migrations/0001_add_contact_context.sql --yes`.
+- Resultado: PASS; 4 consultas procesadas en una sola ejecución.
+- Bookmark posterior informado por D1: `000019ae-00000004-000050dc-6103293222cdcf1ae096da4a1252cf21`.
+- Esquema final: 23 columnas. Las cuatro nuevas son `TEXT`, permiten `NULL` y no tienen default.
+- Conteo final: `total = 8`; no disminuyó respecto del conteo previo.
+- Conteos no nulos: `service_code = 0`, `source_page = 0`, `case_id = 0`, `cta_id = 0`, conforme a la preservación esperada de las filas históricas.
+- No se leyeron filas ni datos personales; solo esquema y agregados autorizados.
+- No se realizó POST real.
+- Único recurso externo modificado: D1 `solaz-contactos`. Queue, Worker, Make, Notion, Resend, Turnstile, Preview, Production web, DNS, Ads y analítica permanecieron intactos.
+
 ## F1.2 — Persistencia estructurada del contexto
 
-F1.2 deja versionado y probado localmente el almacenamiento estructurado de `service_code`, `source_page`, `case_id` y `cta_id` en `contacts`. No se ejecutó la migración contra D1 real ni se tocó Cloudflare, Preview o Production.
+F1.2 dejó versionado y probado localmente el almacenamiento estructurado de `service_code`, `source_page`, `case_id` y `cta_id` en `contacts`. La aplicación posterior a D1 real corresponde exclusivamente a F1.3.
 
 La evidencia real de solo lectura suministrada para diseñar el lote mostró 19 columnas existentes en Production: `id`, `created_at`, `form_type`, `nombre`, `empresa`, `email`, `telefono`, `mensaje`, `presupuesto`, `consent_marketing`, `dias`, `horario`, `origen_url`, `sync_status`, `notion_page_id`, `retry_count`, `last_error`, `synced_at` y `alerted`. No existían las cuatro columnas de contexto.
 
@@ -73,17 +98,17 @@ Formulario
 
 ## Alcance y estado acumulado de F1
 
-F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matriz frontend/backend, contexto interno seguro, idempotencia sobre `id`, Turnstile individual y feedback accesible. F1.2 añade únicamente el esquema local versionado y los bindings backend de contexto; no cambia frontend ni carrocería.
+F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matriz frontend/backend, contexto interno seguro, idempotencia sobre `id`, Turnstile individual y feedback accesible. F1.2 añadió el esquema local versionado y los bindings backend de contexto; F1.3 aplicó únicamente ese esquema aditivo a la D1 real.
 
-**F1 SIGUE ABIERTO.** La migración todavía no fue aplicada a D1 real. Preview, integraciones, atribución externa y QA real/manual quedan para lotes posteriores expresamente autorizados.
+**F1 SIGUE ABIERTO.** La migración ya fue aplicada a D1 real, pero Preview, Turnstile/POST reales, evidencia de escritura de un lead nuevo, Queue, integraciones, atribución externa y QA real/manual quedan para lotes posteriores expresamente autorizados.
 
 ## Archivos afectados
 
-- Creados: 1: `migrations/0001_add_contact_context.sql`.
-- Modificados: 2: `functions/api/contact.js` y `docs/IMPLEMENTATION_STATE.md`.
+- Creados: 0.
+- Modificados: 1: `docs/IMPLEMENTATION_STATE.md`.
 - Eliminados: 0.
-- Archivos temporales: 0 al cierre; prueba SQLite, mocks y manifiestos fueron eliminados antes del commit.
-- `src/contacto.njk`, `src/_data/services.js`, `package.json`, `package-lock.json`, QA/paridad, superficie pública, configuración, templates, media y demás archivos: intactos.
+- Archivos temporales: 0.
+- `migrations/0001_add_contact_context.sql`, `functions/api/contact.js`, `src/contacto.njk`, `src/_data/services.js`, `package.json`, `package-lock.json`, QA/paridad, superficie pública, configuración, templates, media y demás archivos: intactos.
 
 ## Comportamiento implementado
 
@@ -137,7 +162,7 @@ F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matri
 - D1 sigue siendo la primera persistencia y Queue se ejecuta después como entrega best-effort; un fallo de Queue posterior no invalida el guardado.
 - Web3Forms fue eliminado del flujo activo: no queda endpoint, credencial, campo exclusivo ni segundo envío en el frontend.
 - Honeypot conserva respuesta neutra sin Turnstile, INSERT ni Queue.
-- La inserción nueva persiste estructuralmente `service_code`, `source_page`, `case_id` y `cta_id` cuando la migración esté aplicada; `origen_url` se conserva por compatibilidad. En este lote la migración existe solo en el repositorio y en pruebas SQLite locales: D1 real permanece intacto.
+- La inserción nueva persiste estructuralmente `service_code`, `source_page`, `case_id` y `cta_id`; `origen_url` se conserva por compatibilidad. F1.3 confirmó que las cuatro columnas ya existen en D1 real. No se desplegó el backend ni se realizó un POST real en este lote.
 
 ### Turnstile y accesibilidad
 
@@ -150,6 +175,20 @@ F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matri
 - El botón se deshabilita durante el envío y recupera su contenido/estado para reintentar.
 
 ## Pruebas y resultados de F1
+
+### F1.3 — Aplicación controlada de migración D1
+
+- Precheck Git: PASS exacto; rama `develop`, árbol limpio, HEAD local y `origin/develop` en `cb2ddb768a59d293cc280791de7251b1ce2168c2`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Autenticación/cuenta: PASS; OAuth válido y una sola cuenta disponible.
+- Identificación D1: PASS; una única base llamada exactamente `solaz-contactos`.
+- Time Travel previo: PASS; bookmark `000019ae-00000000-000050dc-66e15a75728c69361e3adb40fa94e7b1` obtenido antes de escribir.
+- Esquema previo: PASS; 19 columnas esperadas y ausencia confirmada de las cuatro columnas nuevas.
+- Conteo previo: PASS; `total = 8`.
+- Archivo de migración y árbol limpio inmediatamente antes de escribir: PASS.
+- Ejecución remota única: PASS; 4 consultas procesadas, sin corrección ni repetición.
+- Esquema posterior: PASS; 23 columnas y las cuatro nuevas como `TEXT`, anulables y sin default.
+- Conteos posteriores: PASS; `total = 8` y cero valores no nulos en cada columna nueva.
+- Privacidad y alcance: PASS; no se leyeron datos personales, no hubo POST real y no se tocó ningún recurso externo salvo D1 `solaz-contactos`.
 
 ### F1.2 — Persistencia estructurada
 
@@ -220,7 +259,7 @@ F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matri
 
 ## Cambios visuales
 
-F1.2 no introduce cambios visuales ni de UX: la salida pública completa es byte a byte idéntica al baseline prewrite de `develop`. Diseño, estilos, campos, mensajes, estados, tabs, accesibilidad, contexto visible y Turnstile permanecen iguales.
+F1.3 no introduce cambios visuales ni de UX y no ejecutó build, despliegue o Preview. Diseño, estilos, campos, mensajes, estados, tabs, accesibilidad, contexto visible y Turnstile permanecen iguales al cierre de F1.2.
 
 ### Cambios visibles acumulados del F1.1 original
 
@@ -235,19 +274,24 @@ No se rediseñó la página ni se modificaron identidad, navegación, footer, pr
 ## Limitaciones, pendientes y prohibiciones vigentes
 
 - No hubo prueba visual/manual en navegador, responsive manual ni lector de pantalla; el foco y ARIA se verificaron por análisis local.
-- No se probó Turnstile real, POST real, D1 real ni Queue real.
-- No se desplegó en Preview ni Production; no hubo acciones en Cloudflare, DNS, Ads, analítica o recursos externos.
-- La evidencia del esquema D1 real fue suministrada en lectura, pero la migración versionada todavía debe aplicarse mediante un procedimiento controlado y autorizado antes de que el backend desplegado pueda usar las cuatro columnas.
+- No se probó Turnstile real, POST real, escritura de lead nuevo en D1 ni Queue real.
+- No se desplegó en Preview ni Production; dentro de Cloudflare solo se modificó la D1 `solaz-contactos`. DNS, Ads, analítica y demás recursos externos permanecieron intactos.
+- La migración versionada ya está aplicada en D1 real y el esquema fue verificado; todavía no existe evidencia autorizada de un POST real que ejercite los cuatro bindings.
 - Falta decidir la atribución externa completa bajo reglas de privacidad.
-- Faltan Preview, Turnstile real, POST controlado, confirmación de escritura única D1, Queue real, Worker consumidor, Notion, Resend, reemplazo posterior de Make y QA visual/manual.
+- Faltan Preview, Turnstile real, POST controlado, confirmación de escritura única de un lead nuevo en D1, Queue real, Worker consumidor, Notion, Resend, reemplazo posterior de Make y QA visual/manual.
 - No crear página/URL/oferta de IA, landings, subservicios, tracking o nuevas rutas sin autorización.
 - No iniciar otro lote ni F2, modificar `main`, hacer merge/PR/rama/force push o tocar Production/Cloudflare/recursos reales sin nueva autorización.
 
 ## Rollback
 
-F1.2 queda contenido en un único commit de `develop` con mensaje `feat: persist contact context in D1`. No hay rollback de datos porque la migración no se aplicó a D1 real. Rollback previsto: revertir únicamente el commit F1.2; no ejecutarlo salvo instrucción posterior.
+F1.3 deja un único cambio documental en `develop` con mensaje `ops: apply contact context migration to D1`. La migración D1 es aditiva y las columnas nuevas son anulables, por lo que no altera los valores históricos. El bookmark previo registrado es `000019ae-00000000-000050dc-66e15a75728c69361e3adb40fa94e7b1`; una restauración Time Travel revertiría también cualquier cambio posterior en la base y no está autorizada. No ejecutar rollback documental ni remoto sin una instrucción expresa y un nuevo precheck.
 
 ## Evidencia durable anterior
+
+### F1.2
+
+- Commit: `cb2ddb768a59d293cc280791de7251b1ce2168c2` (`feat: persist contact context in D1`).
+- Versionó y validó localmente la migración aditiva y los bindings backend de contexto, sin aplicar entonces cambios a D1 real.
 
 ### F1.1-CORRECCIÓN
 
@@ -278,35 +322,31 @@ F1.2 queda contenido en un único commit de `develop` con mensaje `feat: persist
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F1.2 — Persistencia estructurada del contexto del lead.
+- Lote: F1.3 — Aplicación controlada de migración en D1 real.
 - Fecha: 2026-09-04.
-- Objetivo: preparar y probar localmente la persistencia D1 estructurada de `service_code`, `source_page`, `case_id` y `cta_id`, sin aplicar cambios a infraestructura real.
-- Precheck: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, árbol limpio, HEAD y `origin/develop` en `c21d4be162952e367850bea91c465ad7eb0ec08b`, `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`, y lecturas obligatorias completas.
-- Bloqueo anterior: el encargo original exigía `npm run qa`, cuyo verificador histórico compara frontend/functions con `main` y rechaza F1.1. El encargo corregido eliminó ese gate; QA, configuración y baseline no fueron modificados.
-- Trabajo: migración aditiva creada; backend ampliado para enlazar los cuatro valores ya validados; fallback seguro de `source_page` desde Referer Solaz; `origen_url`, idempotencia y Queue conservados.
-- Archivos: 1 creado (`migrations/0001_add_contact_context.sql`), 2 modificados (`functions/api/contact.js`, `docs/IMPLEMENTATION_STATE.md`) y 0 eliminados.
-- Decisiones: cuatro columnas `TEXT` anulables y sin default; pathname interno estructurado; URL canónica compatible en `origen_url`; `case_id`/`cta_id` opcionales; servicio exacto de la taxonomía; sin inferencias ni valores artificiales.
-- Evidencia de esquema: se utilizó el `PRAGMA table_info("contacts")` real suministrado, con 19 columnas existentes y ausencia confirmada de las cuatro nuevas. No se consultó D1 desde este lote.
-- Comandos: verificaciones Git; lecturas; `npm ci`; build pre/post; generación y comparación SHA-256 de manifiestos; `node --check`; prueba SQLite en memoria; mocks backend A–I; controles de diff, alcance, lockfile y temporales.
-- Instalación: PASS final con 129 paquetes. Un primer intento tuvo `EBUSY` transitorio en `node_modules/.bin`; la repetición segura pasó sin tocar versionados.
-- Build prewrite: PASS, 24 páginas y 742 archivos copiados.
-- Build posterior: PASS, 24 páginas y 742 archivos copiados.
-- Comparación `_site`: PASS byte a byte, 766/766 archivos con rutas y SHA-256 idénticos; hash de ambos manifiestos `df35b8dd62c40bf5274dc03a04cbb871e61b8decfe676d14e84fe57e5c1ed6aa`.
-- Sintaxis backend: PASS.
-- Migración SQLite local: PASS; cuatro columnas existentes como `TEXT`, `NULL` permitido, sin defaults, fila histórica intacta y nueva inserción con contexto exitosa.
-- Mocks backend: PASS 9/9 (A–I): lead completo, opcionales nulos, source explícito, fallback Referer, ausencia de origen, contexto inválido, duplicado, honeypot y Turnstile inválido.
-- Idempotencia: PASS; primera inserción 1 fila/1 Queue/`deduplicated=false`; reintento 0 filas nuevas/0 Queue adicional/`deduplicated=true`.
-- Queue: PASS; conserva exclusivamente `CONTACT_QUEUE.send({ id: submissionId })`.
-- `package-lock.json`: intacto, SHA-256 `F7411FAE482A3FDC543C26245DDFD8F18B56897757D3573CD755D31CF37B671C`.
-- Errores: `EBUSY` transitorio resuelto por repetición. En la prueba temporal, `node:sqlite` devolvió objetos con prototipo nulo y `sync_status` era literal SQL, no binding; se corrigieron solo las aserciones del harness y la batería completa pasó.
-- Limitaciones: migración preparada y probada únicamente en SQLite local; no demuestra todavía ejecución D1 real ni integraciones desplegadas.
+- Objetivo: aplicar exclusivamente `migrations/0001_add_contact_context.sql` sobre la D1 real `solaz-contactos`, con prechecks, bookmark previo y validación posterior sin datos personales.
+- Precheck Git: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, árbol limpio, HEAD local y `origin/develop` en `cb2ddb768a59d293cc280791de7251b1ce2168c2`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Autenticación: PASS; sesión OAuth válida, sin repetir el login, y una sola cuenta Cloudflare disponible.
+- Identificación D1: PASS; inventario con una sola base llamada exactamente `solaz-contactos`.
+- Bookmark previo: `000019ae-00000000-000050dc-66e15a75728c69361e3adb40fa94e7b1`.
+- Esquema previo: PASS; `PRAGMA table_info("contacts")` devolvió exactamente las 19 columnas conocidas y confirmó la ausencia de `service_code`, `source_page`, `case_id` y `cta_id`.
+- Conteo previo: `total = 8`, obtenido únicamente mediante `SELECT COUNT(*) AS total FROM contacts;`.
+- Migración: PASS en una sola ejecución de `npx wrangler d1 execute solaz-contactos --remote --file migrations/0001_add_contact_context.sql --yes`; 4 consultas procesadas.
+- Bookmark posterior informado: `000019ae-00000004-000050dc-6103293222cdcf1ae096da4a1252cf21`.
+- Esquema posterior: PASS; 23 columnas totales y las cuatro nuevas como `TEXT`, anulables y sin default.
+- Conteos posteriores: PASS; `total = 8`, `service_code_con_valor = 0`, `source_page_con_valor = 0`, `case_id_con_valor = 0`, `cta_id_con_valor = 0`.
+- Integridad histórica: PASS; el total no disminuyó y las filas previas conservaron `NULL` en las columnas nuevas.
+- Privacidad: PASS; no se leyeron filas ni datos personales, solo metadata de esquema y conteos agregados.
+- POST real: no realizado, conforme al alcance.
+- Archivos: 0 creados, 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados.
+- Pruebas de sitio/build: no ejecutadas; F1.3 no modifica código ni salida pública y el encargo limitó el lote a D1 y documentación.
 - Desviaciones: ninguna.
-- Recursos externos tocados: NINGUNO. Production, Cloudflare, Preview, D1/Queue reales, Turnstile, Worker, Make, Notion, Resend, DNS y Ads permanecen intactos.
-- Commit: único commit con mensaje exacto `feat: persist contact context in D1`; el SHA se verifica en el informe final externo porque un commit no puede registrar dentro de sí su propio identificador.
+- Recursos externos tocados: únicamente D1 `solaz-contactos`. Queue, Worker, Make, Notion, Resend, Turnstile, Preview, Production web, DNS, Ads y analítica permanecen intactos.
+- Commit: único commit con mensaje exacto `ops: apply contact context migration to D1`; el SHA se verifica en el informe final externo porque un commit no puede registrar dentro de sí su propio identificador.
 - Push: exclusivamente a `origin/develop`, sujeto a la verificación final posterior al commit.
 - Working tree final: debe quedar limpio tras el commit/push y se verifica en el informe final externo.
 - Estado de main: debe permanecer en `880610411ecb4d66f652e8bfaf89e5794231409d` y se verifica después del push.
-- Criterio de cierre: migración versionada y validada localmente, backend preparado, salida pública idéntica, alcance exacto y pruebas completas; sujeto a commit/push/verificación remota.
-- Pendientes: aplicación controlada de migración real; Preview; Turnstile/POST reales; evidencia D1/Queue; Worker consumidor; Notion; Resend; reemplazo posterior de Make; atribución externa; QA visual/manual; cierre completo de F1.
+- Criterio de cierre: migración aplicada una sola vez, esquema y conteos verificados, documentación durable actualizada y alcance externo exacto; sujeto a commit/push/verificación remota.
+- Pendientes: Preview; Turnstile/POST reales; evidencia de escritura única de un lead nuevo en D1; Queue real; Worker consumidor; Notion; Resend; reemplazo posterior de Make; atribución externa; QA visual/manual; cierre completo de F1.
 - Estado de F1: ABIERTO.
 - Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
