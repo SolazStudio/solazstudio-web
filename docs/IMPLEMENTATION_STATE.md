@@ -14,11 +14,11 @@
 
 ## Preview y aislamiento
 
-- Preview correspondiente a `develop`, configurada manualmente con `npm run build` y directorio de salida `_site`.
-- Sin variables ni secretos configurados.
-- Sin D1 ni Queue vinculados.
-- Sin integraciones reales observadas que puedan contaminar Production.
-- Preview continúa separada de Production; Production, DNS, Ads y `main` no fueron modificados.
+- Durante SETUP-0.3, la configuración de Preview en Cloudflare fue modificada manualmente únicamente para establecer el comando `npm run build` y el directorio de salida `_site`.
+- Esa modificación afectó exclusivamente a la configuración de Preview correspondiente a `develop`.
+- Preview permanece aislada: sin variables ni secretos configurados, y sin D1 ni Queue vinculados.
+- Production, `main`, DNS, Ads, D1 de Production, Queue de Production, secretos reales y Turnstile real no fueron modificados.
+- Durante el cierre posterior a esa configuración manual, Codex no realizó nuevas acciones en Cloudflare; solo ejecutó comprobaciones y actualizó documentación.
 - Turnstile no está operativo en Preview como consecuencia esperada del aislamiento. No se considera un bug de SETUP-0 y no se añadieron claves, secretos ni autorización del hostname.
 - No se realizaron POST ni envíos de formulario.
 
@@ -45,7 +45,10 @@
 ## Cambios y rollback
 
 - Archivo modificado: únicamente `docs/IMPLEMENTATION_STATE.md`.
-- Código, plantillas, CSS, JavaScript, contenido, backend y configuración de Cloudflare modificados: Ninguno.
+- Código, plantillas, CSS, JavaScript, contenido y backend modificados: Ninguno.
+- Configuración de Preview en Cloudflare durante SETUP-0.3: SÍ, modificada manualmente solo para establecer `npm run build` y `_site`.
+- Alcance de esa modificación: exclusivamente Preview; no afectó Production, `main`, DNS, Ads, D1 de Production, Queue de Production, secretos reales ni Turnstile real.
+- Durante esta corrección documental, Codex no realizó acciones en Cloudflare.
 - Rollback: retirar o desactivar la Preview, o revertir su configuración de Preview, sin tocar Production.
 
 ## Pendientes y prohibiciones vigentes
@@ -57,19 +60,16 @@
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: SETUP-0.3.
-- Preflight: PASS exacto sobre `develop` en `b11d4126432af63384baf3b7f0737cbfaed2472c`.
-- Pruebas: `npm ci` PASS final; `npm run qa` PASS final; sintaxis backend PASS; `git diff --check` PASS.
-- Smoke test: PASS; 24/24 rutas, 4/4 assets, robots y sitemap correctos; ruta inexistente con 404.
-- Evidencia manual recibida: Home, navegación, Portafolio, proyecto, Contacto, modos del formulario y responsive/móvil verificados por Seba.
-- Estado de Preview: operativa en <https://374f0f05.solazstudio-web.pages.dev/> con build `npm run build` y salida `_site`.
-- Aislamiento: sin variables/secretos, D1, Queue ni integraciones reales observadas; separada de Production.
-- Limitación Turnstile esperada: widget no operativo en Preview por aislamiento; no se corrigió ni configuró.
-- Archivos modificados: exclusivamente `docs/IMPLEMENTATION_STATE.md`.
-- Commit: `docs: close SETUP-0 preview validation`, único commit documental de este lote; su SHA se captura y verifica tras crearlo.
-- Push: únicamente `develop` a `origin/develop`, con verificación remota inmediatamente posterior.
-- Working tree final: debe quedar limpio y se verifica después del push.
-- Main intacta: SÍ, en `880610411ecb4d66f652e8bfaf89e5794231409d`.
-- Production intacta: SÍ; Cloudflare, DNS y Ads sin acciones.
+- Lote: CORRECCIÓN DOCUMENTAL SETUP-0.3.
+- Precheck: PASS exacto sobre `develop`; HEAD local y `origin/develop` en `904e8a834ba1b739a51458c4bd3896c9654388ce`, `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d` y working tree limpio.
+- Corrección: se eliminó la contradicción documental sobre la configuración de Cloudflare sin alterar los resultados válidos del cierre SETUP-0.3.
+- Hecho corregido: durante SETUP-0.3, la configuración de Preview en Cloudflare fue modificada manualmente para usar `npm run build` y el directorio de salida `_site`.
+- Alcance: la modificación afectó exclusivamente a Preview; su aislamiento sin variables, secretos, D1 ni Queue vinculados se mantiene, y Turnstile continúa esperado como no operativo allí.
+- Acciones de Codex: durante esta corrección documental no se realizaron nuevas acciones en Cloudflare; solo se actualizó y comprobó este documento.
+- Recursos protegidos: Production, `main`, DNS, Ads, D1 de Production, Queue de Production, secretos reales y Turnstile real permanecen intactos.
+- Pruebas: no se repitieron `npm ci`, QA, build, smoke test ni validación de Preview; `git diff --check` fue la única comprobación técnica de esta corrección documental.
+- Archivo modificado: exclusivamente `docs/IMPLEMENTATION_STATE.md`.
+- Commit: `docs: correct SETUP-0.3 Cloudflare record`.
+- Push: únicamente `develop` hacia `origin/develop`.
 - Siguiente fase: F0 + C0.
-- Estado final: SETUP-0 CERRADO AL PUBLICARSE Y VERIFICARSE ESTE COMMIT DOCUMENTAL.
+- Estado final: SETUP-0 permanece cerrado; contradicción documental corregida.
