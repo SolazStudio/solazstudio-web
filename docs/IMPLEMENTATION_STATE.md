@@ -2,11 +2,11 @@
 
 - Fecha: 2026-09-04
 - Fase/lote: SETUP-0.2
-- Estado: CONVERSIÓN Y QA FINAL COMPLETADAS; PRIMER COMMIT PENDIENTE
+- Estado: COMPLETADO AL PUBLICARSE ESTE CIERRE DOCUMENTAL
 - Rama: `develop`
 - Base de implementación: `bd9e9aeaee8af2ff4c6cee6773b2b6d764c879eb`
 - Baseline público de paridad: `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Último commit ejecutable probado: PENDIENTE DE REGISTRAR TRAS EL PRIMER COMMIT
+- Último commit ejecutable probado: `d46b125fd709c1b5479066b95ed6573f1aa5120e`
 - Preview: NO CONFIGURADA
 - Production: INTACTA
 - Bloqueadores: Ninguno
@@ -51,6 +51,7 @@
 - Diff de `functions/`, `img/`, robots, sitemap, favicons y `og-image.jpg` contra el baseline: PASS, sin cambios.
 - `git diff --check`: PASS.
 - Control final: 24 plantillas, cero HTML fuente legacy y ningún archivo temporal, backup, snapshot o reporte adicional.
+- Primer push: PASS; `origin/develop` verificado en `d46b125fd709c1b5479066b95ed6573f1aa5120e`.
 
 ## Errores y correcciones dentro del alcance
 
@@ -87,9 +88,9 @@
 - Correcciones dentro del alcance: Regeneración del piloto incluyendo literalmente el contenido posfavicon; QA afectada repetida y aprobada.
 - Limitaciones: Sin Preview ni QA visual, ambas fuera del lote.
 - Desviaciones: Ninguna.
-- Commit ejecutable probado: PENDIENTE.
-- Pushes: PENDIENTES.
-- Working tree: Contiene exclusivamente la conversión autorizada, pendiente de commits.
-- Criterio de cierre: QA técnica cumplida; pendientes primer commit/push y cierre documental.
+- Commit ejecutable probado: `d46b125fd709c1b5479066b95ed6573f1aa5120e`.
+- Pushes: Primer push realizado y verificado; este documento corresponde al segundo y último commit/push autorizado.
+- Working tree: Limpio después del primer push; al cierre solo se incorpora esta actualización documental y se verifica nuevamente tras publicarla.
+- Criterio de cierre: Preflight, cinco compuertas, 24 plantillas, cero legacy, paridad, backend, media, commits, pushes y estado Git verificados; `main`, Production y Cloudflare intactos.
 - Pendientes: SETUP-0.3.
-- Estado final: EN EJECUCIÓN HASTA PUBLICAR LOS DOS COMMITS AUTORIZADOS
+- Estado final: COMPLETADO AL PUBLICARSE ESTE CIERRE DOCUMENTAL
