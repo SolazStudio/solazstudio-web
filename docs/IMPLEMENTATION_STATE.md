@@ -1,96 +1,75 @@
 # Estado de implementación
 
 - Fecha: 2026-09-04
-- Fase/lote: SETUP-0.2
-- Estado: COMPLETADO AL PUBLICARSE ESTE CIERRE DOCUMENTAL
+- Fase/lote: SETUP-0.3
+- Estado: SETUP-0 CERRADO AL PUBLICARSE Y VERIFICARSE ESTE COMMIT DOCUMENTAL
 - Rama: `develop`
-- Base de implementación: `bd9e9aeaee8af2ff4c6cee6773b2b6d764c879eb`
-- Baseline público de paridad: `880610411ecb4d66f652e8bfaf89e5794231409d`
+- Commit base: `b11d4126432af63384baf3b7f0737cbfaed2472c`
 - Último commit ejecutable probado: `d46b125fd709c1b5479066b95ed6573f1aa5120e`
-- Preview: NO CONFIGURADA
+- Preview: <https://374f0f05.solazstudio-web.pages.dev/>
 - Production: INTACTA
+- Main: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
 - Bloqueadores: Ninguno
-- Siguiente lote: SETUP-0.3
+- Siguiente fase: F0 + C0
 
-## Resultado operativo
+## Preview y aislamiento
 
-- Los 24 HTML públicos se generan desde 24 plantillas Nunjucks bajo `src/` con permalinks explícitos.
-- Los 15 HTML raíz y 9 HTML de `proyectos/` fueron retirados como fuentes legacy.
-- La estructura compartida usa `base.njk`, datos globales/de navegación/de páginas y parciales de head, favicons, navegación, menú móvil y footer.
-- CSS y JavaScript permanecen asociados a cada plantilla y conservan paridad textual.
-- Metadata, tags, atributos, copy y schema conservan paridad con el baseline público.
-- `img/`, archivos públicos raíz y `functions/` permanecen intactos.
+- Preview correspondiente a `develop`, configurada manualmente con `npm run build` y directorio de salida `_site`.
+- Sin variables ni secretos configurados.
+- Sin D1 ni Queue vinculados.
+- Sin integraciones reales observadas que puedan contaminar Production.
+- Preview continúa separada de Production; Production, DNS, Ads y `main` no fueron modificados.
+- Turnstile no está operativo en Preview como consecuencia esperada del aislamiento. No se considera un bug de SETUP-0 y no se añadieron claves, secretos ni autorización del hostname.
+- No se realizaron POST ni envíos de formulario.
 
-## Archivos
+## Comprobaciones de cierre
 
-- Creados: `scripts/verify-parity.mjs`; `src/_data/site.js`, `src/_data/navigation.js`, `src/_data/pages.js`; cinco parciales en `src/_includes/partials/`; 15 plantillas raíz y 9 plantillas bajo `src/proyectos/`.
-- Modificados: `config/public-surface.js`, `eleventy.config.js`, `package.json`, `src/_includes/layouts/base.njk`, `docs/IMPLEMENTATION_STATE.md`.
-- Eliminados: los 24 HTML fuente legacy, `scripts/verify-setup-parity.mjs`, `src/_data/.gitkeep` y `src/_includes/partials/.gitkeep`.
-- Media, backend y archivos públicos existentes modificados: Ninguno.
-
-## Compuertas
-
-- A: PASS. Infraestructura compartida y `fotografia-comercial.njk`; build y paridad 24/24 con 1 plantilla.
-- B: PASS. Quince páginas raíz convertidas; build y paridad 24/24 con 15 plantillas.
-- C: PASS final. Proyecto piloto `video-corporativo-weg-chile.njk`; build y paridad 24/24 con 16 plantillas.
-- D: PASS. Ocho proyectos restantes convertidos; build y paridad 24/24 con 24 plantillas.
-- E: PASS. Cero HTML legacy, cero passthrough HTML, build limpio y paridad final 24/24 desde Nunjucks.
-
-## Pruebas
-
-- Preflight: PASS; `develop` local y remota en `bd9e9aeaee8af2ff4c6cee6773b2b6d764c879eb`, `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`, working tree limpio y Node `v24.18.0`.
-- Builds de compuertas A-E: PASS.
-- QA de transición A-D: PASS final en cada compuerta.
-- `npm ci`: PASS.
-- `npm run build`: PASS final; 24 páginas escritas desde Nunjucks y 742 archivos copiados.
-- `npm run qa:parity`: PASS; 24/24 HTML, 24 plantillas, 766 archivos públicos y legacy deshabilitado.
-- CSS y scripts no JSON-LD: paridad textual PASS.
-- JSON-LD: equivalencia semántica PASS, con orden de arrays preservado.
-- Estructura, atributos y flujo de texto visible: PASS.
+- Preflight: PASS. Repositorio `SolazStudio/solazstudio-web`, rama `develop`, working tree limpio, HEAD local y `origin/develop` en `b11d4126432af63384baf3b7f0737cbfaed2472c`, `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d` y Node `v24.18.0`.
+- `npm ci`: PASS final. Dos intentos iniciales encontraron bloqueos `EBUSY` de Windows/Dropbox dentro de `node_modules/`; se eliminó únicamente esa carpeta generada e ignorada y la instalación limpia posterior pasó.
+- `npm run qa`: PASS final. Un intento encontró un bloqueo `EBUSY` sobre `_site/`; se eliminó únicamente esa salida generada e ignorada y la repetición completó build y paridad.
+- Build: PASS; 24 páginas generadas desde Nunjucks y 742 archivos copiados.
+- Paridad: PASS; 24/24 HTML, 24 plantillas Nunjucks, 766 archivos públicos y legacy deshabilitado.
 - `node --check functions/api/contact.js`: PASS.
-- Diff de `functions/`, `img/`, robots, sitemap, favicons y `og-image.jpg` contra el baseline: PASS, sin cambios.
 - `git diff --check`: PASS.
-- Control final: 24 plantillas, cero HTML fuente legacy y ningún archivo temporal, backup, snapshot o reporte adicional.
-- Primer push: PASS; `origin/develop` verificado en `d46b125fd709c1b5479066b95ed6573f1aa5120e`.
+- Smoke HTTP de solo lectura: PASS; 24/24 rutas públicas respondieron 200.
+- Assets: PASS; `favicon.svg`, `favicon.ico`, `og-image.jpg` y `img/hero-fotografia-comercial.webp` respondieron 200.
+- `robots.txt` y `sitemap.xml`: PASS, ambos respondieron 200.
+- Ruta inexistente `/__setup-0-3-smoke-missing__`: PASS, respondió 404 con la página de error esperada.
 
-## Errores y correcciones dentro del alcance
+## Evidencia manual recibida
 
-- La primera QA de la compuerta C detectó que el transformador piloto omitió dos JSON-LD ubicados después de los favicons. Se regeneró únicamente la plantilla piloto conservando literalmente la cola del head; build y QA de C pasaron después de la corrección.
+- Seba verificó en Preview: Home, navegación, Portafolio, apertura de un proyecto, Contacto, cambio entre ambos modos del formulario y comportamiento responsive/móvil.
+- No se realizó ningún envío de formulario.
+- Única diferencia observada: error del widget Turnstile en Preview, esperado por el aislamiento y no corregido en este lote.
 
-## Limitaciones y desviaciones
+## Cambios y rollback
 
-- Limitaciones: Preview no configurada y QA visual no ejecutada, según el alcance aprobado.
-- Desviaciones respecto del encargo: Ninguna.
-- Decisiones nuevas: Ninguna; se aplicó la arquitectura autorizada con abstracciones limitadas a fragmentos compartidos y parámetros simples.
+- Archivo modificado: únicamente `docs/IMPLEMENTATION_STATE.md`.
+- Código, plantillas, CSS, JavaScript, contenido, backend y configuración de Cloudflare modificados: Ninguno.
+- Rollback: retirar o desactivar la Preview, o revertir su configuración de Preview, sin tocar Production.
 
 ## Pendientes y prohibiciones vigentes
 
-- Pendiente: SETUP-0.3 como lote independiente.
+- Siguiente fase: F0 + C0; no iniciada en este lote.
 - No modificar ni publicar `main`; no hacer merge ni abrir PR.
-- No configurar Preview, Cloudflare, DNS, Production, Ads, D1, Queue, Turnstile ni recursos externos.
-- No ejecutar formularios reales ni iniciar optimizaciones o cambios de contenido/diseño.
+- No modificar Preview, Cloudflare, DNS, Production, Ads, D1, Queue, Turnstile, secretos ni recursos externos.
+- No ejecutar formularios reales ni introducir cambios de código, contenido o diseño.
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: SETUP-0.2
-- Fecha: 2026-09-04
-- Preflight: PASS exacto.
-- Trabajo realizado: Conversión estructural de los 24 HTML públicos a Eleventy/Nunjucks con layout, datos, parciales, permalinks y QA histórica estricta.
-- Archivos creados: 24 plantillas de página, 3 archivos de datos, 5 parciales y `scripts/verify-parity.mjs`.
-- Archivos modificados: Configuración Eleventy, superficie pública, scripts npm, layout base y este estado durable.
-- Archivos eliminados: 24 HTML legacy, verificador anterior y 2 `.gitkeep` ya innecesarios.
-- Decisiones técnicas aplicadas: Eleventy `3.1.5`, Nunjucks `3.2.4`, Node `24.18.0`, permalinks explícitos, assets como passthrough y HTML exclusivamente generado desde `src/`.
-- Compuertas ejecutadas: A, B, C, D y E.
-- Resultado de cada compuerta: A PASS; B PASS; C PASS final tras corrección acotada; D PASS; E PASS.
-- Comandos: preflight Git/Node; builds y QA por compuerta; `npm ci`; build y QA final; sintaxis backend; controles Git y de árbol.
-- Pruebas: Paridad de estilos, scripts, JSON-LD, estructura, atributos, texto visible, rutas, assets, backend y conjunto completo de `_site`.
-- Errores: Omisión inicial de JSON-LD posfavicon en el piloto de C.
-- Correcciones dentro del alcance: Regeneración del piloto incluyendo literalmente el contenido posfavicon; QA afectada repetida y aprobada.
-- Limitaciones: Sin Preview ni QA visual, ambas fuera del lote.
-- Desviaciones: Ninguna.
-- Commit ejecutable probado: `d46b125fd709c1b5479066b95ed6573f1aa5120e`.
-- Pushes: Primer push realizado y verificado; este documento corresponde al segundo y último commit/push autorizado.
-- Working tree: Limpio después del primer push; al cierre solo se incorpora esta actualización documental y se verifica nuevamente tras publicarla.
-- Criterio de cierre: Preflight, cinco compuertas, 24 plantillas, cero legacy, paridad, backend, media, commits, pushes y estado Git verificados; `main`, Production y Cloudflare intactos.
-- Pendientes: SETUP-0.3.
-- Estado final: COMPLETADO AL PUBLICARSE ESTE CIERRE DOCUMENTAL
+- Lote: SETUP-0.3.
+- Preflight: PASS exacto sobre `develop` en `b11d4126432af63384baf3b7f0737cbfaed2472c`.
+- Pruebas: `npm ci` PASS final; `npm run qa` PASS final; sintaxis backend PASS; `git diff --check` PASS.
+- Smoke test: PASS; 24/24 rutas, 4/4 assets, robots y sitemap correctos; ruta inexistente con 404.
+- Evidencia manual recibida: Home, navegación, Portafolio, proyecto, Contacto, modos del formulario y responsive/móvil verificados por Seba.
+- Estado de Preview: operativa en <https://374f0f05.solazstudio-web.pages.dev/> con build `npm run build` y salida `_site`.
+- Aislamiento: sin variables/secretos, D1, Queue ni integraciones reales observadas; separada de Production.
+- Limitación Turnstile esperada: widget no operativo en Preview por aislamiento; no se corrigió ni configuró.
+- Archivos modificados: exclusivamente `docs/IMPLEMENTATION_STATE.md`.
+- Commit: `docs: close SETUP-0 preview validation`, único commit documental de este lote; su SHA se captura y verifica tras crearlo.
+- Push: únicamente `develop` a `origin/develop`, con verificación remota inmediatamente posterior.
+- Working tree final: debe quedar limpio y se verifica después del push.
+- Main intacta: SÍ, en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Production intacta: SÍ; Cloudflare, DNS y Ads sin acciones.
+- Siguiente fase: F0 + C0.
+- Estado final: SETUP-0 CERRADO AL PUBLICARSE Y VERIFICARSE ESTE COMMIT DOCUMENTAL.
