@@ -1,0 +1,16 @@
+{
+  "name": "solazstudio-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "node scripts/clean.mjs",
+    "build": "npm run clean && eleventy",
+    "start": "eleventy --serve",
+    "qa:setup": "node scripts/verify-setup-parity.mjs",
+    "qa": "npm run build && npm run qa:setup"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "3.1.5",
+    "nunjucks": "3.2.4"
+  }
+}
