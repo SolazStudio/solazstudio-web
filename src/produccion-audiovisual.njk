@@ -1,28 +1,10 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fotografía de Arquitectura e Interiorismo Chile | Solaz Studio</title>
-  <meta name="description" content="Fotografía de arquitectura, interiorismo e inmobiliaria en Chile. Video con dron para proyectos residenciales, comerciales y corporativos.">
-  <link rel="canonical" href="https://solazstudio.cl/arquitectura-espacios">
-  <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Fotografía y Video de Arquitectura Chile | Espacios | Solaz Studio">
-  <meta property="og:description" content="Fotografía y video de arquitectura, inmobiliario e interiorismo en Chile. Imágenes que comunican el valor real de cada espacio.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://solazstudio.cl/arquitectura-espacios">
-  <meta property="og:image" content="https://solazstudio.cl/og-image.jpg">
-  <meta property="og:locale" content="es_CL">
-  <meta property="og:site_name" content="Solaz Studio">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Fotografía y Video de Arquitectura Chile | Espacios | Solaz Studio">
-  <meta name="twitter:description" content="Fotografía y video de arquitectura, inmobiliario e interiorismo en Chile. Imágenes que comunican el valor real de cada espacio.">
-  <meta name="twitter:image" content="https://solazstudio.cl/og-image.jpg">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Service","name":"Fotografía y Video de Arquitectura Chile | Solaz Studio","url":"https://solazstudio.cl/arquitectura-espacios","provider":{"@type":"Organization","name":"Solaz Studio","url":"https://solazstudio.cl"},"serviceType":"Fotografía de Arquitectura","areaServed":"Chile"}</script>
-  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://solazstudio.cl/"}, {"@type": "ListItem", "position": 2, "name": "Servicios", "item": "https://solazstudio.cl/servicios"}, {"@type": "ListItem", "position": 3, "name": "Arquitectura & Espacios", "item": "https://solazstudio.cl/arquitectura-espacios"}]}</script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+---
+pageKey: "produccion-audiovisual"
+permalink: "produccion-audiovisual.html"
+---
+{% extends "layouts/base.njk" %}
+{% block head %}
+{% include "partials/head.njk" %}
   <style>
     :root {
       --black:#0a0a0a;--black-soft:#111111;--black-mid:#1a1a1a;
@@ -67,6 +49,7 @@
     .page-hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0;}
     .page-hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(to right,rgba(10,10,10,.92) 50%,rgba(10,10,10,.55) 100%);}
     .page-hero-content{position:relative;z-index:1;max-width:600px;}
+    .page-hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
     .page-eyebrow{font-size:10px;font-weight:400;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);margin-bottom:20px;display:flex;align-items:center;gap:16px;}
     .page-eyebrow::before{content:'';display:block;width:32px;height:1px;background:var(--accent);}
     .page-hero h1{font-family:var(--font-display);font-size:clamp(48px,6vw,88px);line-height:.92;letter-spacing:-.01em;}
@@ -79,8 +62,9 @@
     .section-grid{display:grid;grid-template-columns:1fr 2fr;gap:80px;align-items:start;}
     .section-label{font-size:10px;font-weight:400;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);padding-top:4px;}
     .section-with-isotipo{position:relative;overflow:hidden;}
-    .section-isotipo{position:absolute;right:-80px;top:-60px;bottom:-60px;width:clamp(500px,58vw,780px);height:auto;opacity:0.07;pointer-events:none;z-index:0;transform:none;}
+    .section-isotipo{position:absolute;right:-80px;top:50%;transform:translateY(-50%);width:clamp(500px,58vw,800px);height:110%;object-fit:contain;opacity:0.07;pointer-events:none;z-index:0;}
     .section-isotipo-content{position:relative;z-index:1;}
+    .section-body{}
     .section-body h2{font-family:var(--font-display);font-size:clamp(32px,4vw,52px);line-height:.95;margin-bottom:24px;}
     .section-body p{font-size:14px;font-weight:300;color:var(--grey-light);line-height:1.85;margin-bottom:16px;max-width:600px;}
     .section-body p strong{color:var(--white);font-weight:400;}
@@ -127,8 +111,6 @@
       .main-nav{padding:20px 24px;}
       .nav-hamburger{display:flex;}
       .nav-links,.nav-instagram{display:none!important;}
-      .ig-full{display:none;}
-      .ig-short{display:inline;}
       .page-hero{padding:110px 24px 56px;}
       .section-isotipo{width:220px;right:-10px;top:40px;transform:none;opacity:0.035;}
       .section-isotipo-content h2{max-width:100%!important;}
@@ -139,50 +121,28 @@
       footer{padding:32px 24px;flex-direction:column;align-items:flex-start;gap:20px;}
     }
   </style>
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
-</head>
-<body>
-  <nav class="main-nav" aria-label="Navegación principal">
-    <a href="/" class="nav-logo">solaz</a>
-    <ul class="nav-links">
-      <li><a href="/portafolio">Portafolio</a></li>
-      <li><a href="/servicios">Servicios</a></li>
-      <li><a href="/nosotros">Nosotros</a></li>
-    </ul>
-    <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Instagram"><span class="ig-full">Instagram</span><span class="ig-short">IG</span></a>
-    <a href="/contacto" class="nav-cta">Contacto</a>
-    <button type="button" class="nav-hamburger" id="navToggle" aria-label="Abrir menú">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-  <div class="mobile-menu" id="mobileMenu" aria-hidden="true" inert>
-    <div class="mobile-menu-links">
-      <a href="/portafolio">Portafolio</a>
-      <a href="/servicios">Servicios</a>
-      <a href="/nosotros">Nosotros</a>
-    </div>
-    <div class="mobile-menu-bottom">
-      <a href="/contacto" class="mobile-menu-cta">Contacto →</a>
-      <a href="https://www.instagram.com/solazstudio/" class="mobile-menu-instagram" target="_blank" rel="noopener">Instagram ↗</a>
-    </div>
-  </div>
+{% include "partials/favicons.njk" %}
+{% endblock %}
+{% block body %}
+{% include "partials/navigation.njk" %}
+{% include "partials/mobile-menu.njk" %}
 
   <main>
 
 
   <header class="page-hero">
-    <div class="page-hero-bg" style="background-image:url('img/hero-arquitectura-espacios.webp');" aria-hidden="true"></div>
+    <video class="page-hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+      <source src="https://media.solazstudio.cl/hero/hero-produccion-audiovisual.mp4" type="video/mp4">
+      <img src="img/produccion-audiovisual.webp" alt="" aria-hidden="true">
+    </video>
+    <div class="page-hero-bg" aria-hidden="true"></div>
     <div class="page-hero-content fade-up">
-      <div class="page-eyebrow">Arquitectura & Espacios</div>
-      <h1>ARQUITECTURA<br><span class="outline">& ESPACIOS_</span></h1>
-      <p class="hero-intro">El espacio ya existe — nuestra tarea es que se vea como lo que vale.</p>
-      <p class="hero-body">Fotografía de arquitectura, interiorismo e inmobiliaria en Chile. Trabajamos con arquitectos, inmobiliarias, estudios de diseño y desarrolladores que necesitan imágenes que comuniquen el valor real de cada proyecto — no solo que lo documenten.</p>
-    </div>
+      <div class="page-eyebrow">Video</div>
+      <h1 aria-label="Producción audiovisual"><span aria-hidden="true">PRODUCCIÓN<br><span class="outline">AUDIO</span><br>VISUAL_</span></h1>
+    
+      <p class="hero-intro">Del concepto al corte final, todo en el mismo equipo.</p>
+      <p class="hero-body">Producción audiovisual y video para marcas y empresas en Chile. Guion, dirección, filmación, edición y motion graphics — todo en el mismo equipo, desde la primera reunión hasta el corte final.</p>
+        </div>
   </header>
 
   <section class="content-section section-with-isotipo fade-up">
@@ -190,26 +150,29 @@
       <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
     </svg>
     <div class="section-isotipo-content">
-      <div class="section-label" style="margin-bottom:24px;">Qué hacemos</div>
-      <h2 style="font-family:var(--font-display);font-size:clamp(32px,4vw,52px);line-height:.95;margin-bottom:40px;max-width:65%;">LO QUE FOTOGRAFIAMOS</h2>
+      <div class="section-label" style="margin-bottom:24px;">Tipos de producción</div>
+      <h2 style="font-family:var(--font-display);font-size:clamp(32px,4vw,52px);line-height:.95;margin-bottom:40px;max-width:65%;">QUÉ HACEMOS</h2>
       <div class="spec-grid" style="max-width:65%;">
-        <div class="spec-card">
-          <h3>ARQUITECTURA & CONSTRUCCIÓN</h3>
-          <p>Fotografía de proyectos terminados y en proceso. Fachadas, detalles constructivos, espacios comunes y entorno — para portfolios de arquitectos, concursos y publicaciones.</p>
+          <div class="spec-card">
+            <h3>VIDEO CORPORATIVO & INSTITUCIONAL</h3>
+            <p>Videos de presentación de empresa, cultura organizacional, planes de emergencia y capacitación interna. Producción completa desde el guion hasta la entrega final.</p>
+          </div>
+          <div class="spec-card">
+            <h3>SPOTS & CAMPAÑAS PUBLICITARIAS</h3>
+            <p>Piezas audiovisuales para medios digitales, televisión y plataformas sociales. Concepto, casting, locaciones, dirección y post-producción en un mismo equipo.</p>
+          </div>
+          <div class="spec-card">
+            <h3>VIDEO DE PRODUCTO & MARCA</h3>
+            <p>Videos cortos orientados a e-commerce, lanzamientos de producto y campañas digitales. Adaptados para distintos formatos: horizontal, vertical y cuadrado.</p>
+          </div>
+          <div class="spec-card">
+            <h3>MOTION GRAPHICS</h3>
+            <p>Animación gráfica para incorporar dentro de videos corporativos, presentaciones y piezas institucionales. Diseño, animación y entrega integrada al proyecto.</p>
+          </div>
         </div>
-        <div class="spec-card">
-          <h3>INMOBILIARIO & DESARROLLO</h3>
-          <p>Fotografía inmobiliaria para la venta y arriendo de propiedades residenciales y comerciales. Fotografía de departamentos, casas, oficinas y locales con criterio editorial, no solo documental.</p>
+        <div class="highlight-box" style="max-width:65%;margin-top:24px;">
+          <p>¿Tu proyecto no encaja en ninguna de estas categorías? <strong>Cuéntanos.</strong> Hemos producido piezas muy distintas entre sí — y siempre encontramos la forma de hacerlo bien.</p>
         </div>
-        <div class="spec-card">
-          <h3>INTERIORISMO & DISEÑO</h3>
-          <p>Fotografía de interiores para estudios de diseño, tiendas, restaurantes y oficinas. Luz natural y artificial trabajadas para mostrar cada ambiente en su mejor momento.</p>
-        </div>
-        <div class="spec-card">
-          <h3>VIDEO & TOMAS AÉREAS</h3>
-          <p>Video de presentación de proyectos con tomas aéreas con <strong>dron</strong>. Perspectiva aérea que contextualiza el proyecto en su entorno y escala.</p>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -217,50 +180,56 @@
     <div class="section-grid">
       <div class="section-label">Cómo trabajamos</div>
       <div class="section-body">
-        <h2>LA LUZ LO CAMBIA TODO</h2>
-        <p>La fotografía de arquitectura depende de la luz — natural, artificial y la combinación de ambas. Coordinamos la visita según la orientación del espacio y el momento del día que mejor funciona para cada proyecto.</p>
-        <p>Trabajamos con <strong>iluminación profesional complementaria</strong> cuando el espacio lo requiere, y con preparación previa del espacio en coordinación con el cliente — props, styling y orden — para que cada imagen tenga intención, no solo registro.</p>
+        <h2>DE LA PRIMERA REUNIÓN AL CORTE FINAL</h2>
+        <p>Todo parte de entender qué quieres comunicar y a quién. De ahí construimos el guion, el storyboard, el concepto visual, las locaciones y el plan de producción. Todo esto, antes de encender una cámara.</p>
+        <p>En producción llegamos con equipamiento cinematográfico profesional y el equipo humano que el proyecto necesita. En post-producción editamos, colorizamos e integramos motion graphics cuando el proyecto lo requiere. El resultado es una pieza lista para publicar o presentar.</p>
         <div class="highlight-box">
-          <p>Cada proyecto incluye una instancia de revisión de las imágenes seleccionadas antes de la entrega final. <strong>El objetivo es que las fotos trabajen para vender o comunicar el proyecto — no solo que lo muestren.</strong></p>
+          <p>Quien te atiende es el mismo equipo que llega al set y entrega el resultado. <strong>Tu proyecto no pasa por manos que no conoces.</strong></p>
         </div>
       </div>
     </div>
   </section>
 
+  <div class="clients-section fade-up">
+    <span class="clients-label">Han confiado en nosotros</span>
+    <div class="clients-list">
+      <span class="client-pill">WEG Chile</span>
+      <span class="client-pill">Puerto Rolls</span>
+      <span class="client-pill">Kifit</span>
+      <span class="client-pill">Johnny Rockets</span>
+      <span class="client-pill">Cassone</span>
+      <span class="client-pill">Aistana</span>
+      <span class="client-pill">Cáscara Foods</span>
+    </div>
+  </div>
+
   <section class="cta-section fade-up">
     <h2 class="cta-headline">HABLEMOS<br><span class="outline">DE TU</span><br>PROYECTO_</h2>
     <div>
-      <p class="cta-body">Cuéntanos el tipo de espacio, el uso que le darás a las imágenes y si necesitas tomas aéreas. <strong>Te respondemos con un presupuesto claro y sin vueltas.</strong></p>
+      <p class="cta-body">¿Tienes una idea, un guion o solo el objetivo claro? <strong>Con eso es suficiente para empezar.</strong></p>
       <a href="/contacto" class="cta-link">Solicitar presupuesto →</a>
       <br>
       <a href="/servicios" class="back-link">← Ver todos los servicios</a>
     </div>
   </section>
-
     
   <div class="fade-up" style="padding:0 48px 48px;">
     <p style="font-size:11px;font-weight:300;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-light);margin-bottom:12px;">Proyectos relacionados</p>
     <div style="display:flex;flex-direction:column;gap:4px;">
-      <a href="/proyectos/fotografia-arquitectura-cassone" class="back-link">Cassone — La Luma →</a>
+      <a href="/proyectos/video-corporativo-weg-chile" class="back-link">WEG Chile — Transformador Antofagasta →</a>
+      <a href="/proyectos/campana-publicitaria-elige-educar-mineduc" class="back-link">Elige Educar × Mineduc →</a>
     </div>
   </div>
 </main>
 
-  <footer>
-    <div class="footer-logo">solaz</div>
-    <span class="footer-copy">© 2026 Solaz Studio &nbsp;·&nbsp; <a href="/politica-privacidad" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Política de Privacidad</a> &nbsp;·&nbsp; <a href="/terminos-uso" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Términos de Uso</a></span>
-    <div class="footer-links">
-      <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">Instagram</a>
-      <a href="/portafolio">Portafolio</a>
-      <a href="/contacto">Contacto</a>
-    </div>
-  </footer>
+{% include "partials/footer.njk" %}
 
   <script>
+    
+    
     const t=document.getElementById('navToggle'),m=document.getElementById('mobileMenu');
     if(t&&m){t.addEventListener('click',()=>{const o=m.classList.toggle('open');t.classList.toggle('open');m.setAttribute('aria-hidden',String(!o));m.toggleAttribute('inert',!o);document.body.style.overflow=o?'hidden':'';});m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{m.classList.remove('open');t.classList.remove('open');m.setAttribute('aria-hidden','true');m.toggleAttribute('inert',true);document.body.style.overflow='';}));}
     const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.08});
     document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
   </script>
-</body>
-</html>
+{% endblock %}

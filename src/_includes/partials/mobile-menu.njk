@@ -1,0 +1,12 @@
+{% set page = pages[pageKey] %}
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true" inert>
+    <div class="mobile-menu-links">
+{% for item in navigation %}
+      <a href="{{ item.href }}"{% if page.navigation.activeKey == item.key %} class="active"{% endif %}>{{ item.label }}</a>
+{% endfor %}
+    </div>
+    <div class="mobile-menu-bottom">
+      <a href="/contacto" class="mobile-menu-cta">Contacto →</a>
+      <a href="{{ site.instagramUrl }}" class="mobile-menu-instagram" target="_blank" rel="noopener">Instagram ↗</a>
+    </div>
+  </div>

@@ -1,0 +1,10 @@
+{% set footer = pages[pageKey].footer %}
+  <footer>
+    <div class="footer-logo">solaz</div>
+    <span class="footer-copy">© {{ site.footerYear }} Solaz Studio{% if footer.chile %} — Chile{% endif %} &nbsp;·&nbsp; <a href="/politica-privacidad" style="{{ footer.legalStyle }}" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Política de Privacidad</a> &nbsp;·&nbsp; <a href="/terminos-uso" style="{{ footer.legalStyle }}" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Términos de Uso</a></span>
+    <div class="footer-links"{{ footer.linksAttributes | safe }}>
+{% for link in footer.links %}
+      <a href="{{ link.href }}"{% if link.external %} target="_blank" rel="noopener"{% endif %}>{{ link.label }}</a>
+{% endfor %}
+    </div>
+  </footer>

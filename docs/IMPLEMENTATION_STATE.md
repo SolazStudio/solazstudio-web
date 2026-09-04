@@ -1,74 +1,95 @@
 # Estado de implementación
 
 - Fecha: 2026-09-04
-- Fase/lote: SETUP-0.1
-- Estado: COMPLETADO AL PUBLICARSE ESTE CIERRE DOCUMENTAL
+- Fase/lote: SETUP-0.2
+- Estado: CONVERSIÓN Y QA FINAL COMPLETADAS; PRIMER COMMIT PENDIENTE
 - Rama: `develop`
-- Commit/base: `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Último commit ejecutable probado: `aee0a6c5ae0a7ec13772abf087797c0f0b0d6887`
-- Preview/evidencia: NO CONFIGURADA
+- Base de implementación: `bd9e9aeaee8af2ff4c6cee6773b2b6d764c879eb`
+- Baseline público de paridad: `880610411ecb4d66f652e8bfaf89e5794231409d`
+- Último commit ejecutable probado: PENDIENTE DE REGISTRAR TRAS EL PRIMER COMMIT
+- Preview: NO CONFIGURADA
 - Production: INTACTA
 - Bloqueadores: Ninguno
-- Decisiones nuevas: Ninguna; se aplicaron exclusivamente las decisiones fijadas en el encargo.
-- Siguiente lote: SETUP-0.2
+- Siguiente lote: SETUP-0.3
 
-## Cambios realizados
+## Resultado operativo
 
-- Scaffold mínimo de Eleventy con motores Nunjucks preparado sin migrar páginas públicas.
-- Copia passthrough explícita de la superficie pública existente.
-- Limpieza segura de `_site/` y QA automatizada de paridad contra el commit base.
-- Versiones fijadas de Node, Eleventy y Nunjucks.
-- Primer commit ejecutable publicado y verificado en `origin/develop`.
+- Los 24 HTML públicos se generan desde 24 plantillas Nunjucks bajo `src/` con permalinks explícitos.
+- Los 15 HTML raíz y 9 HTML de `proyectos/` fueron retirados como fuentes legacy.
+- La estructura compartida usa `base.njk`, datos globales/de navegación/de páginas y parciales de head, favicons, navegación, menú móvil y footer.
+- CSS y JavaScript permanecen asociados a cada plantilla y conservan paridad textual.
+- Metadata, tags, atributos, copy y schema conservan paridad con el baseline público.
+- `img/`, archivos públicos raíz y `functions/` permanecen intactos.
 
-## Archivos afectados
+## Archivos
 
-- Archivos creados: `.gitignore`, `.node-version`, `package.json`, `package-lock.json`, `eleventy.config.js`, `config/public-surface.js`, `scripts/clean.mjs`, `scripts/verify-setup-parity.mjs`, `src/_data/.gitkeep`, `src/_includes/layouts/base.njk`, `src/_includes/partials/.gitkeep`, `docs/IMPLEMENTATION_STATE.md`.
-- Archivos existentes antes del lote modificados: Ninguno.
-- Archivos eliminados: Ninguno.
-- Cierre documental: únicamente `docs/IMPLEMENTATION_STATE.md` fue actualizado después del primer push.
+- Creados: `scripts/verify-parity.mjs`; `src/_data/site.js`, `src/_data/navigation.js`, `src/_data/pages.js`; cinco parciales en `src/_includes/partials/`; 15 plantillas raíz y 9 plantillas bajo `src/proyectos/`.
+- Modificados: `config/public-surface.js`, `eleventy.config.js`, `package.json`, `src/_includes/layouts/base.njk`, `docs/IMPLEMENTATION_STATE.md`.
+- Eliminados: los 24 HTML fuente legacy, `scripts/verify-setup-parity.mjs`, `src/_data/.gitkeep` y `src/_includes/partials/.gitkeep`.
+- Media, backend y archivos públicos existentes modificados: Ninguno.
+
+## Compuertas
+
+- A: PASS. Infraestructura compartida y `fotografia-comercial.njk`; build y paridad 24/24 con 1 plantilla.
+- B: PASS. Quince páginas raíz convertidas; build y paridad 24/24 con 15 plantillas.
+- C: PASS final. Proyecto piloto `video-corporativo-weg-chile.njk`; build y paridad 24/24 con 16 plantillas.
+- D: PASS. Ocho proyectos restantes convertidos; build y paridad 24/24 con 24 plantillas.
+- E: PASS. Cero HTML legacy, cero passthrough HTML, build limpio y paridad final 24/24 desde Nunjucks.
 
 ## Pruebas
 
-- Preflight: PASS. Repositorio `SolazStudio/solazstudio-web`, rama inicial `main`, working tree limpio, `main` local y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`, `develop` ausente local y remotamente, Node `v24.18.0`.
-- `node --version`: PASS (`v24.18.0`).
+- Preflight: PASS; `develop` local y remota en `bd9e9aeaee8af2ff4c6cee6773b2b6d764c879eb`, `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`, working tree limpio y Node `v24.18.0`.
+- Builds de compuertas A-E: PASS.
+- QA de transición A-D: PASS final en cada compuerta.
 - `npm ci`: PASS.
-- `npm run build`: PASS (Eleventy `3.1.5`; 766 archivos copiados y 0 páginas transformadas).
-- `npm run qa:setup`: PASS final (24/24 HTML y 766 archivos públicos verificados). La primera ejecución detectó un error de normalización de rutas en el verificador nuevo; se corrigió únicamente ese archivo autorizado y se repitió la prueba afectada.
+- `npm run build`: PASS final; 24 páginas escritas desde Nunjucks y 742 archivos copiados.
+- `npm run qa:parity`: PASS; 24/24 HTML, 24 plantillas, 766 archivos públicos y legacy deshabilitado.
+- CSS y scripts no JSON-LD: paridad textual PASS.
+- JSON-LD: equivalencia semántica PASS, con orden de arrays preservado.
+- Estructura, atributos y flujo de texto visible: PASS.
 - `node --check functions/api/contact.js`: PASS.
-- `git diff --exit-code 880610411ecb4d66f652e8bfaf89e5794231409d -- functions`: PASS.
-- Diff de HTML, `proyectos/`, `img/`, `robots.txt`, `sitemap.xml`, favicons y `og-image.jpg` contra el baseline: PASS, sin cambios.
-- `git diff --check` y `git diff --cached --check`: PASS.
-- Primer push: PASS; `origin/develop` verificado en `aee0a6c5ae0a7ec13772abf087797c0f0b0d6887` antes del cierre documental.
+- Diff de `functions/`, `img/`, robots, sitemap, favicons y `og-image.jpg` contra el baseline: PASS, sin cambios.
+- `git diff --check`: PASS.
+- Control final: 24 plantillas, cero HTML fuente legacy y ningún archivo temporal, backup, snapshot o reporte adicional.
 
-## Pendientes
+## Errores y correcciones dentro del alcance
 
-- Ejecutar SETUP-0.2 únicamente como lote posterior independiente.
-- En SETUP-0.3, aplicar la estrategia de aislamiento de Preview que se apruebe.
+- La primera QA de la compuerta C detectó que el transformador piloto omitió dos JSON-LD ubicados después de los favicons. Se regeneró únicamente la plantilla piloto conservando literalmente la cola del head; build y QA de C pasaron después de la corrección.
 
-## Prohibiciones vigentes
+## Limitaciones y desviaciones
 
-- No modificar, publicar ni fusionar `main`; no actuar sobre Production, Cloudflare, DNS ni Ads.
-- No migrar páginas públicas a Nunjucks durante SETUP-0.1.
-- Para SETUP-0.3, Preview deberá quedar aislada de D1 Production, CONTACT_QUEUE Production, correo/Web3Forms real, Turnstile y secretos reales según la estrategia que se apruebe, analítica, Ads y otras integraciones que puedan contaminar Production.
+- Limitaciones: Preview no configurada y QA visual no ejecutada, según el alcance aprobado.
+- Desviaciones respecto del encargo: Ninguna.
+- Decisiones nuevas: Ninguna; se aplicó la arquitectura autorizada con abstracciones limitadas a fragmentos compartidos y parámetros simples.
+
+## Pendientes y prohibiciones vigentes
+
+- Pendiente: SETUP-0.3 como lote independiente.
+- No modificar ni publicar `main`; no hacer merge ni abrir PR.
+- No configurar Preview, Cloudflare, DNS, Production, Ads, D1, Queue, Turnstile ni recursos externos.
+- No ejecutar formularios reales ni iniciar optimizaciones o cambios de contenido/diseño.
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: SETUP-0.1
+- Lote: SETUP-0.2
 - Fecha: 2026-09-04
-- Trabajo realizado: Scaffold mínimo Eleventy/Nunjucks, passthrough explícito de la superficie pública, build reproducible, limpieza segura y QA de paridad contra el baseline.
-- Archivos creados: `.gitignore`, `.node-version`, `package.json`, `package-lock.json`, `eleventy.config.js`, `config/public-surface.js`, `scripts/clean.mjs`, `scripts/verify-setup-parity.mjs`, `src/_data/.gitkeep`, `src/_includes/layouts/base.njk`, `src/_includes/partials/.gitkeep`, `docs/IMPLEMENTATION_STATE.md`.
-- Archivos modificados: Solo `docs/IMPLEMENTATION_STATE.md` para el cierre posterior al primer push; ningún archivo preexistente al lote fue modificado.
-- Archivos eliminados: Ninguno.
-- Decisiones técnicas aplicadas: Node `24.18.0`, Eleventy `3.1.5`, Nunjucks `3.2.4`, entrada `src`, salida `_site`, motores `njk`, passthrough explícito y baseline fijo autorizado.
-- Comandos ejecutados: preflight Git/Node; `git switch -c develop 880610411ecb4d66f652e8bfaf89e5794231409d`; `npm install`; `node --version`; `npm ci`; `npm run build`; `npm run qa:setup`; `node --check functions/api/contact.js`; verificaciones Git de paridad; control completo del diff staged; primer commit, push y verificación remota.
-- Pruebas ejecutadas: versión Node, instalación limpia, build, QA de paridad, sintaxis backend, diffs contra baseline y controles del diff.
-- Resultado de cada prueba: Node PASS; `npm ci` PASS; build PASS; QA final PASS (24/24 HTML, 766 archivos); backend PASS; fuentes públicas y `functions/` sin diff; controles del diff PASS.
-- Errores: El primer acceso remoto del preflight fue bloqueado por el sandbox y se repitió con autorización, con resultado PASS. La primera QA reveló un error de normalización en el script nuevo, corregido dentro del alcance; la repetición afectada pasó.
-- Limitaciones: Preview no configurada; QA visual fuera del alcance del lote.
-- Desviaciones respecto del encargo: Ninguna.
-- Commit ejecutable probado: `aee0a6c5ae0a7ec13772abf087797c0f0b0d6887`.
-- Push realizado: Primer push a `origin/develop` realizado y verificado; este cierre documental corresponde al segundo y último commit/push autorizado.
-- Working tree: Limpio después del primer push; al cierre solo se incorpora esta actualización documental y se verifica nuevamente tras publicarla.
-- Criterio de cierre: Repositorio, base, rama, versiones, build, paridad, backend, superficie pública, commits, pushes y estado Git verificados; `main`, Production y Cloudflare intactos.
-- Pendientes: SETUP-0.2; SETUP-0.3 con aislamiento aprobado de Preview.
-- Estado final: COMPLETADO AL PUBLICARSE ESTE CIERRE DOCUMENTAL
+- Preflight: PASS exacto.
+- Trabajo realizado: Conversión estructural de los 24 HTML públicos a Eleventy/Nunjucks con layout, datos, parciales, permalinks y QA histórica estricta.
+- Archivos creados: 24 plantillas de página, 3 archivos de datos, 5 parciales y `scripts/verify-parity.mjs`.
+- Archivos modificados: Configuración Eleventy, superficie pública, scripts npm, layout base y este estado durable.
+- Archivos eliminados: 24 HTML legacy, verificador anterior y 2 `.gitkeep` ya innecesarios.
+- Decisiones técnicas aplicadas: Eleventy `3.1.5`, Nunjucks `3.2.4`, Node `24.18.0`, permalinks explícitos, assets como passthrough y HTML exclusivamente generado desde `src/`.
+- Compuertas ejecutadas: A, B, C, D y E.
+- Resultado de cada compuerta: A PASS; B PASS; C PASS final tras corrección acotada; D PASS; E PASS.
+- Comandos: preflight Git/Node; builds y QA por compuerta; `npm ci`; build y QA final; sintaxis backend; controles Git y de árbol.
+- Pruebas: Paridad de estilos, scripts, JSON-LD, estructura, atributos, texto visible, rutas, assets, backend y conjunto completo de `_site`.
+- Errores: Omisión inicial de JSON-LD posfavicon en el piloto de C.
+- Correcciones dentro del alcance: Regeneración del piloto incluyendo literalmente el contenido posfavicon; QA afectada repetida y aprobada.
+- Limitaciones: Sin Preview ni QA visual, ambas fuera del lote.
+- Desviaciones: Ninguna.
+- Commit ejecutable probado: PENDIENTE.
+- Pushes: PENDIENTES.
+- Working tree: Contiene exclusivamente la conversión autorizada, pendiente de commits.
+- Criterio de cierre: QA técnica cumplida; pendientes primer commit/push y cierre documental.
+- Pendientes: SETUP-0.3.
+- Estado final: EN EJECUCIÓN HASTA PUBLICAR LOS DOS COMMITS AUTORIZADOS

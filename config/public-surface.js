@@ -30,6 +30,15 @@ export const PROJECT_HTML_FILES = Object.freeze([
   "proyectos/weg-cobertura-evento-seminario-chile.html"
 ]);
 
+export const EXPECTED_HTML_FILES = Object.freeze([
+  ...ROOT_HTML_FILES,
+  ...PROJECT_HTML_FILES
+]);
+
+export const EXPECTED_TEMPLATE_FILES = Object.freeze(
+  EXPECTED_HTML_FILES.map((file) => `src/${file.replace(/\.html$/, ".njk")}`)
+);
+
 export const ROOT_PUBLIC_FILES = Object.freeze([
   "apple-touch-icon.png",
   "favicon-192.png",
@@ -41,7 +50,7 @@ export const ROOT_PUBLIC_FILES = Object.freeze([
   "sitemap.xml"
 ]);
 
-export const PUBLIC_DIRECTORIES = Object.freeze(["img", "proyectos"]);
+export const PASSTHROUGH_DIRECTORIES = Object.freeze(["img"]);
 
 export const PROHIBITED_OUTPUT_ENTRIES = Object.freeze([
   ".git",

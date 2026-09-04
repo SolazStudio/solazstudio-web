@@ -1,27 +1,10 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portafolio — Solaz Studio | Foto y Video Comercial Chile</title>
-  <meta name="description" content="Portafolio de fotografía comercial, producción audiovisual y contenido para marcas. Trabajos para Pullman Hotels, WEG Chile, Ariztía y más empresas en Chile.">
-  <link rel="canonical" href="https://solazstudio.cl/portafolio">
-  <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Portafolio — Solaz Studio | Foto y Video Comercial Chile">
-  <meta property="og:description" content="Portafolio de fotografía comercial, producción audiovisual y contenido para marcas. Trabajos para Pullman Hotels, WEG Chile, Ariztía y más empresas en Chile.">
-  <meta property="og:url" content="https://solazstudio.cl/portafolio">
-  <meta property="og:image" content="https://solazstudio.cl/og-image.jpg">
-  <meta property="og:locale" content="es_CL">
-  <meta property="og:site_name" content="Solaz Studio">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Portafolio — Solaz Studio | Foto y Video Comercial Chile">
-  <meta name="twitter:description" content="Portafolio de fotografía comercial, producción audiovisual y contenido para marcas. Trabajos para Pullman Hotels, WEG Chile, Ariztía y más empresas en Chile.">
-  <meta name="twitter:image" content="https://solazstudio.cl/og-image.jpg">
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-
+---
+pageKey: "portafolio"
+permalink: "portafolio.html"
+---
+{% extends "layouts/base.njk" %}
+{% block head %}
+{% include "partials/head.njk" %}
   <style>
     :root {
       --black: #0a0a0a;
@@ -642,41 +625,13 @@
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"CollectionPage","name":"Portafolio — Solaz Studio","description":"Fotografía comercial y producción audiovisual para marcas en Chile.","url":"https://solazstudio.cl/portafolio","isPartOf":{"@type":"WebSite","name":"Solaz Studio","url":"https://solazstudio.cl"}}
   </script>
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
-</head>
-<body>
+{% include "partials/favicons.njk" %}
+{% endblock %}
+{% block body %}
   <!-- NAV -->
-  <nav class="main-nav" aria-label="Navegación principal">
-    <a href="/" class="nav-logo">solaz</a>
-    <ul class="nav-links">
-      <li><a href="/portafolio" class="active">Portafolio</a></li>
-      <li><a href="/servicios">Servicios</a></li>
-      <li><a href="/nosotros">Nosotros</a></li>
-    </ul>
-    <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Solaz Studio en Instagram"><span class="ig-full">Instagram</span><span class="ig-short">IG</span></a>
-    <a href="/contacto" class="nav-cta">Contacto</a>
-  
-    <button type="button" class="nav-hamburger" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
+{% include "partials/navigation.njk" %}
 
-  <div class="mobile-menu" id="mobileMenu" aria-hidden="true" inert>
-    <div class="mobile-menu-links">
-      <a href="/portafolio" class="active">Portafolio</a>
-      <a href="/servicios">Servicios</a>
-      <a href="/nosotros">Nosotros</a>
-    </div>
-    <div class="mobile-menu-bottom">
-      <a href="/contacto" class="mobile-menu-cta">Contacto →</a>
-      <a href="https://www.instagram.com/solazstudio/" class="mobile-menu-instagram" target="_blank" rel="noopener">Instagram ↗</a>
-    </div>
-  </div>
+{% include "partials/mobile-menu.njk" %}
 
   <!-- PAGE HEADER -->
   <header class="page-header fade-up">
@@ -1299,15 +1254,7 @@
   </section>
 
   <!-- FOOTER -->
-  <footer>
-    <div class="footer-logo">solaz</div>
-    <span class="footer-copy">© 2026 Solaz Studio &nbsp;·&nbsp; <a href="/politica-privacidad" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Política de Privacidad</a> &nbsp;·&nbsp; <a href="/terminos-uso" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Términos de Uso</a></span>
-    <div class="footer-links">
-      <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">Instagram</a>
-      <a href="/servicios">Servicios</a>
-      <a href="/contacto">Contacto</a>
-    </div>
-  </footer>
+{% include "partials/footer.njk" %}
 
   <script>
     // ── Masonry con posicionamiento absoluto (precisión exacta en px, sin holgura) ──
@@ -1742,5 +1689,4 @@
     }
 
   </script>
-</body>
-</html>
+{% endblock %}

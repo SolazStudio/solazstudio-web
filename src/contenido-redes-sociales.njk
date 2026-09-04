@@ -1,28 +1,10 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fotografía y Video Industrial Chile | Dron | Solaz Studio</title>
-  <meta name="description" content="Fotografía industrial y video corporativo con dron en Chile. Faenas mineras, plantas industriales y proyectos de construcción. Producción adaptada a protocolos de seguridad.">
-  <link rel="canonical" href="https://solazstudio.cl/fotografia-industrial">
-  <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Fotografía y Video Industrial Chile | Dron | Solaz Studio">
-  <meta property="og:description" content="Fotografía industrial, video corporativo y tomas aéreas con dron en Chile. Producción en faena adaptada a protocolos de seguridad. Sector minero, construcción y servicios.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://solazstudio.cl/fotografia-industrial">
-  <meta property="og:image" content="https://solazstudio.cl/og-image.jpg">
-  <meta property="og:locale" content="es_CL">
-  <meta property="og:site_name" content="Solaz Studio">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Fotografía y Video Industrial Chile | Dron | Solaz Studio">
-  <meta name="twitter:description" content="Fotografía industrial, video corporativo y tomas aéreas con dron en Chile. Producción en faena adaptada a protocolos de seguridad. Sector minero, construcción y servicios.">
-  <meta name="twitter:image" content="https://solazstudio.cl/og-image.jpg">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Service","name":"Fotografía y Video Industrial Chile | Dron | Solaz Studio","url":"https://solazstudio.cl/fotografia-industrial","provider":{"@type":"Organization","name":"Solaz Studio","url":"https://solazstudio.cl"},"serviceType":"Fotografía Industrial","areaServed":"Chile"}</script>
-  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://solazstudio.cl/"}, {"@type": "ListItem", "position": 2, "name": "Servicios", "item": "https://solazstudio.cl/servicios"}, {"@type": "ListItem", "position": 3, "name": "Industrial", "item": "https://solazstudio.cl/fotografia-industrial"}]}</script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+---
+pageKey: "contenido-redes-sociales"
+permalink: "contenido-redes-sociales.html"
+---
+{% extends "layouts/base.njk" %}
+{% block head %}
+{% include "partials/head.njk" %}
   <style>
     :root {
       --black:#0a0a0a;--black-soft:#111111;--black-mid:#1a1a1a;
@@ -79,7 +61,7 @@
     .section-grid{display:grid;grid-template-columns:1fr 2fr;gap:80px;align-items:start;}
     .section-label{font-size:10px;font-weight:400;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);padding-top:4px;}
     .section-with-isotipo{position:relative;overflow:hidden;}
-    .section-isotipo{position:absolute;right:-80px;top:-60px;bottom:-60px;width:clamp(500px,58vw,780px);height:auto;opacity:0.07;pointer-events:none;z-index:0;transform:none;}
+    .section-isotipo{position:absolute;right:-80px;top:50%;transform:translateY(-50%);width:clamp(500px,58vw,800px);height:110%;object-fit:contain;opacity:0.07;pointer-events:none;z-index:0;}
     .section-isotipo-content{position:relative;z-index:1;}
     .section-body{}
     .section-body h2{font-family:var(--font-display);font-size:clamp(32px,4vw,52px);line-height:.95;margin-bottom:24px;}
@@ -138,50 +120,23 @@
       footer{padding:32px 24px;flex-direction:column;align-items:flex-start;gap:20px;}
     }
   </style>
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
-</head>
-<body>
-  <nav class="main-nav" aria-label="Navegación principal">
-    <a href="/" class="nav-logo">solaz</a>
-    <ul class="nav-links">
-      <li><a href="/portafolio">Portafolio</a></li>
-      <li><a href="/servicios">Servicios</a></li>
-      <li><a href="/nosotros">Nosotros</a></li>
-    </ul>
-    <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Instagram"><span class="ig-full">Instagram</span><span class="ig-short">IG</span></a>
-    <a href="/contacto" class="nav-cta">Contacto</a>
-    <button type="button" class="nav-hamburger" id="navToggle" aria-label="Abrir menú">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-  <div class="mobile-menu" id="mobileMenu" aria-hidden="true" inert>
-    <div class="mobile-menu-links">
-      <a href="/portafolio">Portafolio</a>
-      <a href="/servicios">Servicios</a>
-      <a href="/nosotros">Nosotros</a>
-    </div>
-    <div class="mobile-menu-bottom">
-      <a href="/contacto" class="mobile-menu-cta">Contacto →</a>
-      <a href="https://www.instagram.com/solazstudio/" class="mobile-menu-instagram" target="_blank" rel="noopener">Instagram ↗</a>
-    </div>
-  </div>
+{% include "partials/favicons.njk" %}
+{% endblock %}
+{% block body %}
+{% include "partials/navigation.njk" %}
+{% include "partials/mobile-menu.njk" %}
 
   <main>
 
 
   <header class="page-hero">
-    <div class="page-hero-bg" style="background-image:url('img/hero-industrial.webp');" aria-hidden="true"></div>
+    <div class="page-hero-bg" style="background-image:url('img/hero-contenido-marcas.webp');" aria-hidden="true"></div>
     <div class="page-hero-content fade-up">
-      <div class="page-eyebrow">Industrial</div>
-      <h1>FOTOGRAFÍA<br><span class="outline">& VIDEO</span><br>INDUSTRIAL_</h1>
+      <div class="page-eyebrow">Contenido Digital</div>
+      <h1>CONTENIDO<br><span class="outline">PARA</span><br>MARCAS_</h1>
     
-      <p class="hero-intro">Donde otros no llegan — o no saben cómo moverse.</p>
-      <p class="hero-body">Fotografía industrial y video corporativo para el sector minero, construcción, energía y servicios en Chile. Conocemos el rubro, entendemos la faena y llegamos preparados para trabajar en las condiciones que el proyecto exige.</p>
+      <p class="hero-intro">Contenido que convierte — no solo que se ve bien.</p>
+      <p class="hero-body">Fotografía y video para redes sociales con enfoque estratégico. No solo hacemos fotos y videos — construimos activos digitales que comunican, generan engagement y mueven a tu audiencia hacia la acción. Para Instagram, TikTok, LinkedIn y cualquier plataforma donde tu marca necesite estar presente.</p>
         </div>
   </header>
 
@@ -191,37 +146,40 @@
     </svg>
     <div class="section-isotipo-content">
       <div class="section-label" style="margin-bottom:24px;">Qué hacemos</div>
-      <h2 style="font-family:var(--font-display);font-size:clamp(32px,4vw,52px);line-height:.95;margin-bottom:40px;max-width:65%;">PRODUCCIÓN EN TERRENO</h2>
+      <h2 style="font-family:var(--font-display);font-size:clamp(32px,4vw,52px);line-height:.95;margin-bottom:40px;max-width:65%;">CONTENIDO QUE TRABAJA POR TU MARCA</h2>
       <div class="spec-grid" style="max-width:65%;">
           <div class="spec-card">
-            <h3>FOTOGRAFÍA DOCUMENTAL & PUBLICITARIA</h3>
-            <p>Fotografía industrial en faena, planta e instalaciones mineras y de construcción. Maquinaria, procesos operativos y espacios de trabajo — para comunicación interna, reportes anuales y marketing corporativo.</p>
+            <h3>FOTOGRAFÍA PARA FEED & ADS</h3>
+            <p>Fotografía para redes sociales con dirección de arte orientada a mantener coherencia visual de marca y maximizar el rendimiento en feed orgánico y anuncios pagados. Cada imagen pensada para el scroll.</p>
           </div>
           <div class="spec-card">
-            <h3>VIDEO INSTITUCIONAL & CORPORATIVO</h3>
-            <p>Videos de presentación de empresa, planes de emergencia, capacitación interna y comunicación corporativa. Producción completa con guion, dirección y edición.</p>
+            <h3>REELS & VIDEO CORTO</h3>
+            <p>Videos cortos editados para Instagram Reels, TikTok y YouTube Shorts — formatos que hoy concentran el mayor alcance orgánico. Producidos para enganchar en los primeros segundos y convertir.</p>
           </div>
           <div class="spec-card">
-            <h3>FILMACIÓN AÉREA CON DRON</h3>
-            <p>Fotografía y video aéreo con <strong>dron</strong> para instalaciones industriales, faenas mineras y terrenos. Perspectiva aérea que da contexto y escala a la operación.</p>
+            <h3>PLAN MENSUAL DE CONTENIDO</h3>
+            <p>Producción mensual con calendario editorial, estrategia de contenido por etapa del funnel y coherencia visual sostenida. Para marcas que entienden que la presencia constante construye audiencia.</p>
           </div>
           <div class="spec-card">
-            <h3>MOTION GRAPHICS & ANIMACIÓN</h3>
-            <p>Gráficas animadas para videos corporativos — señalética, instructivos, certificaciones y elementos informativos integrados en la pieza final.</p>
+            <h3>CONTENIDO PARA CAMPAÑAS</h3>
+            <p>Pack de contenido para lanzamientos, campañas estacionales o activaciones. Piezas alineadas al objetivo de negocio — tráfico, leads, conversión o awareness — en una o más jornadas de producción.</p>
           </div>
+        </div>
+        <div class="highlight-box" style="max-width:65%;margin-top:24px;">
+          <p>¿Tienes una necesidad específica que no encaja aquí? <strong>Cuéntanos.</strong> Trabajamos con marcas muy distintas entre sí y adaptamos la producción al objetivo concreto.</p>
         </div>
     </div>
   </section>
 
   <section class="content-section alt fade-up">
     <div class="section-grid">
-      <div class="section-label">Protocolo y seguridad</div>
+      <div class="section-label">Nuestro enfoque</div>
       <div class="section-body">
-        <h2>NOS ADAPTAMOS A TU FAENA</h2>
-        <p>Trabajamos bajo los protocolos de seguridad que cada empresa define — EPP, inducción, restricciones de acceso y coordinación con departamentos de seguridad. El equipo llega preparado.</p>
-        <p>Para producciones que incluyan <strong>tomas aéreas con dron</strong>, coordinamos la logística con anticipación según las condiciones de cada faena.</p>
+        <h2>ESTRATEGIA PRIMERO, PRODUCCIÓN DESPUÉS</h2>
+        <p>Antes de producir una sola pieza definimos el objetivo: ¿estás buscando awareness, engagement, tráfico o conversión? ¿A quién le hablas y en qué etapa del funnel está? Con eso claro, cada decisión visual — el formato, el tono, el ritmo de edición — responde a una estrategia, no a una preferencia estética.</p>
+        <p>Trabajamos con el concepto de <strong>contenido por etapa</strong>: piezas que generan alcance, otras que construyen comunidad y otras que empujan hacia la acción. El mix correcto es lo que diferencia una cuenta que crece de una que simplemente publica.</p>
         <div class="highlight-box">
-          <p>Cada producción industrial se planifica en detalle antes de la jornada — tabla de tomas, timing estimado, recursos requeridos y coordinación con el cliente para <strong>maximizar el tiempo en terreno</strong>.</p>
+          <p>Todo se entrega <strong>optimizado por plataforma</strong> — proporciones, resolución, formato y duración correctos para cada canal. Sin trabajo extra de tu parte.</p>
         </div>
       </div>
     </div>
@@ -230,16 +188,20 @@
   <div class="clients-section fade-up">
     <span class="clients-label">Han confiado en nosotros</span>
     <div class="clients-list">
-      <span class="client-pill">WEG Chile</span>
-      <span class="client-pill">Engie</span>
-      <span class="client-pill">Paterson & Cooke</span>
+      <span class="client-pill">Puerto Rolls</span>
+      <span class="client-pill">Johnny Rockets</span>
+      <span class="client-pill">Red Bull</span>
+      <span class="client-pill">Maturana Wines</span>
+      <span class="client-pill">Pura Somes</span>
+      <span class="client-pill">Geneo X</span>
+      <span class="client-pill">St Giovanni's</span>
     </div>
   </div>
 
   <section class="cta-section fade-up">
-    <h2 class="cta-headline">HABLEMOS<br><span class="outline">DE TU</span><br>PROYECTO_</h2>
+    <h2 class="cta-headline">HABLEMOS<br><span class="outline">DE TU</span><br>MARCA_</h2>
     <div>
-      <p class="cta-body">Cuéntanos el tipo de instalación, el alcance y si necesitas tomas aéreas. <strong>Coordinamos una visita de reconocimiento sin costo si el proyecto lo requiere.</strong></p>
+      <p class="cta-body">¿Tu marca publica pero no está creciendo? ¿Tienes presencia pero no conversión? <strong>Hablemos — desde ahí construimos el contenido que tu marca necesita.</strong></p>
       <a href="/contacto" class="cta-link">Solicitar presupuesto →</a>
       <br>
       <a href="/servicios" class="back-link">← Ver todos los servicios</a>
@@ -249,20 +211,13 @@
   <div class="fade-up" style="padding:0 48px 48px;">
     <p style="font-size:11px;font-weight:300;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-light);margin-bottom:12px;">Proyectos relacionados</p>
     <div style="display:flex;flex-direction:column;gap:4px;">
-      <a href="/proyectos/video-corporativo-weg-chile" class="back-link">WEG Chile — Transformador Antofagasta →</a>
+      <a href="/proyectos/contenido-marca-red-bull-rb-zero" class="back-link">Red Bull — RB Zero →</a>
+      <a href="/proyectos/contenido-redes-sociales-cdm-medical" class="back-link">CDM Medical →</a>
     </div>
   </div>
 </main>
 
-  <footer>
-    <div class="footer-logo">solaz</div>
-    <span class="footer-copy">© 2026 Solaz Studio &nbsp;·&nbsp; <a href="/politica-privacidad" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Política de Privacidad</a> &nbsp;·&nbsp; <a href="/terminos-uso" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Términos de Uso</a></span>
-    <div class="footer-links">
-      <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">Instagram</a>
-      <a href="/portafolio">Portafolio</a>
-      <a href="/contacto">Contacto</a>
-    </div>
-  </footer>
+{% include "partials/footer.njk" %}
 
   <script>
     
@@ -272,5 +227,4 @@
     const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.08});
     document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
   </script>
-</body>
-</html>
+{% endblock %}

@@ -1,28 +1,10 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fotografía Corporativa Santiago | Headshots | Solaz Studio</title>
-  <meta name="description" content="Fotografía corporativa y headshots para empresas en Santiago Chile. Retratos para LinkedIn, web y prensa. Vamos a tus dependencias o te recibimos en estudio.">
-  <link rel="canonical" href="https://solazstudio.cl/fotografia-corporativa">
-  <meta name="robots" content="index, follow">
-  <meta property="og:title" content="Fotografía Corporativa Santiago | Headshots | Solaz Studio">
-  <meta property="og:description" content="Fotografía corporativa y headshots para empresas en Santiago Chile. Retratos para LinkedIn, web y prensa. Vamos a tus dependencias o te recibimos en estudio.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://solazstudio.cl/fotografia-corporativa">
-  <meta property="og:image" content="https://solazstudio.cl/og-image.jpg">
-  <meta property="og:locale" content="es_CL">
-  <meta property="og:site_name" content="Solaz Studio">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Fotografía Corporativa Santiago | Headshots | Solaz Studio">
-  <meta name="twitter:description" content="Fotografía corporativa y headshots para empresas en Santiago Chile. Retratos para LinkedIn, web y prensa. Vamos a tus dependencias o te recibimos en estudio.">
-  <meta name="twitter:image" content="https://solazstudio.cl/og-image.jpg">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Service","name":"Fotografía Corporativa Santiago | Headshots | Solaz Studio","url":"https://solazstudio.cl/fotografia-corporativa","provider":{"@type":"Organization","name":"Solaz Studio","url":"https://solazstudio.cl"},"serviceType":"Fotografía Corporativa","areaServed":"Chile"}</script>
-  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://solazstudio.cl/"}, {"@type": "ListItem", "position": 2, "name": "Servicios", "item": "https://solazstudio.cl/servicios"}, {"@type": "ListItem", "position": 3, "name": "Fotografía Corporativa", "item": "https://solazstudio.cl/fotografia-corporativa"}]}</script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+---
+pageKey: "cobertura-eventos"
+permalink: "cobertura-eventos.html"
+---
+{% extends "layouts/base.njk" %}
+{% block head %}
+{% include "partials/head.njk" %}
   <style>
     :root {
       --black:#0a0a0a;--black-soft:#111111;--black-mid:#1a1a1a;
@@ -41,8 +23,9 @@
     .nav-links a{color:var(--white);text-decoration:none;font-size:11px;font-weight:400;letter-spacing:.12em;text-transform:uppercase;opacity:.7;transition:opacity .2s;}
     .nav-links a:hover,.nav-links a.active{opacity:1;}
     .nav-instagram{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--white);text-decoration:none;opacity:.6;transition:opacity .2s;}
-    .ig-short{display:none;}
     .nav-instagram:hover{opacity:1;}
+    .ig-full{display:inline;}
+    .ig-short{display:none;}
     .nav-cta{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--black);background:var(--white);padding:10px 22px;text-decoration:none;transition:background .2s;}
     .nav-cta:hover{background:var(--accent);}
     .nav-hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;z-index:101;}
@@ -67,7 +50,6 @@
     .page-hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:0;}
     .page-hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(to right,rgba(10,10,10,.92) 50%,rgba(10,10,10,.55) 100%);}
     .page-hero-content{position:relative;z-index:1;max-width:600px;}
-    .page-hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;}
     .page-eyebrow{font-size:10px;font-weight:400;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);margin-bottom:20px;display:flex;align-items:center;gap:16px;}
     .page-eyebrow::before{content:'';display:block;width:32px;height:1px;background:var(--accent);}
     .page-hero h1{font-family:var(--font-display);font-size:clamp(48px,6vw,88px);line-height:.92;letter-spacing:-.01em;}
@@ -80,7 +62,7 @@
     .section-grid{display:grid;grid-template-columns:1fr 2fr;gap:80px;align-items:start;}
     .section-label{font-size:10px;font-weight:400;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);padding-top:4px;}
     .section-with-isotipo{position:relative;overflow:hidden;}
-    .section-isotipo{position:absolute;right:-60px;top:50%;transform:translateY(-50%);width:clamp(400px,48vw,640px);height:auto;opacity:0.06;pointer-events:none;z-index:0;}
+    .section-isotipo{position:absolute;right:-80px;top:50%;transform:translateY(-50%);width:clamp(500px,58vw,800px);height:130%;object-fit:contain;opacity:0.07;pointer-events:none;z-index:0;}
     .section-isotipo-content{position:relative;z-index:1;}
     .section-body{}
     .section-body h2{font-family:var(--font-display);font-size:clamp(32px,4vw,52px);line-height:.95;margin-bottom:24px;}
@@ -89,8 +71,7 @@
     .section-body p:last-child{margin-bottom:0;}
     /* SPECIALTIES GRID */
     .spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:40px;}
-    .spec-grid-3{grid-template-columns:1fr 1fr 1fr;}
-    .spec-card{padding:32px;background:rgba(26,26,26,0.45);border:1px solid rgba(68,66,64,0.5);}
+    .spec-card{padding:32px;background:rgba(26,26,26,0.75);border:1px solid var(--grey-dark);backdrop-filter:blur(2px);}
     .spec-card h3{font-family:var(--font-display);font-size:22px;letter-spacing:.02em;margin-bottom:12px;color:var(--white);}
     .spec-card p{font-size:13px;font-weight:300;color:var(--grey-light);line-height:1.75;}
     /* HIGHLIGHT BOX */
@@ -125,71 +106,42 @@
       .section-grid,.cta-section{grid-template-columns:1fr;gap:40px;}
       .spec-grid{grid-template-columns:1fr;}
       .content-section{padding:64px 48px;}
+      .section-isotipo{width:clamp(280px,55vw,460px);right:-30px;}
     }
     @media(max-width:640px){
       .main-nav{padding:20px 24px;}
       .nav-hamburger{display:flex;}
       .nav-links,.nav-instagram{display:none!important;}
-      .page-hero{padding:110px 24px 56px;}
+      .ig-full{display:none;}
+      .ig-short{display:inline;}
+      .page-hero{padding:110px 24px 64px;}
       .section-isotipo{width:220px;right:-10px;top:40px;transform:none;opacity:0.035;}
       .section-isotipo-content h2{max-width:100%!important;}
       .section-isotipo-content .spec-grid{max-width:100%!important;}
-      .spec-grid-3{grid-template-columns:1fr!important;}
       .content-section{padding:56px 24px;}
       .clients-section{padding:32px 24px;}
       .cta-section{padding:64px 24px;}
       footer{padding:32px 24px;flex-direction:column;align-items:flex-start;gap:20px;}
     }
   </style>
-  <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
-</head>
-<body>
-  <nav class="main-nav" aria-label="Navegación principal">
-    <a href="/" class="nav-logo">solaz</a>
-    <ul class="nav-links">
-      <li><a href="/portafolio">Portafolio</a></li>
-      <li><a href="/servicios">Servicios</a></li>
-      <li><a href="/nosotros">Nosotros</a></li>
-    </ul>
-    <a href="https://www.instagram.com/solazstudio/" class="nav-instagram" target="_blank" rel="noopener" aria-label="Instagram"><span class="ig-full">Instagram</span><span class="ig-short">IG</span></a>
-    <a href="/contacto" class="nav-cta">Contacto</a>
-    <button type="button" class="nav-hamburger" id="navToggle" aria-label="Abrir menú">
-      <span></span><span></span><span></span>
-    </button>
-  </nav>
-  <div class="mobile-menu" id="mobileMenu" aria-hidden="true" inert>
-    <div class="mobile-menu-links">
-      <a href="/portafolio">Portafolio</a>
-      <a href="/servicios">Servicios</a>
-      <a href="/nosotros">Nosotros</a>
-    </div>
-    <div class="mobile-menu-bottom">
-      <a href="/contacto" class="mobile-menu-cta">Contacto →</a>
-      <a href="https://www.instagram.com/solazstudio/" class="mobile-menu-instagram" target="_blank" rel="noopener">Instagram ↗</a>
-    </div>
-  </div>
+{% include "partials/favicons.njk" %}
+{% endblock %}
+{% block body %}
+{% include "partials/navigation.njk" %}
+
+{% include "partials/mobile-menu.njk" %}
 
   <main>
 
 
   <header class="page-hero">
-    <video class="page-hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
-      <source src="https://media.solazstudio.cl/hero/hero-fotografia-corporativa.mp4" type="video/mp4">
-      <img src="img/fotografia-corporativa.webp" alt="" aria-hidden="true">
-    </video>
-    <div class="page-hero-bg" aria-hidden="true"></div>
+    <div class="page-hero-bg" style="background-image:url('img/hero-cobertura-eventos.webp');" aria-hidden="true"></div>
     <div class="page-hero-content fade-up">
-      <div class="page-eyebrow">Corporativo</div>
-      <h1 aria-label="Fotografía corporativa"><span aria-hidden="true">FOTOGRAFÍA<br><span class="outline">CORPO</span><br>RATIVA_</span></h1>
-    
-      <p class="hero-intro">Vamos a tu empresa — o vienes al estudio. Como lo necesites.</p>
-      <p class="hero-body">Fotografía corporativa, headshots y retratos de equipo para empresas en Chile. Para LinkedIn, web, prensa y comunicaciones internas — nosotros nos aseguramos de que tu imagen diga lo correcto.</p>
-        </div>
+      <div class="page-eyebrow">Eventos</div>
+      <h1>COBERTURA<br><span class="outline">DE</span><br>EVENTOS_</h1>
+      <p class="hero-intro">Lo que ocurre en tu evento merece ser documentado con el mismo nivel con que fue producido.</p>
+      <p class="hero-body">Fotografía y video para eventos corporativos en Chile. No solo registramos — construimos contenido editorial que sigue trabajando para tu marca mucho después de que el evento terminó.</p>
+    </div>
   </header>
 
   <section class="content-section section-with-isotipo fade-up">
@@ -197,34 +149,38 @@
       <path fill="white" d="M626.38,807.95L234.37,415.94l-14.08,76.77-69.21,14.15-13.08,52.27,21.05,45.07-13.37,5.37H40.17c68.28,145.86,216.37,246.9,388.05,246.9,71.5,0,138.9-17.53,198.16-48.51M331.91,440.75l193.85-193.86c103.59,103.6,207.18,207.19,310.78,310.79,12.93-40.84,19.91-84.33,19.91-129.45C856.45,191.72,664.73,0,428.22,0S0,191.72,0,428.23c0,45.12,6.97,88.61,19.91,129.45l214.46-214.46,97.54,97.53ZM459.26,568.1l206.08,216.78c66.94-44.6,120.62-107.53,153.84-181.64l-293.42-283.62-36.58,128.57,22.5,38.57-52.42,81.35Z"/>
     </svg>
     <div class="section-isotipo-content">
-      <div class="section-label" style="margin-bottom:24px;">Modalidades</div>
-      <h2 style="font-family:var(--font-display);font-size:clamp(32px,4vw,52px);line-height:.95;margin-bottom:40px;max-width:65%;">EN TU EMPRESA, EN EL ESTUDIO O AL AIRE LIBRE</h2>
-      <div class="spec-grid spec-grid-3" style="max-width:100%;">
+      <div class="section-label" style="margin-bottom:24px;">Qué cubrimos</div>
+      <h2 style="font-family:var(--font-display);font-size:clamp(32px,4vw,52px);line-height:.95;margin-bottom:40px;max-width:65%;">DESDE EL LANZAMIENTO HASTA LA CONFERENCIA</h2>
+      <div class="spec-grid" style="max-width:65%;">
           <div class="spec-card">
-            <h3>EN TUS DEPENDENCIAS</h3>
-            <p>Instalamos un <strong>estudio completo</strong> — fondo, iluminación y accesorios — directamente en tus oficinas o instalaciones. Ideal para sesiones de equipo numerosas donde trasladar personas no es viable.</p>
+            <h3>EVENTOS CORPORATIVOS</h3>
+            <p>Aniversarios, reuniones de empresa, activaciones internas y presentaciones de resultados. <strong>Documentación con criterio editorial</strong>, no fotógrafo de fondo.</p>
           </div>
           <div class="spec-card">
-            <h3>EN NUESTRO ESTUDIO</h3>
-            <p>Para headshots y retratos individuales con mayor control del ambiente. Ideal para ejecutivos, directivos y profesionales que necesitan fotografía corporativa para LinkedIn, web, prensa o materiales de comunicación.</p>
+            <h3>LANZAMIENTOS DE MARCA</h3>
+            <p>Lanzamientos de producto, apertura de locales y eventos de prensa. Fotografía y video orientados a generar <strong>contenido publicable</strong> para redes, PR y medios.</p>
           </div>
           <div class="spec-card">
-            <h3>AL AIRE LIBRE</h3>
-            <p>Para perfiles distintos, más cercanos o creativos. Buscamos la locación perfecta según el concepto — parques, arquitectura, espacios urbanos. Pensado para sesiones individuales o grupos pequeños que quieren algo fuera de lo convencional.</p>
+            <h3>ACTIVACIONES</h3>
+            <p>Activaciones BTL, ferias, expos y experiencias de marca. Cubrimos el ambiente, los detalles y las personas — <strong>el evento como historia visual</strong>.</p>
           </div>
-        </div>
+          <div class="spec-card">
+            <h3>CONFERENCIAS & SEMINARIOS</h3>
+            <p>Fotografía y video de seminarios corporativos, ponentes y dinámica del evento. Material listo para comunicaciones internas, web y redes sociales el mismo día o al día siguiente.</p>
+          </div>
+      </div>
     </div>
   </section>
 
   <section class="content-section alt fade-up">
     <div class="section-grid">
-      <div class="section-label">El shooting</div>
+      <div class="section-label">Nivel de producción</div>
       <div class="section-body">
-        <h2>DESDE UNA SESIÓN SIMPLE HASTA UN SHOOTING DE ALTO ESTÁNDAR</h2>
-        <p>Nos adaptamos al nivel que cada proyecto necesita. Puede ser algo limpio y ágil, o una producción completa — con equipo de maquillaje profesional para corregir brillos, preparar la piel y trabajar el pelo, más un asistente que guía a cada persona en cómo posar y se asegura de que cada detalle esté en su lugar.</p>
-        <p>Una de las cosas que más valoran nuestros clientes: <strong>cada persona ve sus fotos en pantalla durante la sesión y hace su selección en el momento</strong> — sin esperar días para saber qué quedó.</p>
+        <h2>QUE TU EVENTO SE VEA TAN BIEN COMO LO PLANIFICASTE</h2>
+        <p>Un evento bien producido merece contenido que esté a la misma altura. Llegamos con equipo fotográfico y cinematográfico profesional — fotógrafo, filmmaker, o ambos según lo que el proyecto exija.</p>
+        <p>Si la producción lo pide, sumamos <strong>dron</strong> para tomas aéreas que cambian completamente la escala visual de lo que comunicas después, <strong>Photowall</strong> para que tus invitados se sientan como en un estudio profesional. Y sube historias impresionantes en tiempo real con nuestro <strong>content creator</strong> — tu evento vive en las redes mientras todavía está ocurriendo.</p>
         <div class="highlight-box">
-          <p>El resultado es fotografía corporativa de nivel real — no una foto de perfil.</p>
+          <p><strong>¿Necesitas el contenido el mismo día?</strong> Podemos tener fotografías editadas y listas para publicar horas después de que todo termine — cuando el momento todavía está caliente y tus redes lo necesitan.</p>
         </div>
       </div>
     </div>
@@ -234,42 +190,42 @@
     <span class="clients-label">Han confiado en nosotros</span>
     <div class="clients-list">
       <span class="client-pill">WEG Chile</span>
-      <span class="client-pill">UNAB</span>
-      <span class="client-pill">Carabineros de Chile</span>
-      <span class="client-pill">Copec Flux</span>
+      <span class="client-pill">Mall Plaza</span>
+      <span class="client-pill">Colgate</span>
       <span class="client-pill">Engie</span>
-      <span class="client-pill">Elige Educar</span>
+      <span class="client-pill">Dropi</span>
+      <span class="client-pill">Aistana</span>
     </div>
   </div>
 
   <section class="cta-section fade-up">
-    <h2 class="cta-headline">HABLEMOS<br><span class="outline">DE TU</span><br>EQUIPO_</h2>
+    <h2 class="cta-headline">¿CUÁNDO<br><span class="outline">ES TU</span><br>EVENTO?_</h2>
     <div>
-      <p class="cta-body">¿Cuántas personas son? ¿Vas a nuestro estudio, te visitamos en tu empresa o buscamos una locación exterior? <strong>Con esos datos te armamos una propuesta en el día.</strong></p>
+      <p class="cta-body">Cuéntanos de qué se trata, cuándo es y qué quieres lograr con el contenido. <strong>Te armamos una propuesta con los recursos exactos que tu evento necesita.</strong></p>
       <a href="/contacto" class="cta-link">Solicitar presupuesto →</a>
       <br>
       <a href="/servicios" class="back-link">← Ver todos los servicios</a>
     </div>
   </section>
-    </main>
 
-  <footer>
-    <div class="footer-logo">solaz</div>
-    <span class="footer-copy">© 2026 Solaz Studio &nbsp;·&nbsp; <a href="/politica-privacidad" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Política de Privacidad</a> &nbsp;·&nbsp; <a href="/terminos-uso" style="color:inherit;opacity:.7;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">Términos de Uso</a></span>
-    <div class="footer-links">
-      <a href="https://www.instagram.com/solazstudio/" target="_blank" rel="noopener">Instagram</a>
-      <a href="/portafolio">Portafolio</a>
-      <a href="/contacto">Contacto</a>
+    
+  <div class="fade-up" style="padding:0 48px 48px;">
+    <p style="font-size:11px;font-weight:300;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-light);margin-bottom:12px;">Proyectos relacionados</p>
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <a href="/proyectos/cobertura-maraton-santiago-2025" class="back-link">Maratón de Santiago 2025 →</a>
+      <a href="/proyectos/cobertura-evento-kifit-tnf-trail" class="back-link">Kifit x The North Face →</a>
+      <a href="/proyectos/clew-evento-internacional-world-vaper-show" class="back-link">Clew — World Vaper Show 2025 →</a>
+      <a href="/proyectos/weg-cobertura-evento-seminario-chile" class="back-link">WEG Chile — Seminarios 2025 →</a>
     </div>
-  </footer>
+  </div>
+</main>
+
+{% include "partials/footer.njk" %}
 
   <script>
-    
-    
     const t=document.getElementById('navToggle'),m=document.getElementById('mobileMenu');
     if(t&&m){t.addEventListener('click',()=>{const o=m.classList.toggle('open');t.classList.toggle('open');m.setAttribute('aria-hidden',String(!o));m.toggleAttribute('inert',!o);document.body.style.overflow=o?'hidden':'';});m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{m.classList.remove('open');t.classList.remove('open');m.setAttribute('aria-hidden','true');m.toggleAttribute('inert',true);document.body.style.overflow='';}));}
     const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.08});
     document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
   </script>
-</body>
-</html>
+{% endblock %}
