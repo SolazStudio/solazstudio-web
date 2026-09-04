@@ -79,18 +79,26 @@ function validarToken(valor, maxLargo) {
   return token && TOKEN_PATTERN.test(token) ? token : null;
 }
 
-function obtenerOrigenUrl(sourcePage, referer) {
-  if (sourcePage) {
-    return new URL(sourcePage, 'https://solazstudio.cl').toString();
+function obtenerContextoOrigen(sourcePage, referer) {
+  let sourcePagePersistido = sourcePage;
+
+  if (!sourcePagePersistido) {
+    try {
+      const url = new URL(referer || '');
+      if (ORIGENES_PERMITIDOS.has(url.origin)) {
+        sourcePagePersistido = validarPathInterno(url.pathname);
+      }
+    } catch {
+      sourcePagePersistido = null;
+    }
   }
 
-  try {
-    const url = new URL(referer || '');
-    if (!ORIGENES_PERMITIDOS.has(url.origin)) return null;
-    return new URL(url.pathname, 'https://solazstudio.cl').toString();
-  } catch {
-    return null;
-  }
+  return {
+    sourcePage: sourcePagePersistido,
+    origenUrl: sourcePagePersistido
+      ? new URL(sourcePagePersistido, 'https://solazstudio.cl').toString()
+      : null,
+  };
 }
 
 async function verificarTurnstile(token, secretKey, ip) {
@@ -212,11 +220,6 @@ export async function onRequestPost(context) {
     mensaje = `Solicitud de reunión. Días: ${dias}. Horario: ${horario}.`;
   }
 
-  // Los identificadores de contexto se validan ahora, pero service_code,
-  // case_id y cta_id tendrán persistencia estructurada recién en F1.2.
-  void caseId;
-  void ctaId;
-
   // 4. Turnstile sigue siendo obligatorio y server-side.
   const ip = request.headers.get('CF-Connecting-IP');
   const turnstileOk = await verificarTurnstile(
@@ -229,7 +232,10 @@ export async function onRequestPost(context) {
   }
 
   const consentMarketing = datos.consent_marketing === 'si' ? 1 : 0;
-  const origenUrl = obtenerOrigenUrl(sourcePage, request.headers.get('Referer'));
+  const contextoOrigen = obtenerContextoOrigen(
+    sourcePage,
+    request.headers.get('Referer')
+  );
 
   // 5. Inserción atómica e idempotente usando la columna id existente.
   let inserted;
@@ -237,8 +243,9 @@ export async function onRequestPost(context) {
     const result = await env.DB.prepare(
       `INSERT INTO contacts
         (id, form_type, nombre, empresa, email, telefono, mensaje, presupuesto,
-         consent_marketing, dias, horario, origen_url, sync_status)
-       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending'
+         consent_marketing, dias, horario, origen_url, service_code, source_page,
+         case_id, cta_id, sync_status)
+       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending'
        WHERE NOT EXISTS (SELECT 1 FROM contacts WHERE id = ?)`
     ).bind(
       submissionId,
@@ -252,7 +259,11 @@ export async function onRequestPost(context) {
       consentMarketing,
       dias,
       horario,
-      origenUrl,
+      contextoOrigen.origenUrl,
+      serviceCode,
+      contextoOrigen.sourcePage,
+      caseId,
+      ctaId,
       submissionId
     ).run();
     inserted = Number(result?.meta?.changes ?? result?.changes ?? 0) > 0;

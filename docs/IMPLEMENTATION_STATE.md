@@ -1,15 +1,39 @@
 # Estado de implementación
 
 - Fecha: 2026-09-04
-- Fase/lote: F1.1-CORRECCIÓN — eliminar Web3Forms
+- Fase/lote: F1.2 — Persistencia estructurada del contexto del lead
 - Estado: COMPLETADO PARA REVISIÓN DE CHATGPT
 - Rama: `develop`
-- Commit base: `b0c78bc3e75fb98ee8c316d84c465dee3f81f9e9`
-- Commit del lote: único commit que contiene este documento, con mensaje `fix: remove Web3Forms from contact flow`
+- Commit base: `c21d4be162952e367850bea91c465ad7eb0ec08b`
+- Commit del lote: único commit que contiene este documento, con mensaje `feat: persist contact context in D1`
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
 - Preview / Cloudflare / recursos reales: sin acciones en este lote
 - Bloqueadores: ninguno
-- Siguiente lote: F1.2, sujeto a revisión de ChatGPT y nueva autorización
+- Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización
+
+## F1.2 — Persistencia estructurada del contexto
+
+F1.2 deja versionado y probado localmente el almacenamiento estructurado de `service_code`, `source_page`, `case_id` y `cta_id` en `contacts`. No se ejecutó la migración contra D1 real ni se tocó Cloudflare, Preview o Production.
+
+La evidencia real de solo lectura suministrada para diseñar el lote mostró 19 columnas existentes en Production: `id`, `created_at`, `form_type`, `nombre`, `empresa`, `email`, `telefono`, `mensaje`, `presupuesto`, `consent_marketing`, `dias`, `horario`, `origen_url`, `sync_status`, `notion_page_id`, `retry_count`, `last_error`, `synced_at` y `alerted`. No existían las cuatro columnas de contexto.
+
+La migración `migrations/0001_add_contact_context.sql` añade mediante cuatro operaciones `ALTER TABLE ... ADD COLUMN`:
+
+- `service_code TEXT`
+- `source_page TEXT`
+- `case_id TEXT`
+- `cta_id TEXT`
+
+Todas permiten `NULL`, no tienen default artificial y preservan las filas históricas. No se reconstruye la tabla, no se eliminan columnas y no se crean tablas o índices.
+
+Decisión de persistencia:
+
+- `service_code`: código estable obligatorio ya validado contra `src/_data/services.js`.
+- `source_page`: pathname interno explícito validado; si falta, pathname de Referer Solaz permitido y validado; si tampoco existe, `NULL`.
+- `origen_url`: se conserva además por compatibilidad como URL canónica Solaz cuando existe un origen interno.
+- `case_id` y `cta_id`: tokens validados o `NULL`, sin valores inventados.
+- No se infiere servicio desde caso ni se añaden reglas comerciales.
+- Idempotencia y Queue permanecen iguales: una inserción nueva encola una vez; un UUID repetido no inserta ni encola; el mensaje sigue siendo `CONTACT_QUEUE.send({ id: submissionId })`.
 
 ## Revisión de ChatGPT y corrección definitiva
 
@@ -47,20 +71,19 @@ Formulario
 - El mecanismo actual detrás de `CONTACT_QUEUE`, Make, Worker, Notion y Resend no fue modificado ni probado en esta corrección.
 - La referencia `sebaogalde.cl` aporta patrones de integración server-side, secretos privados, idempotencia, Notion API, Resend API y escape de contenido. Solaz no copiará exactamente esa topología: conserva D1 + Queue como capa adicional de resiliencia.
 
-## Alcance y estado acumulado de F1.1
+## Alcance y estado acumulado de F1
 
-F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matriz frontend/backend, contexto interno seguro, idempotencia sobre `id`, Turnstile individual y feedback accesible. Esta corrección cambia solo el transporte ejecutable del formulario y su documentación; no cambia la carrocería ni el backend.
+F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matriz frontend/backend, contexto interno seguro, idempotencia sobre `id`, Turnstile individual y feedback accesible. F1.2 añade únicamente el esquema local versionado y los bindings backend de contexto; no cambia frontend ni carrocería.
 
-**F1 NO ESTÁ CERRADO.** No se verificó ni modificó infraestructura real. La persistencia estructurada de `service_code`, `case_id` y `cta_id`, la decisión sobre persistencia estructurada adicional de `source_page`, la atribución externa y las pruebas en Preview/Cloudflare quedan para lotes posteriores expresamente autorizados.
+**F1 SIGUE ABIERTO.** La migración todavía no fue aplicada a D1 real. Preview, integraciones, atribución externa y QA real/manual quedan para lotes posteriores expresamente autorizados.
 
 ## Archivos afectados
 
-- Creados: 0.
-- Modificados: 2: `src/contacto.njk` y `docs/IMPLEMENTATION_STATE.md`.
+- Creados: 1: `migrations/0001_add_contact_context.sql`.
+- Modificados: 2: `functions/api/contact.js` y `docs/IMPLEMENTATION_STATE.md`.
 - Eliminados: 0.
-- Archivos temporales: 0 al cierre; los artefactos locales de comprobación fueron eliminados antes del commit.
-- `functions/api/contact.js` y `src/_data/services.js`: leídos y comprobados, no modificados.
-- `package.json`, `package-lock.json`, configuración, QA, rutas, templates de servicios, media y demás archivos: intactos.
+- Archivos temporales: 0 al cierre; prueba SQLite, mocks y manifiestos fueron eliminados antes del commit.
+- `src/contacto.njk`, `src/_data/services.js`, `package.json`, `package-lock.json`, QA/paridad, superficie pública, configuración, templates, media y demás archivos: intactos.
 
 ## Comportamiento implementado
 
@@ -114,7 +137,7 @@ F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matri
 - D1 sigue siendo la primera persistencia y Queue se ejecuta después como entrega best-effort; un fallo de Queue posterior no invalida el guardado.
 - Web3Forms fue eliminado del flujo activo: no queda endpoint, credencial, campo exclusivo ni segundo envío en el frontend.
 - Honeypot conserva respuesta neutra sin Turnstile, INSERT ni Queue.
-- No se creó migración ni se cambió esquema o binding. `service_code`, `case_id` y `cta_id` se capturan y validan, pero **todavía no se persisten estructuralmente**. `source_page` solo aprovecha `origen_url` existente.
+- La inserción nueva persiste estructuralmente `service_code`, `source_page`, `case_id` y `cta_id` cuando la migración esté aplicada; `origen_url` se conserva por compatibilidad. En este lote la migración existe solo en el repositorio y en pruebas SQLite locales: D1 real permanece intacto.
 
 ### Turnstile y accesibilidad
 
@@ -126,7 +149,26 @@ F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matri
 - Cada formulario posee error persistente con `role=alert` y éxito con `role=status`/`aria-live=polite`, ambos enfocables programáticamente; el foco se mueve al resultado relevante.
 - El botón se deshabilita durante el envío y recupera su contenido/estado para reintentar.
 
-## Pruebas y resultados de F1.1
+## Pruebas y resultados de F1
+
+### F1.2 — Persistencia estructurada
+
+- Intento anterior: BLOQUEADO antes de escribir. `npm run qa` construyó correctamente, pero `qa:parity` rechazó los cambios funcionales F1.1 porque compara `functions/` con el baseline histórico de `main`. El encargo corregido resolvió la contradicción: no ejecutar ese gate ni modificar QA, configuración o baseline.
+- Precheck corregido: PASS exacto. Repositorio `SolazStudio/solazstudio-web`, rama `develop`, working tree limpio, HEAD local y `origin/develop` en `c21d4be162952e367850bea91c465ad7eb0ec08b`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`; lecturas obligatorias completas.
+- `npm ci`: PASS final, 129 paquetes. El primer intento encontró `EBUSY` transitorio en `node_modules/.bin`; se repitió sin tocar archivos versionados y pasó.
+- `npm run build` prewrite: PASS; 24 páginas y 742 archivos copiados.
+- Manifiesto público prewrite: 766 rutas con SHA-256 individual; hash SHA-256 del manifiesto `df35b8dd62c40bf5274dc03a04cbb871e61b8decfe676d14e84fe57e5c1ed6aa`.
+- `npm run build` posterior: PASS; 24 páginas y 742 archivos copiados.
+- Comparación `_site`: PASS byte a byte; mismo conjunto de 766 archivos, mismos hashes individuales y mismo hash de manifiesto `df35b8dd62c40bf5274dc03a04cbb871e61b8decfe676d14e84fe57e5c1ed6aa`.
+- `node --check functions/api/contact.js`: PASS.
+- Migración SQLite local en memoria: PASS; cuatro columnas presentes como `TEXT`, anulables y sin default; fila histórica y datos previos intactos; contexto histórico `NULL`; nueva inserción con los cuatro campos correcta.
+- Mocks backend: PASS 9/9, casos A–I. Lead completo guardó los cuatro bindings y produjo 1 INSERT/1 Queue/`deduplicated=false`; opcionales ausentes quedaron `NULL`; source explícito y fallback Referer conservaron pathname/origen compatible; sin fuente produjo ambos `NULL`; contexto inválido se rechazó antes de D1; duplicado no reinsertó ni reencoló; honeypot mantuvo 0 Turnstile/0 D1/0 Queue; Turnstile inválido mantuvo 0 D1/0 Queue.
+- Queue: PASS; mensaje exacto con solo `{ id: submissionId }`.
+- `git diff --check`: PASS.
+- Alcance: PASS; solo la migración creada y los dos archivos modificados autorizados.
+- `package-lock.json`: intacto, SHA-256 `F7411FAE482A3FDC543C26245DDFD8F18B56897757D3573CD755D31CF37B671C`.
+- Temporales: eliminados antes del commit.
+- Recursos externos tocados: NINGUNO.
 
 ### F1.1-CORRECCIÓN definitiva
 
@@ -178,7 +220,7 @@ F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matri
 
 ## Cambios visuales
 
-Esta corrección no introduce cambios visuales ni de UX: diseño, estilos, campos, mensajes, estados, tabs, accesibilidad, contexto y Turnstile permanecen iguales. Los únicos cambios ejecutables son internos: destino nativo del formulario y eliminación de la segunda vía client-side.
+F1.2 no introduce cambios visuales ni de UX: la salida pública completa es byte a byte idéntica al baseline prewrite de `develop`. Diseño, estilos, campos, mensajes, estados, tabs, accesibilidad, contexto visible y Turnstile permanecen iguales.
 
 ### Cambios visibles acumulados del F1.1 original
 
@@ -195,17 +237,22 @@ No se rediseñó la página ni se modificaron identidad, navegación, footer, pr
 - No hubo prueba visual/manual en navegador, responsive manual ni lector de pantalla; el foco y ARIA se verificaron por análisis local.
 - No se probó Turnstile real, POST real, D1 real ni Queue real.
 - No se desplegó en Preview ni Production; no hubo acciones en Cloudflare, DNS, Ads, analítica o recursos externos.
-- Antes de cerrar F1 falta verificar el esquema D1 real y definir/aplicar la persistencia estructurada de `service_code`, `source_page` si corresponde, `case_id` y `cta_id`.
+- La evidencia del esquema D1 real fue suministrada en lectura, pero la migración versionada todavía debe aplicarse mediante un procedimiento controlado y autorizado antes de que el backend desplegado pueda usar las cuatro columnas.
 - Falta decidir la atribución externa completa bajo reglas de privacidad.
-- Faltan Preview, Turnstile real, envío real controlado, confirmación de una única escritura D1, comprobación de Queue/entrega y QA visual/manual.
+- Faltan Preview, Turnstile real, POST controlado, confirmación de escritura única D1, Queue real, Worker consumidor, Notion, Resend, reemplazo posterior de Make y QA visual/manual.
 - No crear página/URL/oferta de IA, landings, subservicios, tracking o nuevas rutas sin autorización.
-- No iniciar F1.2 ni F2, modificar `main`, hacer merge/PR/rama/force push o tocar Production/Cloudflare/recursos reales sin nueva autorización.
+- No iniciar otro lote ni F2, modificar `main`, hacer merge/PR/rama/force push o tocar Production/Cloudflare/recursos reales sin nueva autorización.
 
 ## Rollback
 
-Esta corrección queda contenida en un único commit de `develop` con mensaje `fix: remove Web3Forms from contact flow`. Rollback previsto: revertir únicamente ese commit; no ejecutarlo salvo instrucción posterior.
+F1.2 queda contenido en un único commit de `develop` con mensaje `feat: persist contact context in D1`. No hay rollback de datos porque la migración no se aplicó a D1 real. Rollback previsto: revertir únicamente el commit F1.2; no ejecutarlo salvo instrucción posterior.
 
 ## Evidencia durable anterior
+
+### F1.1-CORRECCIÓN
+
+- Commit: `c21d4be162952e367850bea91c465ad7eb0ec08b` (`fix: remove Web3Forms from contact flow`).
+- Eliminó Web3Forms del flujo ejecutable y dejó `Formulario → /api/contact → D1 → CONTACT_QUEUE`, sin segundo proveedor client-side.
 
 ### F1.1 original
 
@@ -231,35 +278,35 @@ Esta corrección queda contenida en un único commit de `develop` con mensaje `f
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F1.1-CORRECCIÓN — eliminar Web3Forms.
+- Lote: F1.2 — Persistencia estructurada del contexto del lead.
 - Fecha: 2026-09-04.
-- Precheck: PASS exacto; repositorio, rama, limpieza y refs coincidieron; lecturas obligatorias completas; `npm ci` y build prewrite PASS.
-- Repositorio: `SolazStudio/solazstudio-web`.
-- Rama: `develop`.
-- Base exacta: HEAD local y `origin/develop` en `b0c78bc3e75fb98ee8c316d84c465dee3f81f9e9`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
-- Defecto corregido: el éxito neutro del honeypot podía habilitar el aviso secundario Web3Forms desde el frontend.
-- Decisión arquitectónica: eliminar completamente Web3Forms del navegador; flujo implementado `Formulario → /api/contact → D1 → CONTACT_QUEUE`.
-- Archivos: 0 creados, 2 modificados (`src/contacto.njk` y este documento) y 0 eliminados; temporales eliminados.
-- Cambios exactos: 2/2 formularios ahora usan `action="/api/contact"`; se retiraron dos `access_key`, dos `subject` exclusivos, la access key histórica, `formDataWeb3`, el segundo fetch y comentarios que describían Web3Forms como activo.
-- Cambios visuales: ninguno. Campos, required, copy visible, éxito/error, estilos, tabs, contexto, Turnstile e identidad permanecen intactos.
-- Ausencia de Web3Forms: PASS total en fuente y HTML generado; no queda dominio, credencial, campo exclusivo ni vía secundaria ejecutable.
-- Build: PASS prewrite y posterior; 24 HTML, 742 archivos copiados y 766 públicos, sin rutas nuevas.
-- Sintaxis: backend PASS sin modificación; JavaScript inline generado PASS y temporal eliminado.
-- Mocks A/B/C/D: PASS. A honeypot = 0 Siteverify/0 D1/0 Queue/`ok=true`; B nuevo = 1/1/1/`deduplicated=false`; C duplicado = 1 intento D1/0 Queue/`deduplicated=true`; D Turnstile inválido = 1 Siteverify/0 D1/0 Queue/HTTP 400.
-- No regresión: PASS acotado sobre los controles F1.1 requeridos, incluidos taxonomía, matriz, contexto, Turnstile, accesibilidad, idempotencia y siete CTA.
+- Objetivo: preparar y probar localmente la persistencia D1 estructurada de `service_code`, `source_page`, `case_id` y `cta_id`, sin aplicar cambios a infraestructura real.
+- Precheck: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, árbol limpio, HEAD y `origin/develop` en `c21d4be162952e367850bea91c465ad7eb0ec08b`, `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`, y lecturas obligatorias completas.
+- Bloqueo anterior: el encargo original exigía `npm run qa`, cuyo verificador histórico compara frontend/functions con `main` y rechaza F1.1. El encargo corregido eliminó ese gate; QA, configuración y baseline no fueron modificados.
+- Trabajo: migración aditiva creada; backend ampliado para enlazar los cuatro valores ya validados; fallback seguro de `source_page` desde Referer Solaz; `origen_url`, idempotencia y Queue conservados.
+- Archivos: 1 creado (`migrations/0001_add_contact_context.sql`), 2 modificados (`functions/api/contact.js`, `docs/IMPLEMENTATION_STATE.md`) y 0 eliminados.
+- Decisiones: cuatro columnas `TEXT` anulables y sin default; pathname interno estructurado; URL canónica compatible en `origen_url`; `case_id`/`cta_id` opcionales; servicio exacto de la taxonomía; sin inferencias ni valores artificiales.
+- Evidencia de esquema: se utilizó el `PRAGMA table_info("contacts")` real suministrado, con 19 columnas existentes y ausencia confirmada de las cuatro nuevas. No se consultó D1 desde este lote.
+- Comandos: verificaciones Git; lecturas; `npm ci`; build pre/post; generación y comparación SHA-256 de manifiestos; `node --check`; prueba SQLite en memoria; mocks backend A–I; controles de diff, alcance, lockfile y temporales.
+- Instalación: PASS final con 129 paquetes. Un primer intento tuvo `EBUSY` transitorio en `node_modules/.bin`; la repetición segura pasó sin tocar versionados.
+- Build prewrite: PASS, 24 páginas y 742 archivos copiados.
+- Build posterior: PASS, 24 páginas y 742 archivos copiados.
+- Comparación `_site`: PASS byte a byte, 766/766 archivos con rutas y SHA-256 idénticos; hash de ambos manifiestos `df35b8dd62c40bf5274dc03a04cbb871e61b8decfe676d14e84fe57e5c1ed6aa`.
+- Sintaxis backend: PASS.
+- Migración SQLite local: PASS; cuatro columnas existentes como `TEXT`, `NULL` permitido, sin defaults, fila histórica intacta y nueva inserción con contexto exitosa.
+- Mocks backend: PASS 9/9 (A–I): lead completo, opcionales nulos, source explícito, fallback Referer, ausencia de origen, contexto inválido, duplicado, honeypot y Turnstile inválido.
+- Idempotencia: PASS; primera inserción 1 fila/1 Queue/`deduplicated=false`; reintento 0 filas nuevas/0 Queue adicional/`deduplicated=true`.
+- Queue: PASS; conserva exclusivamente `CONTACT_QUEUE.send({ id: submissionId })`.
 - `package-lock.json`: intacto, SHA-256 `F7411FAE482A3FDC543C26245DDFD8F18B56897757D3573CD755D31CF37B671C`.
-- Make: no tocado ni desactivado. Está aprobado para salir del camino crítico solo en un lote posterior con reemplazo probado.
-- Notion: no tocado; sigue siendo el CRM operativo.
-- Resend: no implementado; objetivo futuro server-side detrás de Worker/Queue.
-- Recursos reales: Cloudflare, Preview, Production, D1, Queue, Turnstile, Worker y demás integraciones no fueron tocados ni probados.
-- Errores encontrados: ninguno en producto, instalación o build. La primera ejecución del verificador temporal contó también una referencia JavaScript al selector Turnstile como si fuese un tercer contenedor; se acotó el conteo a elementos `<div>`, la repetición pasó y el temporal fue eliminado.
+- Errores: `EBUSY` transitorio resuelto por repetición. En la prueba temporal, `node:sqlite` devolvió objetos con prototipo nulo y `sync_status` era literal SQL, no binding; se corrigieron solo las aserciones del harness y la batería completa pasó.
+- Limitaciones: migración preparada y probada únicamente en SQLite local; no demuestra todavía ejecución D1 real ni integraciones desplegadas.
 - Desviaciones: ninguna.
-- Limitaciones: pruebas locales/estáticas y mocks; sin POST real, navegador/QA visual manual, infraestructura o integraciones reales.
-- Pendientes: persistencia estructurada de `service_code`, `case_id`, `cta_id`; decisión sobre `source_page`; atribución bajo privacidad; Preview; Turnstile/POST reales; evidencia D1/Queue; Worker → Notion/Resend; migración posterior de Make; QA visual/manual.
-- Commit: único commit correctivo con mensaje `fix: remove Web3Forms from contact flow`; el SHA se verifica en el informe final externo porque un commit no puede registrar dentro de sí su propio identificador.
+- Recursos externos tocados: NINGUNO. Production, Cloudflare, Preview, D1/Queue reales, Turnstile, Worker, Make, Notion, Resend, DNS y Ads permanecen intactos.
+- Commit: único commit con mensaje exacto `feat: persist contact context in D1`; el SHA se verifica en el informe final externo porque un commit no puede registrar dentro de sí su propio identificador.
 - Push: exclusivamente a `origin/develop`, sujeto a la verificación final posterior al commit.
 - Working tree final: debe quedar limpio tras el commit/push y se verifica en el informe final externo.
 - Estado de main: debe permanecer en `880610411ecb4d66f652e8bfaf89e5794231409d` y se verifica después del push.
-- Estado de F1: ABIERTO. Esta corrección no inicia F1.2, migración Make, Worker ni Resend.
-- Criterio de cierre: corrección local cumplida; queda lista para revisión de ChatGPT tras commit, push y verificación remota.
+- Criterio de cierre: migración versionada y validada localmente, backend preparado, salida pública idéntica, alcance exacto y pruebas completas; sujeto a commit/push/verificación remota.
+- Pendientes: aplicación controlada de migración real; Preview; Turnstile/POST reales; evidencia D1/Queue; Worker consumidor; Notion; Resend; reemplazo posterior de Make; atribución externa; QA visual/manual; cierre completo de F1.
+- Estado de F1: ABIERTO.
 - Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
