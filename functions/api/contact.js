@@ -1,25 +1,96 @@
 // functions/api/contact.js
 //
-// Recibe el envío de cualquiera de los 2 formularios de contacto.html
-// (form_type = "mensaje" o "reunion"), valida Turnstile en el servidor,
-// guarda el contacto en D1 (fuente de verdad) y encola la sincronización
-// con Notion. Nunca llama a Notion directamente desde acá — eso lo hace
-// el Worker consumidor de la cola, para poder reintentar sin perder el envío.
+// Recibe los dos recorridos de contacto, valida Turnstile y guarda primero
+// en D1. Solo una inserción nueva se encola para sincronización posterior.
+
+import services from '../../src/_data/services.js';
+
+const ORIGENES_PERMITIDOS = new Set([
+  'https://solazstudio.cl',
+  'https://www.solazstudio.cl',
+]);
+
+const SERVICE_CODES = new Set(services.map(({ code }) => code));
 
 const CAMPOS_PERMITIDOS = [
   'form_type', 'nombre', 'empresa', 'email', 'telefono', 'mensaje',
-  'presupuesto', 'consent_marketing', 'dias', 'horario',
+  'presupuesto', 'consent_marketing', 'dias', 'horario', 'service_code',
+  'source_page', 'case_id', 'cta_id', 'submission_id',
   'cf-turnstile-response', 'botcheck',
 ];
 
 const MAX_LARGO = {
-  nombre: 200, empresa: 200, email: 200, telefono: 60,
-  mensaje: 5000, presupuesto: 200, dias: 200, horario: 100,
+  nombre: 200,
+  empresa: 200,
+  email: 200,
+  telefono: 60,
+  mensaje: 5000,
+  presupuesto: 200,
+  dias: 200,
+  horario: 100,
+  source_page: 300,
+  case_id: 160,
+  cta_id: 100,
 };
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const TOKEN_PATTERN = /^[a-z0-9]+(?:[\/_-][a-z0-9]+)*$/i;
+
+function respuestaJson(payload, status = 200) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
 
 function textoLimpio(valor, maxLargo) {
   if (typeof valor !== 'string') return '';
   return valor.trim().slice(0, maxLargo);
+}
+
+function validarPathInterno(valor) {
+  const path = textoLimpio(valor, MAX_LARGO.source_page);
+  if (
+    !path ||
+    !path.startsWith('/') ||
+    path.startsWith('//') ||
+    path.includes('?') ||
+    path.includes('#') ||
+    path.includes('\\')
+  ) {
+    return null;
+  }
+
+  try {
+    const url = new URL(path, 'https://solazstudio.cl');
+    if (url.origin !== 'https://solazstudio.cl' || url.pathname !== path) {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
+  return path;
+}
+
+function validarToken(valor, maxLargo) {
+  const token = textoLimpio(valor, maxLargo);
+  return token && TOKEN_PATTERN.test(token) ? token : null;
+}
+
+function obtenerOrigenUrl(sourcePage, referer) {
+  if (sourcePage) {
+    return new URL(sourcePage, 'https://solazstudio.cl').toString();
+  }
+
+  try {
+    const url = new URL(referer || '');
+    if (!ORIGENES_PERMITIDOS.has(url.origin)) return null;
+    return new URL(url.pathname, 'https://solazstudio.cl').toString();
+  } catch {
+    return null;
+  }
 }
 
 async function verificarTurnstile(token, secretKey, ip) {
@@ -28,90 +99,97 @@ async function verificarTurnstile(token, secretKey, ip) {
   body.set('response', token || '');
   if (ip) body.set('remoteip', ip);
 
-  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body,
-  });
-  const data = await res.json();
-  return data.success === true;
+  try {
+    const res = await fetch(
+      'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+      }
+    );
+    const data = await res.json();
+    return data.success === true;
+  } catch {
+    return false;
+  }
 }
 
 export async function onRequestPost(context) {
   const { request, env } = context;
 
-  // 1. Validar Origin (evita que otros sitios usen este endpoint directamente)
+  // 1. Validar Origin para impedir el uso directo desde otros sitios.
   const origin = request.headers.get('Origin') || '';
-  const origenesPermitidos = ['https://solazstudio.cl', 'https://www.solazstudio.cl'];
-  if (origin && !origenesPermitidos.includes(origin)) {
-    return new Response(JSON.stringify({ ok: false, error: 'origen_no_permitido' }), {
-      status: 403,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  if (origin && !ORIGENES_PERMITIDOS.has(origin)) {
+    return respuestaJson({ ok: false, error: 'origen_no_permitido' }, 403);
   }
 
   let form;
   try {
     form = await request.formData();
   } catch {
-    return new Response(JSON.stringify({ ok: false, error: 'formato_invalido' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return respuestaJson({ ok: false, error: 'formato_invalido' }, 400);
   }
 
-  // 2. Honeypot — si el campo trampa viene lleno, es un bot. Respondemos
-  // éxito falso (para no delatar la trampa) pero no guardamos nada.
-  const botcheck = form.get('botcheck');
-  if (botcheck) {
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  // 2. Honeypot: éxito falso, sin persistencia ni Queue.
+  if (form.get('botcheck')) {
+    return respuestaJson({ ok: true });
   }
 
-  // 3. Lista blanca de campos — cualquier otro campo se ignora
+  // 3. Lista blanca de campos; cualquier otro campo se ignora.
   const datos = {};
   for (const campo of CAMPOS_PERMITIDOS) {
     datos[campo] = form.get(campo);
   }
-  // dias[] puede venir repetido (checkboxes) — juntar todos los valores
-  const diasSeleccionados = form.getAll('dias[]').filter(Boolean);
+
+  const diasSeleccionados = form
+    .getAll('dias[]')
+    .map((dia) => textoLimpio(dia, 40))
+    .filter(Boolean);
   if (diasSeleccionados.length) {
     datos.dias = diasSeleccionados.join(', ');
   }
 
   const formType = datos.form_type === 'reunion' ? 'reunion' : 'mensaje';
-
-  // 4. Verificar Turnstile en el servidor (obligatorio, nunca confiar solo en el navegador)
-  const ip = request.headers.get('CF-Connecting-IP');
-  const turnstileOk = await verificarTurnstile(datos['cf-turnstile-response'], env.TURNSTILE_SECRET_KEY, ip);
-  if (!turnstileOk) {
-    return new Response(JSON.stringify({ ok: false, error: 'verificacion_fallida' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  // 5. Limpiar y validar campos según el tipo de formulario
   const nombre = textoLimpio(datos.nombre, MAX_LARGO.nombre);
   const email = textoLimpio(datos.email, MAX_LARGO.email);
   const telefono = textoLimpio(datos.telefono, MAX_LARGO.telefono);
   const empresa = textoLimpio(datos.empresa, MAX_LARGO.empresa);
+  const serviceCode = textoLimpio(datos.service_code, 100);
+  const submissionId = textoLimpio(datos.submission_id, 50);
 
-  if (!nombre || !email) {
-    return new Response(JSON.stringify({ ok: false, error: 'faltan_campos_obligatorios' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  if (!nombre || !email || !serviceCode || !submissionId) {
+    return respuestaJson({ ok: false, error: 'faltan_campos_obligatorios' }, 400);
   }
 
-  const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  if (!emailValido) {
-    return new Response(JSON.stringify({ ok: false, error: 'email_invalido' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return respuestaJson({ ok: false, error: 'email_invalido' }, 400);
+  }
+
+  if (!SERVICE_CODES.has(serviceCode)) {
+    return respuestaJson({ ok: false, error: 'servicio_invalido' }, 400);
+  }
+
+  if (!UUID_PATTERN.test(submissionId)) {
+    return respuestaJson({ ok: false, error: 'submission_id_invalido' }, 400);
+  }
+
+  const sourcePageRaw = textoLimpio(datos.source_page, MAX_LARGO.source_page);
+  const sourcePage = sourcePageRaw ? validarPathInterno(sourcePageRaw) : null;
+  if (sourcePageRaw && !sourcePage) {
+    return respuestaJson({ ok: false, error: 'source_page_invalido' }, 400);
+  }
+
+  const caseIdRaw = textoLimpio(datos.case_id, MAX_LARGO.case_id);
+  const caseId = caseIdRaw ? validarToken(caseIdRaw, MAX_LARGO.case_id) : null;
+  if (caseIdRaw && !caseId) {
+    return respuestaJson({ ok: false, error: 'case_id_invalido' }, 400);
+  }
+
+  const ctaIdRaw = textoLimpio(datos.cta_id, MAX_LARGO.cta_id);
+  const ctaId = ctaIdRaw ? validarToken(ctaIdRaw, MAX_LARGO.cta_id) : null;
+  if (ctaIdRaw && !ctaId) {
+    return respuestaJson({ ok: false, error: 'cta_id_invalido' }, 400);
   }
 
   let mensaje = '';
@@ -123,53 +201,75 @@ export async function onRequestPost(context) {
     mensaje = textoLimpio(datos.mensaje, MAX_LARGO.mensaje);
     presupuesto = textoLimpio(datos.presupuesto, MAX_LARGO.presupuesto) || null;
     if (!mensaje) {
-      return new Response(JSON.stringify({ ok: false, error: 'faltan_campos_obligatorios' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return respuestaJson({ ok: false, error: 'faltan_campos_obligatorios' }, 400);
     }
   } else {
     dias = textoLimpio(datos.dias, MAX_LARGO.dias) || null;
     horario = textoLimpio(datos.horario, MAX_LARGO.horario) || null;
-    const partes = ['Solicita reunión.'];
-    if (dias) partes.push(`Días: ${dias}.`);
-    if (horario) partes.push(`Horario: ${horario}.`);
-    mensaje = partes.join(' ');
+    if (!dias || !horario) {
+      return respuestaJson({ ok: false, error: 'faltan_campos_obligatorios' }, 400);
+    }
+    mensaje = `Solicitud de reunión. Días: ${dias}. Horario: ${horario}.`;
+  }
+
+  // Los identificadores de contexto se validan ahora, pero service_code,
+  // case_id y cta_id tendrán persistencia estructurada recién en F1.2.
+  void caseId;
+  void ctaId;
+
+  // 4. Turnstile sigue siendo obligatorio y server-side.
+  const ip = request.headers.get('CF-Connecting-IP');
+  const turnstileOk = await verificarTurnstile(
+    datos['cf-turnstile-response'],
+    env.TURNSTILE_SECRET_KEY,
+    ip
+  );
+  if (!turnstileOk) {
+    return respuestaJson({ ok: false, error: 'verificacion_fallida' }, 400);
   }
 
   const consentMarketing = datos.consent_marketing === 'si' ? 1 : 0;
-  const id = crypto.randomUUID();
-  const origenUrl = request.headers.get('Referer') || null;
+  const origenUrl = obtenerOrigenUrl(sourcePage, request.headers.get('Referer'));
 
-  // 6. Guardar en D1 primero — solo devolvemos éxito si esto funciona
+  // 5. Inserción atómica e idempotente usando la columna id existente.
+  let inserted;
   try {
-    await env.DB.prepare(
+    const result = await env.DB.prepare(
       `INSERT INTO contacts
         (id, form_type, nombre, empresa, email, telefono, mensaje, presupuesto,
          consent_marketing, dias, horario, origen_url, sync_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`
+       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending'
+       WHERE NOT EXISTS (SELECT 1 FROM contacts WHERE id = ?)`
     ).bind(
-      id, formType, nombre, empresa || null, email, telefono || null, mensaje,
-      presupuesto, consentMarketing, dias, horario, origenUrl
+      submissionId,
+      formType,
+      nombre,
+      empresa || null,
+      email,
+      telefono || null,
+      mensaje,
+      presupuesto,
+      consentMarketing,
+      dias,
+      horario,
+      origenUrl,
+      submissionId
     ).run();
-  } catch (err) {
-    return new Response(JSON.stringify({ ok: false, error: 'error_guardando' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    inserted = Number(result?.meta?.changes ?? result?.changes ?? 0) > 0;
+  } catch {
+    return respuestaJson({ ok: false, error: 'error_guardando' }, 500);
   }
 
-  // 7. Encolar la sincronización con Notion (si esto falla, el contacto
-  // igual quedó guardado en D1 — la reconciliación periódica lo va a
-  // encontrar y reintentar más tarde).
+  if (!inserted) {
+    return respuestaJson({ ok: true, id: submissionId, deduplicated: true });
+  }
+
+  // 6. Queue es best-effort después de persistir en D1.
   try {
-    await env.CONTACT_QUEUE.send({ id });
-  } catch (err) {
-    // No hacemos fallar la respuesta por esto — D1 ya tiene el contacto.
+    await env.CONTACT_QUEUE.send({ id: submissionId });
+  } catch {
+    // D1 ya es la fuente de verdad; la respuesta continúa siendo exitosa.
   }
 
-  return new Response(JSON.stringify({ ok: true, id }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return respuestaJson({ ok: true, id: submissionId, deduplicated: false });
 }

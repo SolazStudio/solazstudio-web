@@ -183,7 +183,8 @@ permalink: "contacto.html"
     .form-label .required { color: var(--accent); margin-left: 2px; }
 
     .form-input,
-    .form-textarea {
+    .form-textarea,
+    .form-select {
       width: 100%; background: rgba(17,17,17,0.92);
       border: 1px solid rgba(68,66,64,0.8); color: var(--white);
       font-family: var(--font-body); font-size: 14px; font-weight: 300;
@@ -192,7 +193,9 @@ permalink: "contacto.html"
       -webkit-appearance: none;
     }
     .form-input::placeholder, .form-textarea::placeholder { color: var(--grey-light); }
-    .form-input:focus, .form-textarea:focus { border-color: var(--accent); }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
+    .form-select { cursor: pointer; }
+    .form-select option { background: var(--black-soft); color: var(--white); }
     .form-textarea { resize: vertical; min-height: 120px; line-height: 1.7; }
 
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -257,6 +260,22 @@ permalink: "contacto.html"
     .form-submit:hover { background: var(--accent); }
     .form-submit-arrow { transition: transform 0.2s; }
     .form-submit:hover .form-submit-arrow { transform: translateX(4px); }
+
+    .form-status {
+      margin: 0 0 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--grey-dark);
+      background: var(--black-soft);
+      color: var(--white);
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.6;
+    }
+    .form-error { border-color: #9e5b55; }
+    .turnstile-status { margin-top: -12px; }
+    .form-panel[hidden],
+    .form-status[hidden],
+    .form-success[hidden] { display: none !important; }
 
     /* Success message */
     .form-success {
@@ -474,17 +493,21 @@ permalink: "contacto.html"
     <div class="contact-right">
 
       <!-- Tabs -->
-      <div class="form-tabs" role="tablist">
-        <button type="button" class="tab-btn active" data-tab="mensaje" role="tab" aria-selected="true" aria-controls="tab-mensaje" id="tabbtn-mensaje">Escríbenos</button>
-        <button type="button" class="tab-btn" data-tab="reunion" role="tab" aria-selected="false" aria-controls="tab-reunion" id="tabbtn-reunion">Agenda tu reunión</button>
+      <div class="form-tabs" aria-label="Seleccionar recorrido de contacto">
+        <button type="button" class="tab-btn active" data-tab="mensaje" aria-pressed="true" aria-controls="tab-mensaje" id="tabbtn-mensaje">Escríbenos</button>
+        <button type="button" class="tab-btn" data-tab="reunion" aria-pressed="false" aria-controls="tab-reunion" id="tabbtn-reunion">Solicitar reunión</button>
       </div>
 
       <!-- TAB 1: Formulario de contacto (Web3Forms) -->
-      <div class="form-panel active" id="tab-mensaje" role="tabpanel" aria-labelledby="tabbtn-mensaje">
+      <div class="form-panel active" id="tab-mensaje">
         <form id="formMensaje" action="https://api.web3forms.com/submit" method="POST">
           <input type="hidden" name="access_key" value="e2f133c1-ad94-45ad-b922-b354f4ce2f52">
           <input type="hidden" name="subject" value="Nuevo mensaje — Solaz Studio">
           <input type="hidden" name="form_type" value="mensaje">
+          <input type="hidden" name="source_page" value="">
+          <input type="hidden" name="case_id" value="">
+          <input type="hidden" name="cta_id" value="">
+          <input type="hidden" name="submission_id" value="">
           <input type="checkbox" name="botcheck" style="display:none">
 
           <div class="form-row">
@@ -504,9 +527,19 @@ permalink: "contacto.html"
               <input class="form-input" type="email" id="email" name="email" placeholder="tu@correo.cl" required>
             </div>
             <div class="form-group">
-              <label class="form-label" for="telefono">Teléfono<span class="required">*</span></label>
-              <input class="form-input" type="tel" id="telefono" name="telefono" placeholder="+56 9 XXXX XXXX" required>
+              <label class="form-label" for="telefono">Teléfono <span style="color:var(--grey-mid);font-size:9px;letter-spacing:0.15em;">(opcional)</span></label>
+              <input class="form-input" type="tel" id="telefono" name="telefono" placeholder="+56 9 XXXX XXXX">
             </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="service-code">Servicio<span class="required">*</span></label>
+            <select class="form-select" id="service-code" name="service_code" required>
+              <option value="">Selecciona un servicio</option>
+              {% for service in services %}
+              <option value="{{ service.code }}">{{ service.label }}</option>
+              {% endfor %}
+            </select>
           </div>
 
           <div class="form-group">
@@ -524,30 +557,36 @@ permalink: "contacto.html"
             <label for="consent-marketing">Acepto recibir información comercial ocasional de Solaz Studio, como promociones o novedades. Este consentimiento es opcional y puede retirarse en cualquier momento escribiendo a <a href="mailto:hola@solazstudio.cl">hola@solazstudio.cl</a>.</label>
           </div>
 
-          <div class="cf-turnstile" data-sitekey="0x4AAAAAAD6I7K_Sk2CdA1wu" style="margin-bottom: 24px;"></div>
+          <div class="cf-turnstile" data-turnstile-widget data-sitekey="0x4AAAAAAD6I7K_Sk2CdA1wu" style="margin-bottom: 24px;"></div>
+          <p class="form-status form-error turnstile-status" data-turnstile-status role="alert" tabindex="-1" hidden></p>
+          <div class="form-status form-error" data-form-error role="alert" tabindex="-1" hidden></div>
 
           <button type="submit" class="form-submit">
             Enviar mensaje
             <span class="form-submit-arrow">→</span>
           </button>
         </form>
-        <div class="form-success" id="successMensaje">
+        <div class="form-success" id="successMensaje" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" hidden>
           <h2>MENSAJE ENVIADO_</h2>
           <p>Recibimos tu mensaje. Te contactamos en menos de 24 horas hábiles.</p>
         </div>
       </div>
 
-      <!-- TAB 2: Agenda reunión -->
-      <div class="form-panel" id="tab-reunion" role="tabpanel" aria-labelledby="tabbtn-reunion">
+      <!-- TAB 2: Solicitud de reunión -->
+      <div class="form-panel" id="tab-reunion" hidden>
 
         <p class="form-note">
-          Una videollamada de 15 minutos, sin compromiso. Cuéntanos en qué estás y evaluamos juntos cómo podemos ayudarte. Déjanos tu disponibilidad y te confirmamos horario en menos de 24 horas.
+          Una videollamada de 15 minutos, sin compromiso. Cuéntanos en qué estás y evaluamos juntos cómo podemos ayudarte. Envíanos tu disponibilidad y confirmaremos el horario después; esta solicitud no constituye una reserva automática.
         </p>
 
         <form id="formReunion" action="https://api.web3forms.com/submit" method="POST">
           <input type="hidden" name="access_key" value="e2f133c1-ad94-45ad-b922-b354f4ce2f52">
           <input type="hidden" name="subject" value="Solicitud de reunión — Solaz Studio">
           <input type="hidden" name="form_type" value="reunion">
+          <input type="hidden" name="source_page" value="">
+          <input type="hidden" name="case_id" value="">
+          <input type="hidden" name="cta_id" value="">
+          <input type="hidden" name="submission_id" value="">
           <input type="checkbox" name="botcheck" style="display:none">
 
           <div class="form-row">
@@ -567,14 +606,24 @@ permalink: "contacto.html"
               <input class="form-input" type="email" id="r-email" name="email" placeholder="tu@correo.cl" required>
             </div>
             <div class="form-group">
-              <label class="form-label" for="r-telefono">Teléfono<span class="required">*</span></label>
-              <input class="form-input" type="tel" id="r-telefono" name="telefono" placeholder="+56 9 XXXX XXXX" required>
+              <label class="form-label" for="r-telefono">Teléfono <span style="color:var(--grey-mid);font-size:9px;letter-spacing:0.15em;">(opcional)</span></label>
+              <input class="form-input" type="tel" id="r-telefono" name="telefono" placeholder="+56 9 XXXX XXXX">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">¿Qué días te acomodan?</label>
-            <div class="check-group">
+            <label class="form-label" for="r-service-code">Servicio<span class="required">*</span></label>
+            <select class="form-select" id="r-service-code" name="service_code" required>
+              <option value="">Selecciona un servicio</option>
+              {% for service in services %}
+              <option value="{{ service.code }}">{{ service.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">¿Qué días te acomodan?<span class="required">*</span></label>
+            <div class="check-group" data-meeting-days>
               <div class="check-item"><input type="checkbox" id="lunes" name="dias[]" value="Lunes"><label for="lunes">Lunes</label></div>
               <div class="check-item"><input type="checkbox" id="martes" name="dias[]" value="Martes"><label for="martes">Martes</label></div>
               <div class="check-item"><input type="checkbox" id="miercoles" name="dias[]" value="Miércoles"><label for="miercoles">Miércoles</label></div>
@@ -584,24 +633,26 @@ permalink: "contacto.html"
           </div>
 
           <div class="form-group">
-            <label class="form-label">¿En qué horario prefieres?</label>
+            <label class="form-label">¿En qué horario prefieres?<span class="required">*</span></label>
             <div class="check-group">
-              <div class="check-item"><input type="radio" id="manana" name="horario" value="Mañana (9:00 – 13:00)"><label for="manana">Mañana · 9:00 – 13:00</label></div>
+              <div class="check-item"><input type="radio" id="manana" name="horario" value="Mañana (9:00 – 13:00)" required><label for="manana">Mañana · 9:00 – 13:00</label></div>
               <div class="check-item"><input type="radio" id="tarde" name="horario" value="Tarde (14:00 – 18:00)"><label for="tarde">Tarde · 14:00 – 18:00</label></div>
             </div>
           </div>
 
-          <div class="cf-turnstile" data-sitekey="0x4AAAAAAD6I7K_Sk2CdA1wu" style="margin-bottom: 24px;"></div>
+          <div class="cf-turnstile" data-turnstile-widget data-sitekey="0x4AAAAAAD6I7K_Sk2CdA1wu" style="margin-bottom: 24px;"></div>
+          <p class="form-status form-error turnstile-status" data-turnstile-status role="alert" tabindex="-1" hidden></p>
+          <div class="form-status form-error" data-form-error role="alert" tabindex="-1" hidden></div>
 
           <button type="submit" class="form-submit">
-            Confirmar disponibilidad
+            Enviar solicitud de reunión
             <span class="form-submit-arrow">→</span>
           </button>
         </form>
 
-        <div class="form-success" id="successReunion">
+        <div class="form-success" id="successReunion" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" hidden>
           <h2>RECIBIDO_</h2>
-          <p>Confirmamos tu reunión en menos de 24 horas hábiles.</p>
+          <p>Recibimos tu solicitud. Confirmaremos el horario después, en menos de 24 horas hábiles.</p>
         </div>
 
       </div>
@@ -616,67 +667,257 @@ permalink: "contacto.html"
   <script>
 
 
-    // Tabs
+    const contactForms = Array.from(document.querySelectorAll('#formMensaje, #formReunion'));
+    const validServiceCodes = new Set([
+      {% for service in services %}
+      '{{ service.code }}'{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ]);
+
+    function createSubmissionId() {
+      if (typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+      }
+      const bytes = window.crypto.getRandomValues(new Uint8Array(16));
+      bytes[6] = (bytes[6] & 0x0f) | 0x40;
+      bytes[8] = (bytes[8] & 0x3f) | 0x80;
+      const hex = Array.from(bytes, byte => byte.toString(16).padStart(2, '0'));
+      return `${hex.slice(0, 4).join('')}-${hex.slice(4, 6).join('')}-${hex.slice(6, 8).join('')}-${hex.slice(8, 10).join('')}-${hex.slice(10).join('')}`;
+    }
+
+    function normalizeInternalPath(value) {
+      if (!value || value.length > 300 || !value.startsWith('/') || value.startsWith('//') || /[?#\\]/.test(value)) {
+        return '';
+      }
+      try {
+        const url = new URL(value, window.location.origin);
+        return url.origin === window.location.origin && url.pathname === value ? url.pathname : '';
+      } catch {
+        return '';
+      }
+    }
+
+    function normalizeContextToken(value, maxLength) {
+      if (!value || value.length > maxLength || !/^[a-z0-9]+(?:[\/_-][a-z0-9]+)*$/i.test(value)) {
+        return '';
+      }
+      return value;
+    }
+
+    function initializeContactContext() {
+      const params = new URLSearchParams(window.location.search);
+      const requestedService = params.get('service_code') || '';
+      const sourceWasExplicit = params.has('source_page');
+      let sourcePage = normalizeInternalPath(params.get('source_page') || '');
+
+      if (!sourceWasExplicit && document.referrer) {
+        try {
+          const referrer = new URL(document.referrer);
+          if (referrer.origin === window.location.origin) {
+            sourcePage = normalizeInternalPath(referrer.pathname);
+          }
+        } catch {
+          sourcePage = '';
+        }
+      }
+
+      const caseWasExplicit = params.has('case_id');
+      let caseId = normalizeContextToken(params.get('case_id') || '', 160);
+      if (!caseWasExplicit && sourcePage) {
+        const projectMatch = sourcePage.match(/^\/proyectos\/([a-z0-9-]+)\/?$/i);
+        if (projectMatch) caseId = projectMatch[1];
+      }
+
+      const ctaId = params.has('cta_id')
+        ? normalizeContextToken(params.get('cta_id') || '', 100)
+        : '';
+
+      contactForms.forEach(form => {
+        form.elements.service_code.value = validServiceCodes.has(requestedService)
+          ? requestedService
+          : '';
+        form.elements.source_page.value = sourcePage;
+        form.elements.case_id.value = caseId;
+        form.elements.cta_id.value = ctaId;
+        form.elements.submission_id.value = createSubmissionId();
+      });
+    }
+
+    const turnstileWidgets = new Map();
+
+    function setTurnstileMessage(form, message = '') {
+      const status = form.querySelector('[data-turnstile-status]');
+      if (!status) return;
+      status.textContent = message;
+      status.hidden = !message;
+    }
+
+    function resetTurnstile(form, message = '') {
+      const widgetId = turnstileWidgets.get(form);
+      if (widgetId === undefined || typeof window.turnstile?.reset !== 'function') {
+        setTurnstileMessage(form, message || 'La verificación no está disponible. Intenta nuevamente.');
+        return;
+      }
+      try {
+        window.turnstile.reset(widgetId);
+        setTurnstileMessage(form, message);
+      } catch {
+        setTurnstileMessage(form, 'La verificación no está disponible. Intenta nuevamente.');
+      }
+    }
+
+    function renderTurnstile(form) {
+      if (turnstileWidgets.has(form) || typeof window.turnstile?.render !== 'function') return;
+      const container = form.querySelector('[data-turnstile-widget]');
+      if (!container) return;
+      try {
+        const widgetId = window.turnstile.render(container, {
+          sitekey: container.dataset.sitekey,
+          callback: () => setTurnstileMessage(form),
+          'expired-callback': () => resetTurnstile(form, 'La verificación expiró. Complétala nuevamente.'),
+          'timeout-callback': () => resetTurnstile(form, 'La verificación agotó el tiempo. Complétala nuevamente.'),
+          'error-callback': () => {
+            setTurnstileMessage(form, 'La verificación no está disponible. Intenta nuevamente.');
+            return true;
+          },
+        });
+        turnstileWidgets.set(form, widgetId);
+      } catch {
+        setTurnstileMessage(form, 'La verificación no está disponible. Intenta nuevamente.');
+      }
+    }
+
+    function renderVisibleTurnstile() {
+      const visibleForm = document.querySelector('.form-panel:not([hidden]) form');
+      if (visibleForm) renderTurnstile(visibleForm);
+    }
+
+    // Botones de selección de recorrido con semántica aria-pressed.
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
-        document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        btn.setAttribute('aria-selected', 'true');
-        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        document.querySelectorAll('.tab-btn').forEach(other => {
+          const selected = other === btn;
+          other.classList.toggle('active', selected);
+          other.setAttribute('aria-pressed', String(selected));
+        });
+        document.querySelectorAll('.form-panel').forEach(panel => {
+          const selected = panel.id === `tab-${btn.dataset.tab}`;
+          panel.classList.toggle('active', selected);
+          panel.hidden = !selected;
+        });
+        renderVisibleTurnstile();
       });
     });
 
-    // Form submission: primero /api/contact (D1, fuente de verdad),
-    // y solo si eso funciona, se manda también a Web3Forms para el
-    // correo de aviso (best-effort — si Web3Forms falla, el contacto
-    // igual quedó guardado, solo se pierde la notificación por correo).
+    const turnstileScript = document.querySelector('script[src*="/turnstile/v0/api.js"]');
+    if (typeof window.turnstile?.render === 'function') {
+      renderVisibleTurnstile();
+    } else if (turnstileScript) {
+      turnstileScript.addEventListener('load', renderVisibleTurnstile, { once: true });
+      turnstileScript.addEventListener('error', () => {
+        contactForms.forEach(form => setTurnstileMessage(form, 'La verificación no está disponible. Intenta nuevamente.'));
+      }, { once: true });
+    }
+
+    function clearFormError(form) {
+      const error = form.querySelector('[data-form-error]');
+      if (!error) return;
+      error.textContent = '';
+      error.hidden = true;
+    }
+
+    function showFormError(form, message) {
+      const error = form.querySelector('[data-form-error]');
+      if (!error) return;
+      error.textContent = message;
+      error.hidden = false;
+      error.focus();
+    }
+
+    function validateForm(form) {
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        showFormError(form, 'Completa los campos obligatorios antes de enviar.');
+        return false;
+      }
+      if (form.elements.form_type.value === 'reunion') {
+        const hasDay = Boolean(form.querySelector('[name="dias[]"]:checked'));
+        const hasTime = Boolean(form.querySelector('[name="horario"]:checked'));
+        if (!hasDay || !hasTime) {
+          showFormError(form, 'Selecciona al menos un día y una franja horaria para solicitar la reunión.');
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // D1 es la fuente de verdad; Web3Forms permanece como aviso secundario.
     function handleForm(formId, successId) {
       const form = document.getElementById(formId);
       const success = document.getElementById(successId);
-      if (!form) return;
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+      if (!form || !success) return;
+      form.noValidate = true;
+
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        clearFormError(form);
+        if (!validateForm(form)) return;
+
+        const formData = new FormData(form);
+        if (!String(formData.get('cf-turnstile-response') || '').trim()) {
+          setTurnstileMessage(form, 'Completa la verificación antispam antes de enviar.');
+          showFormError(form, 'Completa la verificación antispam antes de enviar.');
+          return;
+        }
+
         const btn = form.querySelector('.form-submit');
+        const defaultButtonMarkup = btn.innerHTML;
         btn.textContent = 'Enviando…';
         btn.disabled = true;
 
-        const formData = new FormData(form);
-
         try {
-          const res = await fetch('/api/contact', {
-            method: 'POST',
-            body: formData,
-          });
+          const res = await fetch('/api/contact', { method: 'POST', body: formData });
           const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data.ok) {
+            const verificationFailed = data.error === 'verificacion_fallida';
+            showFormError(
+              form,
+              verificationFailed
+                ? 'La verificación antispam falló. Complétala nuevamente.'
+                : 'No pudimos enviar tu solicitud. Intenta nuevamente.'
+            );
+            resetTurnstile(form, verificationFailed ? 'Completa nuevamente la verificación antispam.' : '');
+            return;
+          }
 
-          if (res.ok && data.ok) {
-            form.style.display = 'none';
-            success.classList.add('visible');
-
-            // Notificación por correo, best-effort — no bloquea el éxito.
-            // Ojo: Web3Forms nunca esperó los campos "form_type" ni
-            // "cf-turnstile-response" (son nuevos, agregados para /api/contact).
-            // Se sacan antes de mandarle los datos, por si Web3Forms descarta
-            // en silencio los envíos con campos que no reconoce.
+          if (!data.deduplicated) {
             const formDataWeb3 = new FormData(form);
             formDataWeb3.delete('form_type');
             formDataWeb3.delete('cf-turnstile-response');
+            formDataWeb3.delete('submission_id');
+            formDataWeb3.delete('botcheck');
             fetch(form.action, {
               method: 'POST',
               body: formDataWeb3,
               headers: { 'Accept': 'application/json' },
             }).catch(() => {});
-          } else {
-            btn.textContent = 'Error al enviar. Intenta de nuevo.';
-            btn.disabled = false;
           }
+
+          form.hidden = true;
+          success.hidden = false;
+          success.classList.add('visible');
+          success.focus();
         } catch {
-          btn.textContent = 'Error al enviar. Intenta de nuevo.';
+          showFormError(form, 'No pudimos enviar tu solicitud. Intenta nuevamente.');
+          resetTurnstile(form);
+        } finally {
+          btn.innerHTML = defaultButtonMarkup;
           btn.disabled = false;
         }
       });
     }
+
+    initializeContactContext();
     handleForm('formMensaje', 'successMensaje');
     handleForm('formReunion', 'successReunion');
 
