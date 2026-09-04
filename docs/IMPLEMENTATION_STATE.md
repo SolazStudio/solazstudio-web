@@ -1,15 +1,50 @@
 # Estado de implementación
 
 - Fecha: 2026-09-04
-- Fase/lote: F1.3 — Aplicación controlada de migración en D1 real
+- Fase/lote: F1.4 — Preview funcional aislada
 - Estado: COMPLETADO PARA REVISIÓN DE CHATGPT
 - Rama: `develop`
-- Commit base: `cb2ddb768a59d293cc280791de7251b1ce2168c2`
-- Commit del lote: único commit que contiene este documento, con mensaje `ops: apply contact context migration to D1`
+- Commit base: `3ede11ea52596c526e4b855bcf60b2141004d81e`
+- Commits del lote: funcional `595ce30b312a0366659a96b4377db42f39c1bfa4` (`feat: add isolated functional preview`) y commit documental que contiene este informe
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Preview / Cloudflare / recursos reales: únicamente D1 `solaz-contactos`; Preview, Production web y demás recursos intactos
+- Preview / Cloudflare / recursos reales: Preview funcional aislada; D1 `solaz-contactos-preview` y configuración Preview únicamente
 - Bloqueadores: ninguno
 - Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización
+
+## F1.4 — Preview funcional aislada
+
+F1.4 creó y demostró el circuito aislado `Formulario Preview → /api/contact Preview → D1 solaz-contactos-preview`. La deployment funcional probada es <https://42acd5df.solazstudio-web.pages.dev/> (`42acd5df-fae0-4671-9c54-416fb7a6571e`), generada por la integración Git de Pages desde `develop` y el commit funcional `595ce30b312a0366659a96b4377db42f39c1bfa4`.
+
+Infraestructura y configuración:
+
+- D1 creada: `solaz-contactos-preview`, ID `234b26b3-813f-46c8-9784-36ccf3037abc`, región ENAM.
+- Bootstrap exclusivo: `tools/preview/bootstrap_contacts.sql`, fuera de `migrations/`, sin INSERTs ni datos copiados.
+- Esquema Preview: tabla `contacts` con 23 columnas, PK sobre `id`, checks compatibles e índices `idx_contacts_created_at` e `idx_contacts_sync_status`.
+- Conteo inicial Preview: `0`.
+- Binding Preview: `DB → solaz-contactos-preview`.
+- Queue Preview: ausente; no existe binding `CONTACT_QUEUE`.
+- Variables Preview: `TURNSTILE_SITE_KEY` como `plain_text` y `TURNSTILE_SECRET_KEY` como `secret_text`, ambas de prueba oficial. El secreto no se registra en Git ni en este documento.
+- Configuración Production: hash SHA-256 `71d5fcb4f5f94881eaca99c6c0bac757479d06020e5f554b83b1e2bab890227b` antes y después; bindings y secreto Production no se modificaron ni se leyeron.
+- Deployment Production canónica: `d5ae0595-dbdf-4b50-9208-f3ab5aa64e22`, commit `880610411ecb4d66f652e8bfaf89e5794231409d`, intacta.
+
+Pruebas funcionales remotas:
+
+- GET `/` y `/contacto/`: HTTP 200.
+- HTML de Contacto: 2/2 instancias con la sitekey oficial de prueba y 0 instancias de la sitekey Production.
+- Contacto general sintético: HTTP 200, `deduplicated=false`, una fila nueva.
+- Solicitud de reunión sintética: HTTP 200, `deduplicated=false`, una segunda fila.
+- Idempotencia: reenvío del primer `submission_id`, HTTP 200, `deduplicated=true`, sin tercera fila.
+- Turnstile negativo: token ausente, HTTP 400 y `verificacion_fallida`, sin fila adicional.
+- Origin negativo: `https://example.com`, HTTP 403 y `origen_no_permitido`, sin fila adicional.
+- Conteo final Preview: exactamente `2`, ambas filas sintéticas QA.
+- Persistencia verificada sin imprimir PII: ambos `submission_id`, `form_type`, `service_code`, `source_page`, `case_id`, `cta_id`, `sync_status` y presencia de los campos propios de cada recorrido fueron correctos.
+
+Aislamiento demostrado:
+
+- Preview no posee Queue ni bindings hacia Worker, Make, Notion, Resend, email, analítica o Ads.
+- La D1 real `solaz-contactos` nunca estuvo enlazada a Preview: conservó `total = 8`, 23 columnas y los mismos índices antes/después. F1.4 no ejecutó ninguna escritura ni POST contra ella.
+- Los bookmarks de Time Travel consultados corresponden al timestamp actual y avanzaron entre lecturas automáticas; no se usaron como prueba de mutación. La separación se verificó por IDs de binding, comandos ejecutados, esquema y conteo.
+- No hubo deployment Production, merge, PR, rama nueva, DNS ni secretos Production leídos o modificados.
 
 ## F1.3 — Aplicación controlada de migración en D1 real
 
@@ -98,17 +133,17 @@ Formulario
 
 ## Alcance y estado acumulado de F1
 
-F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matriz frontend/backend, contexto interno seguro, idempotencia sobre `id`, Turnstile individual y feedback accesible. F1.2 añadió el esquema local versionado y los bindings backend de contexto; F1.3 aplicó únicamente ese esquema aditivo a la D1 real.
+F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matriz frontend/backend, contexto interno seguro, idempotencia sobre `id`, Turnstile individual y feedback accesible. F1.2 añadió el esquema local versionado y los bindings backend de contexto; F1.3 aplicó únicamente ese esquema aditivo a la D1 real. F1.4 añadió configuración de build para Turnstile, aceptación estricta de orígenes Pages del proyecto y una Preview funcional aislada con D1 propia.
 
-**F1 SIGUE ABIERTO.** La migración ya fue aplicada a D1 real, pero Preview, Turnstile/POST reales, evidencia de escritura de un lead nuevo, Queue, integraciones, atribución externa y QA real/manual quedan para lotes posteriores expresamente autorizados.
+**F1 SIGUE ABIERTO.** La migración ya fue aplicada a D1 real y el circuito funcional fue probado de extremo a extremo solo en Preview. El release a Production, un POST de Production, Queue, integraciones, atribución externa y QA visual/manual quedan para lotes posteriores expresamente autorizados.
 
 ## Archivos afectados
 
-- Creados: 0.
-- Modificados: 1: `docs/IMPLEMENTATION_STATE.md`.
+- Creados: 2: `src/_data/environment.js` y `tools/preview/bootstrap_contacts.sql`.
+- Modificados: 3: `functions/api/contact.js`, `src/contacto.njk` y `docs/IMPLEMENTATION_STATE.md`.
 - Eliminados: 0.
-- Archivos temporales: 0.
-- `migrations/0001_add_contact_context.sql`, `functions/api/contact.js`, `src/contacto.njk`, `src/_data/services.js`, `package.json`, `package-lock.json`, QA/paridad, superficie pública, configuración, templates, media y demás archivos: intactos.
+- Archivos temporales versionados: 0; el harness dirigido y los outputs temporales no se incluyeron en Git.
+- `migrations/0001_add_contact_context.sql`, `src/_data/services.js`, `package.json`, `package-lock.json`, QA/paridad, configuración global, rutas públicas, demás templates y media: intactos.
 
 ## Comportamiento implementado
 
@@ -154,19 +189,21 @@ F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matri
 
 - `functions/api/contact.js` importa la taxonomía desde `../../src/_data/services.js`; no duplica la lista.
 - Backend valida server-side la matriz, correo, taxonomía, UUID y contexto interno con longitudes limitadas.
-- `source_page` válido se transforma de forma segura en una URL canónica Solaz para la columna existente `origen_url`; sin `source_page`, solo se admite el pathname de un Referer de Production permitido.
+- `source_page` válido se transforma de forma segura en una URL canónica Solaz para la columna existente `origen_url`. El fallback de Referer admite Production solo cuando el request también es Production, o el mismo origen Preview estricto cuando el request usa un subdominio HTTPS de `.solazstudio-web.pages.dev`; la URL persistida conserva el dominio canónico `solazstudio.cl`.
+- Los dos orígenes Production siguen siendo exactamente `https://solazstudio.cl` y `https://www.solazstudio.cl`. Un origen Preview solo se acepta si usa HTTPS, su hostname termina exactamente en `.solazstudio-web.pages.dev` y el Origin coincide con `new URL(request.url).origin`; no se acepta la raíz `solazstudio-web.pages.dev`, un `*.pages.dev` genérico ni cruces entre Previews.
 - Cada formulario recibe al inicializar un UUID propio mediante APIs nativas del navegador. El identificador se conserva durante reintentos y no se regenera por un error.
 - `submission_id` validado usa la columna `contacts.id` existente.
 - La inserción usa una única sentencia `INSERT ... SELECT ... WHERE NOT EXISTS`; el resultado de D1 determina si se insertó la fila.
 - Una primera inserción encola una vez y responde `deduplicated=false`; un reintento con el mismo UUID no inserta ni encola de nuevo y responde `deduplicated=true`.
-- D1 sigue siendo la primera persistencia y Queue se ejecuta después como entrega best-effort; un fallo de Queue posterior no invalida el guardado.
+- D1 sigue siendo la primera persistencia y Queue se ejecuta después como entrega best-effort; un fallo o ausencia de Queue posterior no invalida el guardado. En Preview, `CONTACT_QUEUE` está deliberadamente ausente y el recorrido termina en la D1 aislada.
 - Web3Forms fue eliminado del flujo activo: no queda endpoint, credencial, campo exclusivo ni segundo envío en el frontend.
 - Honeypot conserva respuesta neutra sin Turnstile, INSERT ni Queue.
-- La inserción nueva persiste estructuralmente `service_code`, `source_page`, `case_id` y `cta_id`; `origen_url` se conserva por compatibilidad. F1.3 confirmó que las cuatro columnas ya existen en D1 real. No se desplegó el backend ni se realizó un POST real en este lote.
+- La inserción nueva persiste estructuralmente `service_code`, `source_page`, `case_id` y `cta_id`; `origen_url` se conserva por compatibilidad. F1.3 confirmó que las cuatro columnas ya existen en D1 real y F1.4 las ejercitó únicamente en D1 Preview. No se realizó un POST contra Production.
 
 ### Turnstile y accesibilidad
 
-- El script de Turnstile de Contacto usa `render=explicit`; no se cambió la sitekey ni otra metadata de `pages.js`.
+- El script de Turnstile de Contacto usa `render=explicit`; no se cambió otra metadata de `pages.js`.
+- `src/_data/environment.js` expone `environment.turnstileSiteKey`: toma `TURNSTILE_SITE_KEY` durante el build y conserva como fallback la sitekey pública Production preexistente. Las dos instancias Nunjucks usan esa propiedad; la clave pública de prueba no está versionada en templates ni configuración del repositorio.
 - Cada formulario conserva su propio widget ID; el panel visible se renderiza de forma segura.
 - El widget específico se resetea después de un fallo de envío o verificación y se recupera ante expiración/timeout.
 - Fallos de carga o disponibilidad muestran feedback accesible.
@@ -175,6 +212,30 @@ F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matri
 - El botón se deshabilita durante el envío y recupera su contenido/estado para reintentar.
 
 ## Pruebas y resultados de F1
+
+### F1.4 — Preview funcional aislada
+
+- Precheck Git: PASS exacto en el estado de entrada; repositorio `SolazStudio/solazstudio-web`, rama `develop`, árbol limpio, HEAD local y `origin/develop` en `3ede11ea52596c526e4b855bcf60b2141004d81e`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Precheck Cloudflare: PASS; OAuth válido, una sola cuenta, proyecto Pages exacto `solazstudio-web`, D1 Preview inicialmente inexistente y configuración Preview sin D1, Queue ni variables. Se confirmó un método API soportado para cambiar solo `deployment_configs.preview`.
+- Snapshot Production: PASS; binding `DB` a la D1 real, binding `CONTACT_QUEUE` y variable secreta Turnstile identificados solo por nombre/tipo/destino; ningún valor secreto fue leído. Hash de configuración `71d5fcb4f5f94881eaca99c6c0bac757479d06020e5f554b83b1e2bab890227b`.
+- Estructura D1 real de solo lectura: PASS; 23 columnas, PK, checks, dos índices funcionales y ningún trigger, sin consultar filas ni PII.
+- `npm ci`: PASS final; 129 paquetes instalados y 130 auditados, 0 vulnerabilidades. Dos intentos iniciales encontraron un bloqueo local `EBUSY` en `node_modules`; se apartó solo el output generado y la instalación limpia pasó.
+- Build con fallback Production: PASS; 24 páginas, 742 archivos copiados, dos sitekeys públicas Production y cero sitekeys de prueba.
+- Build con variable Preview efímera: PASS; 24 páginas, 742 archivos copiados, dos sitekeys públicas de prueba y cero sitekeys Production. Un primer intento encontró `EBUSY` al limpiar `_site`; se apartó solo ese output generado y el reintento pasó.
+- `qa:assets`: no existe en `package.json`. `qa:parity` no se ejecutó porque compara contra la salida histórica y no es un gate aplicable a cambios funcionales F1 autorizados.
+- Sintaxis: PASS para `functions/api/contact.js` y `src/_data/environment.js`.
+- Pruebas dirigidas locales: PASS para origen Preview same-origin; rechazo de raíz del proyecto, otro proyecto y cruce entre Previews; orígenes Production preservados; Referer Preview same-origin y canonicalización; rechazo de Referer Production en un request Preview; ausencia segura de Queue; y bootstrap de 23 columnas, índices y cero filas.
+- D1 Preview: PASS; `solaz-contactos-preview` creada e inicializada solo con el bootstrap Preview, sin datos copiados; conteo inicial `0`.
+- Deployment funcional: PASS; ID `42acd5df-fae0-4671-9c54-416fb7a6571e`, URL <https://42acd5df.solazstudio-web.pages.dev/>, entorno Preview, commit `595ce30b312a0366659a96b4377db42f39c1bfa4` y todas las etapas exitosas.
+- GET remoto: PASS; `/` y `/contacto/` devolvieron HTTP 200; Contacto incluyó dos sitekeys de prueba y ninguna Production.
+- POST general y reunión: PASS; dos envíos sintéticos distintos devolvieron HTTP 200, `ok=true`, `deduplicated=false` y generaron exactamente dos filas en D1 Preview.
+- Persistencia selectiva: PASS sin imprimir PII; IDs `f1400000-0000-4000-8000-000000000001` y `f1400000-0000-4000-8000-000000000002`, tipos `mensaje`/`reunion`, contexto estructurado, estado `pending` y presencia de campos propios de cada recorrido correctos.
+- Idempotencia: PASS; reenvío exacto del primer ID devolvió HTTP 200 y `deduplicated=true`, sin tercera fila.
+- Turnstile negativo: PASS; token ausente devolvió HTTP 400 y `verificacion_fallida`, sin fila nueva.
+- Origin negativo: PASS; `https://example.com` devolvió HTTP 403 y `origen_no_permitido`, sin fila nueva.
+- Conteo final Preview: PASS; exactamente `2` filas sintéticas QA.
+- Aislamiento: PASS; Preview quedó con `DB` a la D1 Preview y sin Queue. D1 real conservó 23 columnas, los mismos índices y `total = 8`; no recibió comandos de escritura ni POST. Production conservó idéntica configuración y deployment canónica.
+- `git diff --check`: PASS antes del commit funcional; alcance de código limitado a los cuatro archivos autorizados.
 
 ### F1.3 — Aplicación controlada de migración D1
 
@@ -259,7 +320,7 @@ F1.1 conserva los dos recorridos, clasificación obligatoria por servicio, matri
 
 ## Cambios visuales
 
-F1.3 no introduce cambios visuales ni de UX y no ejecutó build, despliegue o Preview. Diseño, estilos, campos, mensajes, estados, tabs, accesibilidad, contexto visible y Turnstile permanecen iguales al cierre de F1.2.
+F1.4 no introduce cambios de diseño ni UX. Diseño, estilos, campos, mensajes, estados, tabs, accesibilidad y contexto visible permanecen iguales; únicamente la build Preview muestra y usa la sitekey oficial de prueba de Turnstile, mientras el fallback Production conserva la sitekey pública preexistente.
 
 ### Cambios visibles acumulados del F1.1 original
 
@@ -273,20 +334,25 @@ No se rediseñó la página ni se modificaron identidad, navegación, footer, pr
 
 ## Limitaciones, pendientes y prohibiciones vigentes
 
-- No hubo prueba visual/manual en navegador, responsive manual ni lector de pantalla; el foco y ARIA se verificaron por análisis local.
-- No se probó Turnstile real, POST real, escritura de lead nuevo en D1 ni Queue real.
-- No se desplegó en Preview ni Production; dentro de Cloudflare solo se modificó la D1 `solaz-contactos`. DNS, Ads, analítica y demás recursos externos permanecieron intactos.
-- La migración versionada ya está aplicada en D1 real y el esquema fue verificado; todavía no existe evidencia autorizada de un POST real que ejercite los cuatro bindings.
+- No hubo QA visual/manual, responsive manual ni lector de pantalla; el foco y ARIA se verificaron por análisis local y la Preview por HTTP/HTML y pruebas funcionales dirigidas.
+- Turnstile y los POST se probaron únicamente en Preview con claves oficiales de prueba y datos sintéticos. No se probó Turnstile Production, no hubo POST Production ni escritura nueva en D1 real.
+- Se desplegó solo Preview por integración Git desde `develop`; no hubo deployment Production. DNS, Ads, analítica y demás recursos externos permanecieron intactos.
+- La migración versionada ya está aplicada en D1 real y el esquema fue verificado. La persistencia de los cuatro bindings se demostró en D1 Preview, no en Production.
 - Falta decidir la atribución externa completa bajo reglas de privacidad.
-- Faltan Preview, Turnstile real, POST controlado, confirmación de escritura única de un lead nuevo en D1, Queue real, Worker consumidor, Notion, Resend, reemplazo posterior de Make y QA visual/manual.
+- Faltan el release y validación autorizada de Production, Queue real, Worker consumidor, Notion, Resend, reemplazo posterior de Make y QA visual/manual.
 - No crear página/URL/oferta de IA, landings, subservicios, tracking o nuevas rutas sin autorización.
 - No iniciar otro lote ni F2, modificar `main`, hacer merge/PR/rama/force push o tocar Production/Cloudflare/recursos reales sin nueva autorización.
 
 ## Rollback
 
-F1.3 deja un único cambio documental en `develop` con mensaje `ops: apply contact context migration to D1`. La migración D1 es aditiva y las columnas nuevas son anulables, por lo que no altera los valores históricos. El bookmark previo registrado es `000019ae-00000000-000050dc-66e15a75728c69361e3adb40fa94e7b1`; una restauración Time Travel revertiría también cualquier cambio posterior en la base y no está autorizada. No ejecutar rollback documental ni remoto sin una instrucción expresa y un nuevo precheck.
+La base Git de F1.4 es `3ede11ea52596c526e4b855bcf60b2141004d81e`. Un rollback autorizado debe revertir únicamente los dos commits F1.4; retirar solo el binding `DB` y las dos variables añadidas a `deployment_configs.preview`; y eliminar únicamente `solaz-contactos-preview` si se autoriza expresamente y continúa siendo seguro. No debe modificar D1 real, Queue, secretos Production, configuración/deployment Production, `main` ni ningún otro recurso. No ejecutar este rollback sin instrucción expresa y un nuevo precheck.
 
 ## Evidencia durable anterior
+
+### F1.3
+
+- Commit: `3ede11ea52596c526e4b855bcf60b2141004d81e` (`ops: apply contact context migration to D1`).
+- Aplicó una sola vez la migración aditiva a D1 real, preservó ocho filas históricas y documentó esquema final de 23 columnas sin leer PII ni realizar POST.
 
 ### F1.2
 
@@ -322,31 +388,30 @@ F1.3 deja un único cambio documental en `develop` con mensaje `ops: apply conta
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F1.3 — Aplicación controlada de migración en D1 real.
+- Lote: F1.4 — Preview funcional aislada.
 - Fecha: 2026-09-04.
-- Objetivo: aplicar exclusivamente `migrations/0001_add_contact_context.sql` sobre la D1 real `solaz-contactos`, con prechecks, bookmark previo y validación posterior sin datos personales.
-- Precheck Git: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, árbol limpio, HEAD local y `origin/develop` en `cb2ddb768a59d293cc280791de7251b1ce2168c2`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
-- Autenticación: PASS; sesión OAuth válida, sin repetir el login, y una sola cuenta Cloudflare disponible.
-- Identificación D1: PASS; inventario con una sola base llamada exactamente `solaz-contactos`.
-- Bookmark previo: `000019ae-00000000-000050dc-66e15a75728c69361e3adb40fa94e7b1`.
-- Esquema previo: PASS; `PRAGMA table_info("contacts")` devolvió exactamente las 19 columnas conocidas y confirmó la ausencia de `service_code`, `source_page`, `case_id` y `cta_id`.
-- Conteo previo: `total = 8`, obtenido únicamente mediante `SELECT COUNT(*) AS total FROM contacts;`.
-- Migración: PASS en una sola ejecución de `npx wrangler d1 execute solaz-contactos --remote --file migrations/0001_add_contact_context.sql --yes`; 4 consultas procesadas.
-- Bookmark posterior informado: `000019ae-00000004-000050dc-6103293222cdcf1ae096da4a1252cf21`.
-- Esquema posterior: PASS; 23 columnas totales y las cuatro nuevas como `TEXT`, anulables y sin default.
-- Conteos posteriores: PASS; `total = 8`, `service_code_con_valor = 0`, `source_page_con_valor = 0`, `case_id_con_valor = 0`, `cta_id_con_valor = 0`.
-- Integridad histórica: PASS; el total no disminuyó y las filas previas conservaron `NULL` en las columnas nuevas.
-- Privacidad: PASS; no se leyeron filas ni datos personales, solo metadata de esquema y conteos agregados.
-- POST real: no realizado, conforme al alcance.
-- Archivos: 0 creados, 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados.
-- Pruebas de sitio/build: no ejecutadas; F1.3 no modifica código ni salida pública y el encargo limitó el lote a D1 y documentación.
-- Desviaciones: ninguna.
-- Recursos externos tocados: únicamente D1 `solaz-contactos`. Queue, Worker, Make, Notion, Resend, Turnstile, Preview, Production web, DNS, Ads y analítica permanecen intactos.
-- Commit: único commit con mensaje exacto `ops: apply contact context migration to D1`; el SHA se verifica en el informe final externo porque un commit no puede registrar dentro de sí su propio identificador.
-- Push: exclusivamente a `origin/develop`, sujeto a la verificación final posterior al commit.
-- Working tree final: debe quedar limpio tras el commit/push y se verifica en el informe final externo.
-- Estado de main: debe permanecer en `880610411ecb4d66f652e8bfaf89e5794231409d` y se verifica después del push.
-- Criterio de cierre: migración aplicada una sola vez, esquema y conteos verificados, documentación durable actualizada y alcance externo exacto; sujeto a commit/push/verificación remota.
-- Pendientes: Preview; Turnstile/POST reales; evidencia de escritura única de un lead nuevo en D1; Queue real; Worker consumidor; Notion; Resend; reemplazo posterior de Make; atribución externa; QA visual/manual; cierre completo de F1.
+- Objetivo: crear y demostrar exclusivamente el circuito `Formulario Preview → /api/contact Preview → D1 solaz-contactos-preview`, sin conectar ni escribir recursos Production.
+- Precheck: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, árbol limpio, HEAD local y `origin/develop` en la base `3ede11ea52596c526e4b855bcf60b2141004d81e`; `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`. OAuth, cuenta única, proyecto Pages y aislamiento inicial también pasaron.
+- Archivos: 2 creados (`src/_data/environment.js`, `tools/preview/bootstrap_contacts.sql`), 3 modificados (`functions/api/contact.js`, `src/contacto.njk`, `docs/IMPLEMENTATION_STATE.md`) y 0 eliminados. No se versionaron temporales.
+- Infraestructura creada: D1 `solaz-contactos-preview`, ID `234b26b3-813f-46c8-9784-36ccf3037abc`, región ENAM; bootstrap exclusivo Preview, 23 columnas, dos índices funcionales y cero filas iniciales.
+- Configuración Preview final: binding `DB → solaz-contactos-preview`; `CONTACT_QUEUE` ausente; `TURNSTILE_SITE_KEY` de prueba como `plain_text`; `TURNSTILE_SECRET_KEY` de prueba como `secret_text`; ningún secreto Production leído, copiado o registrado.
+- Deployment funcional nueva: <https://42acd5df.solazstudio-web.pages.dev/>, ID `42acd5df-fae0-4671-9c54-416fb7a6571e`, generada por auto-deploy Git de Pages desde `develop` y el commit funcional `595ce30b312a0366659a96b4377db42f39c1bfa4`.
+- Pruebas locales: PASS en `npm ci`, builds Production-fallback y Preview, sintaxis y harness dirigido de orígenes/Referer, ausencia de Queue y bootstrap. `qa:assets` no existe; la paridad histórica no se ejecutó por no aplicar a cambios F1 intencionales.
+- GET remoto: PASS; `/` y `/contacto/` HTTP 200, con 2/2 sitekeys de prueba y 0 sitekeys Production en Contacto.
+- Contacto general: PASS; envío sintético ID `f1400000-0000-4000-8000-000000000001`, HTTP 200, `ok=true`, `deduplicated=false` y primera fila Preview.
+- Solicitud de reunión: PASS; envío sintético ID `f1400000-0000-4000-8000-000000000002`, HTTP 200, `ok=true`, `deduplicated=false` y segunda fila Preview.
+- Evidencia D1 Preview: PASS sin exponer PII; `submission_id`, `form_type`, `service_code`, `source_page`, `case_id`, `cta_id`, `sync_status` y presencia de campos propios de cada recorrido coincidieron.
+- Conteo final D1 Preview: exactamente `2` filas sintéticas QA.
+- Idempotencia: PASS; reenvío del primer ID respondió HTTP 200 y `deduplicated=true`, sin tercera fila.
+- Turnstile negativo: PASS; token ausente respondió HTTP 400 y `verificacion_fallida`, sin fila adicional.
+- Origin ajeno: PASS; `https://example.com` respondió HTTP 403 y `origen_no_permitido`, sin fila adicional.
+- D1 real: sin escrituras atribuibles a F1.4 y sin POST; permaneció con 23 columnas, los mismos índices y `total = 8`. Los bookmarks de Time Travel avanzaron por su naturaleza temporal automática y no se usaron aisladamente como evidencia de mutación.
+- Integraciones excluidas: no hubo Queue message, Worker, email, Make, Notion, Resend, analítica ni Ads; Preview no tiene el binding de Queue.
+- Production: configuración idéntica antes/después, hash `71d5fcb4f5f94881eaca99c6c0bac757479d06020e5f554b83b1e2bab890227b`; deployment canónica `d5ae0595-dbdf-4b50-9208-f3ab5aa64e22` en `880610411ecb4d66f652e8bfaf89e5794231409d`; sin deployment Production.
+- Commits: funcional `595ce30b312a0366659a96b4377db42f39c1bfa4` (`feat: add isolated functional preview`) y commit documental que contiene este informe; máximo de dos respetado.
+- Push: exclusivamente a `origin/develop`; la comprobación final de refs y árbol limpio se registra en el informe externo porque el commit no puede contener su propio SHA.
+- `origin/main`: debe permanecer exactamente en `880610411ecb4d66f652e8bfaf89e5794231409d` tras el push final.
+- Desviaciones/incidencias no materiales: dos bloqueos `EBUSY` de outputs generados durante instalación/build, resueltos apartando únicamente esas carpetas; un primer query estructural D1 con quoting incorrecto falló antes de leer o escribir; una variable PowerShell protegida usada por error interrumpió el primer chequeo GET antes de asignar Home. Todos se corrigieron de forma acotada, sin cambios versionados ni recursos fuera de alcance. No hubo desviaciones materiales.
+- Rollback disponible: revertir solo los dos commits F1.4; retirar únicamente binding/variables Preview añadidos; eliminar solo `solaz-contactos-preview` si hay autorización expresa y es seguro; nunca tocar D1 real, Queue, Production ni `main`.
 - Estado de F1: ABIERTO.
 - Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
