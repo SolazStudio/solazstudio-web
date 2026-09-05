@@ -1,14 +1,14 @@
 # Estado de implementación
 
-- Fecha: 2026-09-04
-- Fase/lote: F2.1 — Inventario real del circuito post-D1
-- Estado: COMPLETADO PARA REVISIÓN DE CHATGPT
+- Fecha: 2026-09-05
+- Fase/lote: F2.2 — Recuperación y baseline del Worker actual
+- Estado: F2.2 — BLOQUEADO PARA REVISIÓN DE CHATGPT
 - Rama: `develop`
-- Commit base: `f006a37c3aa9fc20f1230112c25e6471b223596f`
-- Commit del lote: único commit documental que contiene este informe, con mensaje `docs: record F2.1 post-D1 inventory`
+- Commit base: `4557de845746aff61727ef3ad7c6130affe436cd`
+- Commit del lote: único commit documental que contiene este bloqueo, con mensaje `docs: capture contact worker production baseline`
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Cloudflare / recursos reales: inventario de solo lectura; cero escrituras remotas
-- Bloqueadores: ninguno
+- Cloudflare / recursos reales: precheck de solo lectura; cero escrituras remotas
+- Bloqueadores: la sesión OAuth de Wrangler no puede usarse para el GET oficial del source mediante las capacidades disponibles sin extraer explícitamente la credencial; Wrangler no ofrece descarga de Workers y el único navegador disponible no tiene sesión Cloudflare. El encargo prohíbe extraer el token o iniciar otro login.
 - Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización
 
 ## Cierre de F1 por revisión de ChatGPT
@@ -17,6 +17,50 @@
 - La frase histórica “F1 sigue abierto” registrada al cierre técnico de F1.4 expresaba el estado provisional anterior a esa revisión.
 - El cierre de F1 no requirió ni produjo escrituras adicionales en Cloudflare, D1, Queue, Worker, Notion, email, Preview o Production.
 - Queue, Worker, fallos y resiliencia pasan a F2. F2.1 solo inventaría el sistema actual; no construye F2.2.
+
+## F2.2 — Recuperación y baseline del Worker actual
+
+Estado: **F2.2 — BLOQUEADO PARA REVISIÓN DE CHATGPT**.
+
+Precheck local y remoto completado antes de cualquier escritura:
+
+- Repositorio exacto `SolazStudio/solazstudio-web`, rama `develop` y working tree inicial limpio.
+- HEAD local, referencia local `origin/develop` y `origin/develop` remoto: `4557de845746aff61727ef3ad7c6130affe436cd`.
+- Referencia local y remota `origin/main`: `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- `docs/IMPLEMENTATION_STATE.md` leído íntegramente.
+- Wrangler `4.112.0` autenticado mediante la sesión existente y una sola cuenta inequívoca.
+
+Estado del Worker verificado por operaciones de solo lectura:
+
+- Worker exacto: `solaz-contact-worker`.
+- Deployment activo: `1d21bf44-6d1c-472a-aba7-345ddf6c3172`, creado `2026-07-21T06:41:47.252634Z`, estrategia porcentual y una única versión al `100%`; no hay traffic split.
+- Versión activa y última versión disponible: número 6, ID `c1224de0-a9be-4aac-8143-aa2a5bd12ab7`, creada `2026-07-21T06:41:46Z` por Wrangler.
+- Etag de script de la versión: `cfd43cd970dd7b0e69f8b90675fa9ba7160d37da05eb46df576b3dc701475864`.
+- Handlers: `queue` y `scheduled`; compatibility date `2026-07-01`; sin compatibility flags informadas.
+- Bindings inspeccionados solo por nombre/tipo: `CONTACT_QUEUE`/`queue`, `DB`/`d1`, `EMAIL`/`send_email`, `NOTION_DATABASE_ID`/`plain_text` y `NOTION_TOKEN`/`secret_text`. No se reutilizó ni documentó ningún valor.
+- La metadata coincide con F2.1 y demuestra que el deployment observado entonces sigue activo y estable.
+
+Bloqueo de recuperación:
+
+- La documentación oficial vigente confirma el GET de descarga `GET /accounts/{account_id}/workers/scripts/{script_name}` y el GET alternativo de contenido `GET /accounts/{account_id}/workers/scripts/{script_name}/content/v2`.
+- Wrangler autenticado no expone un comando para descargar el source del Worker.
+- El intento de preparar el GET directo fue detenido antes de crear proceso, llamada HTTP, carpeta temporal o archivo porque el único mecanismo disponible requería extraer y manejar explícitamente el token OAuth almacenado. Eso contradice la regla de autenticación del encargo.
+- Se comprobó como alternativa una sesión existente del navegador: el navegador integrado llegó a la pantalla de login de Cloudflare y no había otro navegador conectado. No se inició login, no se introdujeron credenciales y no se intentó el endpoint del source desde esa sesión.
+- No existe un conector Cloudflare disponible que descargue el source usando la sesión sin exponer credenciales.
+- Por tanto no puede sostenerse la correspondencia obligatoria source ↔ versión activa. Se activó exactamente la condición de bloqueo “la única forma exige exponer un token”.
+
+Consecuencias y alcance:
+
+- No se descargó source completo ni parcial.
+- No se creó `workers/contact-sync/baseline/`, `BASELINE.md` ni archivo de código.
+- No fue posible realizar hashes, comparación byte-for-byte, escaneo de secretos, validación de sintaxis ni análisis estático de `queue()`/`scheduled()`.
+- Las transiciones D1, llamadas a Notion, uso de email, ack/retry, reconciliación e idempotencia permanecen no verificables más allá del inventario F2.1; no se infirieron ni corrigieron.
+- No se consultaron D1, Notion, email, logs o payloads; no se ejecutó Worker/scheduled; no se enviaron mensajes Queue ni POST funcionales.
+- No hubo escrituras Cloudflare ni cambios de Worker, deployment, versión, Queue, triggers, D1, Pages, Preview, Production, bindings, secrets, Make, Notion, Resend, email, DNS, Ads o analítica.
+- No se inició F2.3. Sus gaps siguen pendientes y no se diseñaron ni implementaron en este lote bloqueado.
+- Único cambio local del lote: este registro documental.
+
+Rollback del lote bloqueado: revertir únicamente el commit documental F2.2 en `develop`. No desplegar el baseline —que no existe— ni modificar Worker, Queue, D1, F2.1, Preview, Production o `main`.
 
 ## F2.1 — Inventario real del circuito post-D1
 
@@ -483,7 +527,7 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 - Smoke HTTP SETUP-0.3: 24/24 rutas públicas y assets críticos con 200; ruta inexistente con 404. QA visual/manual de Home, navegación, Portafolio, proyecto, Contacto, ambos modos y móvil, sin envíos.
 - Production, `main`, DNS, Ads, D1/Queue de Production, secretos y Turnstile real permanecieron intactos. Corrección documental posterior: `d584494c809765e61f301af23618ef7212734653`.
 
-## INFORME CODEX — ÚLTIMO LOTE
+## INFORME CODEX — F2.1
 
 - Lote: F2.1 — Inventario real del circuito post-D1.
 - Fecha: 2026-09-04.
@@ -518,3 +562,31 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 - Siguiente lote: pendiente de revisión de ChatGPT y autorización expresa; no iniciar F2.2.
 - Estado de F1: CERRADO.
 - Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
+
+## INFORME CODEX — ÚLTIMO LOTE
+
+- Lote: F2.2 — Recuperación y baseline del Worker actual.
+- Fecha: 2026-09-05.
+- Estado: **F2.2 — BLOQUEADO PARA REVISIÓN DE CHATGPT**.
+- Precheck: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, árbol inicial limpio, HEAD local y `origin/develop` local/remoto en `4557de845746aff61727ef3ad7c6130affe436cd`; `origin/main` local/remoto en `880610411ecb4d66f652e8bfaf89e5794231409d`; estado durable leído íntegramente; Wrangler 4.112.0 autenticado y una cuenta inequívoca.
+- Archivos: 0 creados, 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados. No existe baseline parcial ni temporal creado por la recuperación.
+- Worker: `solaz-contact-worker` inequívoco.
+- Deployment activo: `1d21bf44-6d1c-472a-aba7-345ddf6c3172`, una versión al 100%, sin traffic split.
+- Versión activa: número 6, `c1224de0-a9be-4aac-8143-aa2a5bd12ab7`; es también la última versión listada. Etag `cfd43cd970dd7b0e69f8b90675fa9ba7160d37da05eb46df576b3dc701475864`, handlers `queue,scheduled`, compatibility date `2026-07-01`.
+- Método GET previsto: descarga oficial `GET /accounts/{account_id}/workers/scripts/solaz-contact-worker`; no se ejecutó porque la capacidad disponible exigía extraer el OAuth de Wrangler. También se verificó documentalmente el GET `.../content/v2`, sin ejecutarlo.
+- Correspondencia source/version: NO DEMOSTRADA porque no se obtuvo el source; esta ausencia obliga el bloqueo aunque la versión activa sea única, última y estable.
+- Formato/source/baseline/hashes: no disponibles; no se creó `workers/contact-sync/baseline/` ni `BASELINE.md`.
+- Seguridad: ningún token, secret, valor de binding, lead, PII o contenido D1 se mostró, copió o versionó. El escaneo del source no pudo realizarse porque el source no fue descargado.
+- Byte-for-byte y sintaxis: no aplicables sin source.
+- `queue()`, D1, Notion, email, retry/ack, `scheduled()`, reconciliación e idempotencia: el análisis F2.2 no pudo ejecutarse; siguen no verificables con la precisión requerida y no se presentan inferencias nuevas.
+- Gaps F2.3: no se definieron ni implementaron; el lote se detuvo antes de esa etapa.
+- Puntos no verificables: código desplegado, lógica interna completa y su correspondencia con la versión activa; por derivación, transiciones y comportamiento real solicitados.
+- Pruebas locales: precheck Git, lectura documental, validación de disponibilidad de capacidades, `git diff --check` PASS y control de alcance PASS con solo este documento modificado. No se ejecutaron build, npm, POST, Worker, scheduled, Queue, D1, Notion ni email.
+- Cero escrituras Cloudflare: PASS. Solo se usaron Wrangler `whoami`, deployments/versions GET/list/view y navegación GET a la pantalla de login. El GET del source no llegó a ejecutarse. No hubo deploy, upload, publish, create, update, apply, send, purge, POST, PUT, PATCH o DELETE.
+- Commit: único commit documental previsto con mensaje `docs: capture contact worker production baseline`; el SHA se verifica en el informe externo porque el commit no puede contener su propio identificador.
+- Push: exclusivamente a `origin/develop`, sujeto a verificación final; una Preview automática documental queda permitida como efecto de la integración, sin probarla ni modificarla.
+- Main/Production/Worker/Queue: verificados intactos antes del commit. `origin/main` permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`; Pages Production conserva deployment `d5ae0595-dbdf-4b50-9208-f3ab5aa64e22`, rama `main`, source `8806104`; Queue `solaz-contactos-sync` conserva ID `dac558e81fd745f8b5b0f6fe97d7e380`, 2 productores y el único consumidor `solaz-contact-worker`; el Worker conserva deployment/versión/porcentaje. No se realizó ninguna acción de escritura sobre ellos.
+- Desviaciones: ninguna material. La recuperación se bloqueó por una condición prevista del encargo; el intento inseguro fue rechazado antes de ejecutar proceso o llamada HTTP y la alternativa del navegador no disponía de sesión autenticada. No se inició un nuevo login.
+- Rollback: revertir únicamente el commit documental F2.2 en `develop`; no modificar Worker, Queue, D1, F2.1, Preview, Production o `main`.
+- Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización. No iniciar F2.3.
+- Estado final exacto: BLOQUEADO PARA REVISIÓN DE CHATGPT
