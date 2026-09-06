@@ -1,15 +1,15 @@
 # Estado de implementación
 
-- Fecha: 2026-09-05
-- Fase/lote: F2.2 — Recuperación y baseline del Worker actual
-- Estado: F2.2 — COMPLETADO PARA REVISIÓN DE CHATGPT
+- Fecha: 2026-09-06
+- Fase/lote: F2.3 — Worker gestionado + hardening local de resiliencia
+- Estado: F2.3 — COMPLETADO PARA REVISIÓN DE CHATGPT
 - Rama: `develop`
-- Commit base de la continuación: `ad58ab54e8846c81547b014b40e6967bc6ac17ef`
-- Commit histórico del bloqueo: `ad58ab54e8846c81547b014b40e6967bc6ac17ef` (`docs: capture contact worker production baseline`), preservado sin reescritura
-- Commit de la continuación: único commit con mensaje `docs: complete contact worker production baseline`; su SHA se verifica fuera del propio commit
+- Commit base: `f9db03a90d9e1ce05679749f65f0a90d2e302d8d`
+- Commit del lote: único commit con mensaje `feat: harden contact sync worker locally`; su SHA se verifica fuera del propio commit
+- Estado F2: **ABIERTO**
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Cloudflare / recursos reales: recuperación y verificaciones de solo lectura; cero escrituras remotas
-- Bloqueadores: ninguno en la continuación; la recuperación oficial y el baseline pasaron los controles
+- Cloudflare / recursos reales: metadata de solo lectura; cero escrituras remotas y cero deploys
+- Bloqueadores: ninguno; implementación y pruebas locales completas
 - Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización
 
 ## Cierre de F1 por revisión de ChatGPT
@@ -18,6 +18,62 @@
 - La frase histórica “F1 sigue abierto” registrada al cierre técnico de F1.4 expresaba el estado provisional anterior a esa revisión.
 - El cierre de F1 no requirió ni produjo escrituras adicionales en Cloudflare, D1, Queue, Worker, Notion, email, Preview o Production.
 - Queue, Worker, fallos y resiliencia pasan a F2. F2.1 solo inventaría el sistema actual; no construye F2.2.
+
+## F2.3 — Worker gestionado + hardening local de resiliencia
+
+Estado: **F2.3 — COMPLETADO PARA REVISIÓN DE CHATGPT**. Estado de F2: **ABIERTO**.
+
+### Precheck, alcance y archivos
+
+- Repositorio exacto `SolazStudio/solazstudio-web`, rama `develop`, working tree inicial limpio y documento durable leído íntegramente.
+- HEAD local, `origin/develop` local y remoto: `f9db03a90d9e1ce05679749f65f0a90d2e302d8d`; `origin/main` local y remoto: `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Baseline F2.2 leída y verificada antes de escribir: SHA-256 `f899e72d438bc63a871d6480349bba6f7fd618f8e2d68bba8902d22063f80b7c`. El mismo hash se confirmó tras implementar/probar; no existe diff bajo `workers/contact-sync/baseline/`.
+- Antes del lote solo existía `migrations/0001_add_contact_context.sql`.
+- Creados exclusivamente: `workers/contact-sync/src/index.js`, `workers/contact-sync/test/worker.test.js` y `migrations/0002_add_sync_started_at.sql`. Modificado exclusivamente este documento. Baseline, package files, Functions, templates y frontend intactos.
+- No se creó `wrangler.toml`, `wrangler.jsonc` ni configuración Cloudflare desplegable.
+
+### Migración local no aplicada
+
+- `0002_add_sync_started_at.sql` contiene una única sentencia: `ALTER TABLE contacts ADD COLUMN sync_started_at TEXT;`.
+- La columna es nullable por omisión; no hay otras columnas, reconstrucción, `INSERT`, `UPDATE` o `DELETE`.
+- Validación textual local PASS. La migración **NO fue aplicada** a D1 Production ni Preview y no se ejecutó SQL remoto.
+
+### Worker gestionado y diferencias frente a la baseline
+
+- Source mantenible ES module separado de la baseline: sin minificación, `__name`/`__defProp` ni `sourceMappingURL`; conserva D1, Queue, Notion, email, `queue()` y `scheduled()`, junto con los mismos campos funcionales enviados a Notion.
+- Constantes: `MAX_REINTENTOS=6`, `PENDING_REQUEUE_MINUTES=10` y `SYNCING_STALE_MINUTES=20`.
+- Claim D1 atómico: `UPDATE` condicional cambia a `syncing`, fija `sync_started_at=datetime('now')` y admite solo `pending` bajo el máximo o `syncing` stale con timestamp no nulo y más de 20 minutos. El derecho a llamar Notion depende exclusivamente de `meta.changes===1`; la lectura inicial no actúa como lock.
+- Contactos inexistentes, ya `synced`, `failed` o sin claim terminan sin POST a Notion. No hay locks en memoria.
+- Éxito: persiste `synced`, `notion_page_id`, `synced_at`, limpia `last_error` y pone `sync_started_at=NULL`.
+- Fallo: incrementa en SQL `retry_count=COALESCE(retry_count,0)+1`, decide `pending`/`failed` de forma determinista, guarda diagnóstico técnico pequeño y limpia `sync_started_at`; una lectura posterior obtiene el contador final.
+- HTTP 429, HTTP 5xx y fallo de red son retryable. HTTP 4xx salvo 429 es definitivo y pasa a `failed` desde el primer intento, sin retry de Queue.
+- Respuesta 2xx con body ilegible/no JSON o sin ID Notion utilizable es un fallo operacional definitivo: queda `failed` y no genera retry automático, porque Notion podría haber creado la página.
+- Parsing defensivo: body y JSON se manejan sin perder el status; se extraen `code`, `message` e `id`, pero solo status/code técnicos filtrados llegan al diagnóstico. Nunca se guarda/loggea body, payload, token, database ID, Authorization o campos del contacto.
+- `Retry-After` acepta solo entero positivo; valores válidos se limitan a 1–3600 segundos. Si falta/es inválido, backoff determinista `min(60 * 2^(retryCountFinal - 1), 900)`: 60, 120, 240, 480 y 900 segundos.
+- Límite explícito: el backoff gobierna el retry del mensaje, pero el cron obligatorio identifica `pending` por `created_at`. Una fila antigua que vuelve a `pending` puede ser reencolada por cron antes del delay; el claim evita ejecución concurrente, pero respetar un not-before estricto requeriría estado/esquema adicional y queda abierto para otro lote.
+- `queue()` procesa individual y secuencialmente. Solo errores retryable con contador final menor que 6 llaman `message.retry({ delaySeconds })`; al sexto fallo persiste `failed` y hace ACK/retorno normal. No hay `retryAll()` ni throw de un fallo individual al batch.
+- Fallos internos D1 no se fingen como éxito: se registran de forma sanitizada y permiten retry técnico. El caso Notion exitoso + confirmación D1 fallida conserva el código específico `notion_success_d1_unconfirmed` y sigue siendo un gap explícito.
+- `scheduled()` selecciona hasta 50 `pending` con más de 10 minutos y `syncing` con `sync_started_at` mayor a 20 minutos. Eliminó la rama inalcanzable de `failed` bajo el máximo; nunca reencola `failed` ni sincroniza directamente.
+- Cada reencolado tiene su propio try/catch: un `CONTACT_QUEUE.send()` fallido genera log sanitizado y continúa con la fila siguiente. El límite 50 sin paginación/drain permanece como gap operativo.
+- Alertas: seleccionan cualquier `failed AND alerted=0 LIMIT 20`, incluido un 4xx definitivo temprano. `alerted=1` se escribe solo después de email exitoso; un fallo de email queda registrado y no marca la fila. El copy indica que el contacto permanece en D1 y requiere revisión manual.
+- Logging estructurado y mínimo: event, ID opaco, status, retry count, delay, outcome y code técnico. Los logs no contienen nombre, empresa, email, teléfono, mensaje, presupuesto, payload Notion, secrets, body ni contenido de email.
+
+### Pruebas y gap abierto
+
+- `node --check workers/contact-sync/src/index.js`: PASS.
+- `node --check workers/contact-sync/test/worker.test.js`: PASS.
+- `node --test workers/contact-sync/test/worker.test.js`: **26 PASS, 0 FAIL**.
+- Los 24 escenarios funcionales obligatorios pasaron: éxito, claim concurrente, estados no elegibles, 429/Retry-After, 5xx, red, 400, sexto fallo, 2xx ambiguos, pending/stale/failed del cron, continuidad tras send fallido, alertas, logs, gap Notion→D1, backoff y clamp. Dos tests adicionales validan migración y hash baseline.
+- Tests enteramente locales con `node:test`/`node:assert`, fakes deterministas de D1/Queue/email y `fetch` bloqueado por defecto. Cero red, Worker remoto, Queue real, D1 real, Notion real o email real.
+- El test de contrato Notion→D1 demuestra deliberadamente que, si Notion devuelve un ID pero D1 no confirma `synced`, una recuperación stale futura puede repetir el POST. F2.3 no busca por nombre/email, no asume unicidad, no cambia Notion y **no resuelve la idempotencia completa Notion↔D1**.
+- También pasan escaneo de secretos, ausencia de PII en logs, validación de imports/exports y promesas esperadas, `git diff --check`, hash baseline y control estricto de los cuatro paths autorizados.
+
+### Infraestructura, rollback y siguiente paso
+
+- F2.3 fue enteramente local salvo el push Git. Solo se consultó metadata Cloudflare de lectura: el Worker remoto conservó deployment `1d21bf44-6d1c-472a-aba7-345ddf6c3172` y versión `c1224de0-a9be-4aac-8143-aa2a5bd12ab7` al 100%; Queue `solaz-contactos-sync` conservó ID/timestamps, 2 productores y 1 consumidor.
+- Cero deploy, versión Worker, cambio de tráfico/bindings/cron/consumer, mensaje Queue, migración aplicada, SQL remoto, Notion, email, Pages, Preview, Production, secret, DNS, Ads o analítica.
+- Rollback: revertir únicamente el commit F2.3 `feat: harden contact sync worker locally`; no tocar baseline F2.2 ni ningún recurso remoto.
+- F2 permanece **ABIERTO**. F2.4 no se inició y requiere revisión/autorización expresa.
 
 ## F2.2 — Recuperación y baseline del Worker actual
 
@@ -621,7 +677,7 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 - Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización. No iniciar F2.3.
 - Estado final exacto: BLOQUEADO PARA REVISIÓN DE CHATGPT
 
-## INFORME CODEX — ÚLTIMO LOTE
+## INFORME CODEX — F2.2 CIERRE
 
 - Lote: continuación del mismo F2.2 — Recuperación y baseline del Worker actual; F2.3 no iniciado.
 - Fecha: 2026-09-05; snapshot `2026-09-06T03:00:01Z` UTC.
@@ -654,4 +710,45 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 - Desviaciones: ninguna material. Se usó el flag oculto `--no-delegate-c3` solo para ejecutar la implementación incorporada de la operación oficial y evitar una instalación auxiliar; no alteró el alcance remoto. Una consulta concurrente inicial falló localmente por permisos/network y se repitió secuencialmente sin efecto remoto.
 - Rollback: revertir únicamente el nuevo commit de continuación F2.2; conservar el commit documental de bloqueo y no modificar Worker, Queue, D1, F2.1, Preview, Production o `main`.
 - Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización. No iniciar F2.3.
+- Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
+
+## INFORME CODEX — ÚLTIMO LOTE
+
+- Lote: F2.3 — Worker gestionado + hardening local de resiliencia; F2.4 no iniciado.
+- Fecha: 2026-09-06.
+- Precheck: PASS exacto; repo `SolazStudio/solazstudio-web`, rama `develop`, árbol limpio, HEAD/`origin/develop` local y remoto `f9db03a90d9e1ce05679749f65f0a90d2e302d8d`, `origin/main` local/remoto `880610411ecb4d66f652e8bfaf89e5794231409d`, lecturas obligatorias completas y una sola migración previa.
+- Archivos: creados `workers/contact-sync/src/index.js`, `workers/contact-sync/test/worker.test.js` y `migrations/0002_add_sync_started_at.sql`; modificado solo `docs/IMPLEMENTATION_STATE.md`; ningún otro path.
+- Baseline: SHA-256 antes/después `f899e72d438bc63a871d6480349bba6f7fd618f8e2d68bba8902d22063f80b7c`; cero diff bajo `workers/contact-sync/baseline/`.
+- Managed Worker: ES module mantenible derivado conceptualmente de F2.2, separado de la baseline, sin bundling/minificación/source map y con D1, Queue, Notion, email, `queue()` y `scheduled()` preservados.
+- Migración: una sola columna nullable `sync_started_at TEXT`; sin otras columnas ni DML.
+- Migración aplicada: NO; cero SQL local contra una copia real y cero SQL remoto a D1 Production/Preview.
+- Claim: `UPDATE` D1 condicional y atómico, `syncing` + timestamp; solo `pending` bajo máximo o `syncing` stale con timestamp >20 minutos; Notion depende exclusivamente de `meta.changes===1`.
+- Estados D1: éxito limpia `sync_started_at` y confirma `synced`/Notion/timestamp; error incrementa en SQL, limpia claim y decide `pending`/`failed`; inexistente, `synced`, `failed` o claim perdido no llaman Notion.
+- Retry policy: solo 429, 5xx, red o error interno no persistido pueden reintentar; Notion 4xx salvo 429 y 2xx ambiguo terminan sin retry automático.
+- Retry-After: entero positivo exclusivamente, clamp 1–3600 segundos; inválido/ausente usa backoff.
+- Backoff: `min(60 * 2^(retryCountFinal - 1), 900)` verificado en 60/120/240/480/900 segundos, sin jitter.
+- Sexto intento: incrementa a 6, persiste `failed`, limpia `sync_started_at` y NO llama `message.retry()`.
+- 4xx definitivo: persiste `failed` incluso antes del sexto intento, ACK/retorno normal y queda elegible para alerta.
+- Notion defensivo: lectura de body protegida, JSON opcional y validación estricta de ID; extrae code/message/id pero solo conserva diagnóstico técnico filtrado. Un 2xx no JSON/sin ID no repite POST automáticamente.
+- Scheduled pending: reencola hasta 50 `pending` con más de 10 minutos.
+- Scheduled syncing stale: reencola `syncing` solo con `sync_started_at` no nulo y más de 20 minutos; no recupera antes.
+- Cron resiliente: cada `CONTACT_QUEUE.send({ id })` tiene catch propio; un fallo no aborta candidatos posteriores; no reencola `failed` ni sincroniza directo.
+- Alertas: cualquier `failed AND alerted=0 LIMIT 20`; email solo si existe binding y `alerted=1` únicamente tras éxito. Fallo de email conserva 0 y no rompe cron.
+- Logging: objetos estructurados con campos técnicos permitidos; test confirma ausencia de nombre, empresa, email, teléfono, mensaje y presupuesto sintéticos.
+- Tests ejecutados: `node --check` en Worker/test, `node --test`, escaneo de secretos, validación textual de migración, hash baseline, imports/exports/promesas, diff check y alcance Git.
+- Tests: **26 PASS, 0 FAIL, 0 skipped/cancelled/todo**.
+- Gap abierto: Notion creado + confirmación D1 fallida sigue sin idempotencia garantizada; el test 22 demuestra que una recuperación stale futura puede duplicar. No hay search, heurística, email único ni cambio de esquema Notion.
+- Gap de backoff: el retry individual respeta delay, pero el cron por `created_at` puede reencolar antes una fila `pending` antigua; el claim contiene concurrencia, no implementa un not-before durable.
+- Cero escrituras remotas: PASS; solo metadata GET/list/info/status y push Git. Sin deploy, Queue send, migración, SQL, Notion, email o Pages manual.
+- Worker remoto: intacto en deployment `1d21bf44-6d1c-472a-aba7-345ddf6c3172`, versión 6 `c1224de0-a9be-4aac-8143-aa2a5bd12ab7` al 100%, sin versión/deploy F2.3.
+- Queue: intacta, ID `dac558e81fd745f8b5b0f6fe97d7e380`, mismos timestamps, 2 productores y 1 consumidor.
+- Main: `origin/main` permanece exactamente en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Production: intacta; main no cambió y no se ejecutó acción Pages/Production.
+- Commit: único commit con mensaje exacto `feat: harden contact sync worker locally`; SHA final se informa externamente porque no puede autocontenerse.
+- Push: exclusivamente a `origin/develop`; sin rama, PR, merge, main o force push.
+- SHA final develop: verificado tras el push en el informe externo.
+- Desviaciones: ninguna material. Se consultaron documentación oficial y `@cloudflare/workers-types` 5.20260906.1 en temporal para validar APIs, sin instalar ni cambiar dependencias; el temporal fue descartado.
+- Rollback: revertir únicamente el commit F2.3; no tocar baseline F2.2, Worker, Queue, D1, Notion, Preview, Production o main.
+- Siguiente lote: pendiente de revisión de ChatGPT y autorización expresa; no iniciar F2.4.
+- Estado F2: **ABIERTO**.
 - Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
