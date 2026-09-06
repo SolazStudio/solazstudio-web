@@ -2,13 +2,14 @@
 
 - Fecha: 2026-09-05
 - Fase/lote: F2.2 — Recuperación y baseline del Worker actual
-- Estado: F2.2 — BLOQUEADO PARA REVISIÓN DE CHATGPT
+- Estado: F2.2 — COMPLETADO PARA REVISIÓN DE CHATGPT
 - Rama: `develop`
-- Commit base: `4557de845746aff61727ef3ad7c6130affe436cd`
-- Commit del lote: único commit documental que contiene este bloqueo, con mensaje `docs: capture contact worker production baseline`
+- Commit base de la continuación: `ad58ab54e8846c81547b014b40e6967bc6ac17ef`
+- Commit histórico del bloqueo: `ad58ab54e8846c81547b014b40e6967bc6ac17ef` (`docs: capture contact worker production baseline`), preservado sin reescritura
+- Commit de la continuación: único commit con mensaje `docs: complete contact worker production baseline`; su SHA se verifica fuera del propio commit
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Cloudflare / recursos reales: precheck de solo lectura; cero escrituras remotas
-- Bloqueadores: la sesión OAuth de Wrangler no puede usarse para el GET oficial del source mediante las capacidades disponibles sin extraer explícitamente la credencial; Wrangler no ofrece descarga de Workers y el único navegador disponible no tiene sesión Cloudflare. El encargo prohíbe extraer el token o iniciar otro login.
+- Cloudflare / recursos reales: recuperación y verificaciones de solo lectura; cero escrituras remotas
+- Bloqueadores: ninguno en la continuación; la recuperación oficial y el baseline pasaron los controles
 - Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización
 
 ## Cierre de F1 por revisión de ChatGPT
@@ -20,47 +21,76 @@
 
 ## F2.2 — Recuperación y baseline del Worker actual
 
-Estado: **F2.2 — BLOQUEADO PARA REVISIÓN DE CHATGPT**.
+Estado: **F2.2 — COMPLETADO PARA REVISIÓN DE CHATGPT**.
 
-Precheck local y remoto completado antes de cualquier escritura:
+### Continuación y corrección del bloqueo histórico
+
+- El intento anterior quedó correctamente registrado como bloqueado y su commit `ad58ab54e8846c81547b014b40e6967bc6ac17ef` se conserva intacto.
+- Ese bloqueo se produjo con la investigación y las capacidades usadas entonces: no se encontró una descarga segura y se rechazó extraer el OAuth manualmente.
+- Posteriormente ChatGPT verificó documentación oficial vigente y autorizó probar `wrangler init --from-dash`. Wrangler 4.112.0 confirma localmente que `--from-dash` acepta el nombre de un Worker y su implementación incorporada recuperó el proyecto sin deploy.
+- Por tanto, la frase histórica “Wrangler no ofrece descarga de Workers” describe la conclusión del intento anterior, pero **no es una conclusión técnica general vigente**.
+
+### Precheck y correspondencia con Production
 
 - Repositorio exacto `SolazStudio/solazstudio-web`, rama `develop` y working tree inicial limpio.
-- HEAD local, referencia local `origin/develop` y `origin/develop` remoto: `4557de845746aff61727ef3ad7c6130affe436cd`.
+- HEAD local, referencia local `origin/develop` y `origin/develop` remoto: `ad58ab54e8846c81547b014b40e6967bc6ac17ef`.
 - Referencia local y remota `origin/main`: `880610411ecb4d66f652e8bfaf89e5794231409d`.
-- `docs/IMPLEMENTATION_STATE.md` leído íntegramente.
-- Wrangler `4.112.0` autenticado mediante la sesión existente y una sola cuenta inequívoca.
-
-Estado del Worker verificado por operaciones de solo lectura:
-
-- Worker exacto: `solaz-contact-worker`.
+- `docs/IMPLEMENTATION_STATE.md` leído íntegramente; Wrangler `4.112.0` autenticado con una sola cuenta inequívoca.
+- Worker exacto y estable: `solaz-contact-worker`.
 - Deployment activo: `1d21bf44-6d1c-472a-aba7-345ddf6c3172`, creado `2026-07-21T06:41:47.252634Z`, estrategia porcentual y una única versión al `100%`; no hay traffic split.
 - Versión activa y última versión disponible: número 6, ID `c1224de0-a9be-4aac-8143-aa2a5bd12ab7`, creada `2026-07-21T06:41:46Z` por Wrangler.
 - Etag de script de la versión: `cfd43cd970dd7b0e69f8b90675fa9ba7160d37da05eb46df576b3dc701475864`.
 - Handlers: `queue` y `scheduled`; compatibility date `2026-07-01`; sin compatibility flags informadas.
 - Bindings inspeccionados solo por nombre/tipo: `CONTACT_QUEUE`/`queue`, `DB`/`d1`, `EMAIL`/`send_email`, `NOTION_DATABASE_ID`/`plain_text` y `NOTION_TOKEN`/`secret_text`. No se reutilizó ni documentó ningún valor.
-- La metadata coincide con F2.1 y demuestra que el deployment observado entonces sigue activo y estable.
+- Queue `solaz-contactos-sync`: ID `dac558e81fd745f8b5b0f6fe97d7e380`, 2 productores y 1 consumidor `solaz-contact-worker`; metadata sin cambios.
+- La configuración recuperada contiene el cron `*/10 * * * *`, que demuestra un Cron Trigger activo cada diez minutos al momento del snapshot.
+- Las verificaciones anterior y posterior a la recuperación coinciden con F2.1 y vinculan inequívocamente el módulo descargado con el Worker que mantiene esa única versión activa al 100%.
 
-Bloqueo de recuperación:
+### Recuperación, archivos y seguridad
 
-- La documentación oficial vigente confirma el GET de descarga `GET /accounts/{account_id}/workers/scripts/{script_name}` y el GET alternativo de contenido `GET /accounts/{account_id}/workers/scripts/{script_name}/content/v2`.
-- Wrangler autenticado no expone un comando para descargar el source del Worker.
-- El intento de preparar el GET directo fue detenido antes de crear proceso, llamada HTTP, carpeta temporal o archivo porque el único mecanismo disponible requería extraer y manejar explícitamente el token OAuth almacenado. Eso contradice la regla de autenticación del encargo.
-- Se comprobó como alternativa una sesión existente del navegador: el navegador integrado llegó a la pantalla de login de Cloudflare y no había otro navegador conectado. No se inició login, no se introdujeron credenciales y no se intentó el endpoint del source desde esa sesión.
-- No existe un conector Cloudflare disponible que descargue el source usando la sesión sin exponer credenciales.
-- Por tanto no puede sostenerse la correspondencia obligatoria source ↔ versión activa. Se activó exactamente la condición de bloqueo “la única forma exige exponer un token”.
+- Ayuda local verificada: `npx wrangler init --help` expone `--from-dash <WORKER_NAME>`.
+- Recuperación ejecutada fuera del repositorio mediante `wrangler init --from-dash solaz-contact-worker --no-delegate-c3`. `--no-delegate-c3` seleccionó la implementación incorporada de Wrangler y evitó instalar una herramienta auxiliar; la operación siguió siendo exactamente `--from-dash`, de lectura remota y escritura solo en un temporal local.
+- Archivos obtenidos: `src/index.js` (módulo desplegado, 5.293 bytes), `wrangler.jsonc` (configuración reconstruida) y `.wrangler/cache/wrangler-account.json` (cache/scaffold local).
+- Se preservó `workers/contact-sync/baseline/src/index.js`; `BASELINE.md` registra la evidencia y `.gitattributes` fija el source como `-text` para conservar sus bytes en futuros checkouts. La configuración segura necesaria —entrypoint, compatibility date, cron y bindings por nombre/tipo— quedó documentada sin valores. Se descartaron `wrangler.jsonc`, cache, temporales y cualquier metadata de cuenta; no hubo `node_modules`, lockfile, log, `.env` o `.dev.vars` versionado.
+- El comentario `sourceMappingURL` del módulo apunta a un mapa que Wrangler no entregó; no forma parte del código ejecutable recuperado y su ausencia no impide la sintaxis ni el análisis del módulo.
+- Escaneo local previo: cero API keys, tokens, contraseñas, private keys, secretos Notion/Resend, webhooks secretos, URLs con credenciales o PII de leads. `Authorization`/`Bearer` usa `env.NOTION_TOKEN`; no hay valor literal. Los dos emails literales son buzones operativos del dominio público del proyecto.
+- No se extrajo, imprimió, copió ni manipuló el OAuth/token de Wrangler; tampoco se registraron valores sensibles de bindings.
 
-Consecuencias y alcance:
+### Integridad y fidelidad
 
-- No se descargó source completo ni parcial.
-- No se creó `workers/contact-sync/baseline/`, `BASELINE.md` ni archivo de código.
-- No fue posible realizar hashes, comparación byte-for-byte, escaneo de secretos, validación de sintaxis ni análisis estático de `queue()`/`scheduled()`.
-- Las transiciones D1, llamadas a Notion, uso de email, ack/retry, reconciliación e idempotencia permanecen no verificables más allá del inventario F2.1; no se infirieron ni corrigieron.
-- No se consultaron D1, Notion, email, logs o payloads; no se ejecutó Worker/scheduled; no se enviaron mensajes Queue ni POST funcionales.
-- No hubo escrituras Cloudflare ni cambios de Worker, deployment, versión, Queue, triggers, D1, Pages, Preview, Production, bindings, secrets, Make, Notion, Resend, email, DNS, Ads o analítica.
-- No se inició F2.3. Sus gaps siguen pendientes y no se diseñaron ni implementaron en este lote bloqueado.
-- Único cambio local del lote: este registro documental.
+- SHA-256 del módulo recuperado y preservado: `f899e72d438bc63a871d6480349bba6f7fd618f8e2d68bba8902d22063f80b7c`; tamaño 5.293 bytes; comparación local byte por byte PASS.
+- Hash reproducible del conjunto preservado: `d0b9623ddd80a497b6a454b21c289682eb68ecbf0e09dd5af3b78a94ac5da51d`, con el algoritmo/cadena exactos documentados en `BASELINE.md`.
+- Se demuestra que `src/index.js` es byte-for-byte idéntico al archivo emitido por Wrangler. No se afirma igualdad byte-for-byte con la respuesta HTTP cruda ni equivalencia del SHA con el etag remoto, porque `--from-dash` abstrae la descarga y genera archivos auxiliares.
+- Garantía real: recuperación oficial, Worker/versión activa inequívocos, metadata coherente y preservación byte-for-byte del módulo entregado por Wrangler.
 
-Rollback del lote bloqueado: revertir únicamente el commit documental F2.2 en `develop`. No desplegar el baseline —que no existe— ni modificar Worker, Queue, D1, F2.1, Preview, Production o `main`.
+### Análisis estático
+
+- **Entrypoint:** ES module bundled con export default; handlers exclusivos `queue(batch, env)` y `scheduled(event, env, ctx)`; no existe `fetch`.
+- **Queue:** recorre el batch secuencialmente, extrae `message.body.id`, ejecuta cada mensaje aislado y hace `ack()` tras retorno normal o `retry()` al capturar cualquier error. No hay `retryAll()` ni throw del batch; el catch no convierte el mensaje fallido en éxito porque llama explícitamente `retry()`.
+- **D1:** lee la fila por `id`, omite inexistentes y `synced`, cambia a `syncing`, luego escribe `synced` + `notion_page_id` + `synced_at` y limpia `last_error`; ante error incrementa `retry_count`, guarda `last_error` truncado y vuelve a `pending` hasta el quinto fallo o pasa a `failed` desde el sexto. `alerted` cambia a 1 solo tras email exitoso.
+- **Notion:** ejecuta exclusivamente create por `POST https://api.notion.com/v1/pages`; no search/update. No consulta `notion_page_id` antes de crear. Parsea JSON, exige `res.ok` y toma `data.id`; clasifica 429/5xx en el objeto de error, pero la clasificación y `Retry-After` no gobiernan retry/delay.
+- **Email:** el cron resume hasta 20 `failed` con al menos 6 intentos y `alerted=0`. Si el envío resulta exitoso, marca esos IDs `alerted=1`; si falla, el catch vacío lo silencia y las filas permanecen elegibles para otro cron.
+- **Retries:** combina `message.retry()`, `retry_count` aplicativo con máximo 6 y reencolado programado. No existe backoff aplicativo; cualquier error se reintenta igual. Lectura/incremento no atómicos permiten carreras o pérdida de incrementos.
+- **Scheduled:** el cron activo cada 10 minutos selecciona hasta 50 `pending` con más de 10 minutos o `failed` con `retry_count < 6`, y reenvía `{ id }` a la Queue; no sincroniza directamente. Después procesa alertas. Un fallo de un `send()` aborta el resto de esa ejecución porque no hay catch por fila.
+- **Reconciliación solicitada:** sí, una fila que queda `pending` por el fallo silencioso de `CONTACT_QUEUE.send()` de Pages es recuperada cuando supera 10 minutos: `scheduled()` la selecciona y vuelve a encolarla, sujeta al límite 50 y a que cron/reencolado operen. La lógica existe y la configuración descargada demuestra el trigger remoto activo.
+- **Idempotencia:** D1 evita repetir solo filas ya `synced`, pero no tiene claim compare-and-set ni lock para `pending/syncing`; Queue no deduplica; Notion siempre crea y no busca/actualiza. Si Notion crea y se pierde la respuesta o falla la escritura D1 posterior, una reentrega puede crear un duplicado.
+
+### Gaps verificados para un lote posterior
+
+- Idempotencia atómica D1↔Notion y recuperación de “Notion creado, D1 no actualizado”.
+- Claim/lock transaccional para evitar procesamiento concurrente y recuperación de filas atascadas en `syncing`, que hoy el cron no consulta.
+- Configuración Queue durable/versionada: batch, retry/delay, concurrencia y DLQ; el inventario sigue sin DLQ separada.
+- Backoff real y uso efectivo de `Retry-After`; paginación/drain más allá de 50 pendientes/20 alertas; observabilidad de fallos de cron, reencolado y email.
+- Robustez ante respuestas Notion no JSON y estrategia segura para diagnósticos.
+- Gestión futura del Worker desde repositorio con deploy/rollback separado. No se implementó ninguna solución ni se inició F2.3.
+
+### Pruebas, alcance y rollback
+
+- PASS: ayuda `--from-dash`, hashes/tamaño, igualdad del módulo recuperado/preservado, sintaxis `node --check`, escaneo de secretos, imports/exports/handlers, análisis estático, `git diff --check` y control de alcance Git.
+- No se ejecutaron build/QA web, Worker, scheduled, Queue send, SQL D1, Notion, email ni POST funcionales.
+- Todas las operaciones Cloudflare fueron GET/list/info/status o la lectura oficial `--from-dash`; cero deploy, upload, publish, create, update, apply, send, purge, POST, PUT, PATCH o DELETE remoto.
+- Archivos del lote: 3 creados bajo `workers/contact-sync/baseline/`, 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados.
+- Rollback: revertir únicamente el nuevo commit `docs: complete contact worker production baseline`. Conservar el commit histórico de bloqueo salvo decisión posterior; no desplegar este snapshot ni modificar Worker, Queue, D1, F2.1, Preview, Production o `main`.
 
 ## F2.1 — Inventario real del circuito post-D1
 
@@ -563,7 +593,7 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 - Estado de F1: CERRADO.
 - Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
 
-## INFORME CODEX — ÚLTIMO LOTE
+## INFORME CODEX — F2.2 BLOQUEO HISTÓRICO
 
 - Lote: F2.2 — Recuperación y baseline del Worker actual.
 - Fecha: 2026-09-05.
@@ -590,3 +620,38 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 - Rollback: revertir únicamente el commit documental F2.2 en `develop`; no modificar Worker, Queue, D1, F2.1, Preview, Production o `main`.
 - Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización. No iniciar F2.3.
 - Estado final exacto: BLOQUEADO PARA REVISIÓN DE CHATGPT
+
+## INFORME CODEX — ÚLTIMO LOTE
+
+- Lote: continuación del mismo F2.2 — Recuperación y baseline del Worker actual; F2.3 no iniciado.
+- Fecha: 2026-09-05; snapshot `2026-09-06T03:00:01Z` UTC.
+- Estado: **F2.2 — COMPLETADO PARA REVISIÓN DE CHATGPT**.
+- Precheck: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, árbol inicial limpio, HEAD local y `origin/develop` local/remoto en `ad58ab54e8846c81547b014b40e6967bc6ac17ef`; `origin/main` local/remoto en `880610411ecb4d66f652e8bfaf89e5794231409d`; documento durable leído íntegramente; Wrangler 4.112.0 autenticado y una cuenta inequívoca.
+- Historia: se conserva sin reescritura el commit de bloqueo `ad58ab54e8846c81547b014b40e6967bc6ac17ef`. La conclusión histórica “Wrangler no ofrece descarga” no queda vigente como regla general: documentación oficial y ayuda local confirman `--from-dash`.
+- Método: carpeta temporal fuera del repo y `wrangler init --from-dash solaz-contact-worker --no-delegate-c3`; lectura remota oficial, sin C3 adicional, deploy, publish, upload ni creación de recursos.
+- Worker: `solaz-contact-worker`; deployment `1d21bf44-6d1c-472a-aba7-345ddf6c3172`; versión activa/última número 6 `c1224de0-a9be-4aac-8143-aa2a5bd12ab7`, 100%, sin traffic split; etag `cfd43cd970dd7b0e69f8b90675fa9ba7160d37da05eb46df576b3dc701475864`; handlers `queue,scheduled`; compatibility date `2026-07-01`.
+- Configuración recuperada: entrypoint `src/index.js`, `workers_dev=true`, `preview_urls=true`, cron `*/10 * * * *` y bindings `CONTACT_QUEUE`/Queue, `DB`/D1, `EMAIL`/send_email, `NOTION_DATABASE_ID`/plain_text y `NOTION_TOKEN`/secret_text. No se documentaron valores.
+- Archivos recuperados: `src/index.js` (source ejecutable), `wrangler.jsonc` (configuración reconstruida) y `.wrangler/cache/wrangler-account.json` (scaffold/cache local). Wrangler no entregó el source map mencionado al final del bundle; no es necesario para ejecutar/validar el módulo.
+- Archivos preservados/control: `workers/contact-sync/baseline/src/index.js`, `BASELINE.md` y `.gitattributes`; este último impide conversiones de EOL del source. Se descartaron configuración con valores operativos, cache, temporales y metadata local; ningún `node_modules`, lockfile, log, `.env`, `.dev.vars` o credencial fue versionado.
+- Hashes: `src/index.js`, 5.293 bytes, SHA-256 `f899e72d438bc63a871d6480349bba6f7fd618f8e2d68bba8902d22063f80b7c`; conjunto reproducible SHA-256 `d0b9623ddd80a497b6a454b21c289682eb68ecbf0e09dd5af3b78a94ac5da51d`.
+- Seguridad: PASS; cero API keys, tokens, passwords, private keys, secretos Notion/Resend, webhooks secretos, URLs con credenciales o PII de leads. `Authorization` usa el binding secret sin valor literal; los emails literales son buzones operativos del dominio público. OAuth/token de Wrangler nunca fue extraído, mostrado, copiado ni manipulado.
+- Fidelidad: el archivo versionado es byte-for-byte idéntico al módulo emitido por Wrangler. Worker, única versión activa, handlers, compatibility date y bindings son coherentes. No se afirma igualdad byte-for-byte con la respuesta HTTP cruda ni que el SHA local equivalga al etag remoto, porque `--from-dash` abstrae la descarga.
+- `queue()`: procesa secuencialmente `batch.messages`, usa `message.body.id`, aísla por mensaje, hace `ack()` en retorno normal y `retry()` en catch; no usa `retryAll()` ni relanza el batch.
+- D1: selecciona por ID; omite ausentes/`synced`; transita a `syncing`; en éxito escribe `synced`, `notion_page_id`, `synced_at` y limpia `last_error`; en error incrementa `retry_count`, guarda error truncado y usa `pending` antes de 6 o `failed` desde 6; `alerted=1` solo tras email exitoso.
+- Notion: solo create por POST `/v1/pages`; no search/update ni comprobación previa de `notion_page_id`. Requiere HTTP ok y toma `data.id`; detecta 429/5xx pero no aplica la clasificación ni `Retry-After` a un backoff.
+- Email: alerta hasta 20 fallos finales no alertados; tras éxito marca `alerted=1`. Si envío falla, el catch vacío silencia el error y permite reintento en cron posterior.
+- Retries: `message.retry()` + contador aplicativo máximo 6 + reencolado cron. El catch del consumer no reconoce como exitoso el mensaje fallido, pero no hay backoff aplicativo y las actualizaciones no atómicas admiten carreras.
+- `scheduled()`: cron activo cada 10 minutos; reencola hasta 50 `pending` de más de 10 minutos o `failed` bajo el máximo; luego alerta fallos finales. No sincroniza directamente y un fallo de Queue aborta el resto de esa ejecución.
+- Reconciliación: SÍ recupera una fila `pending` cuyo primer send falló silenciosamente: tras 10 minutos el cron la selecciona y vuelve a enviar `{ id }`, sujeta al límite de 50 y al éxito del reencolado.
+- Idempotencia: solo la fila ya `synced` tiene guard temprano. No hay claim/lock D1, deduplicación Queue ni idempotencia/search/update Notion; si Notion crea y la respuesta o actualización D1 falla, un retry puede duplicar la página.
+- Gaps: idempotencia atómica D1↔Notion; lock/claim y rescate de `syncing`; política Queue versionada con backoff/concurrencia/DLQ; uso real de `Retry-After`; drain/paginación de límites; observabilidad de cron/reencolado/email; respuestas Notion no JSON; gestión futura del Worker desde repo. No se implementó ninguno.
+- Pruebas: `--from-dash` help PASS, escaneo PASS, igualdad/hash/tamaño PASS, `node --check` PASS, imports/exports/handlers PASS, análisis estático PASS, `git diff --check` PASS y alcance Git PASS. No se ejecutaron build/QA web, Worker, scheduled, Queue send, D1, Notion, email o POST funcional.
+- Cero escrituras remotas: PASS; solo GET/list/info/status y recuperación oficial. Worker, Queue, D1, Pages/Preview/Production, bindings, triggers, secretos, Notion, Make, Resend, email, DNS, Ads y analítica no se modificaron.
+- Archivos Git: 3 creados, 1 modificado y 0 eliminados; exclusivamente `workers/contact-sync/baseline/**` y `docs/IMPLEMENTATION_STATE.md`.
+- Commit: un nuevo commit encima del bloqueo, mensaje exacto `docs: complete contact worker production baseline`; SHA verificado en el informe externo porque el commit no puede contener su propio identificador.
+- Push: exclusivamente a `origin/develop`; sin PR, merge, rama nueva ni force push.
+- Main/Production: `origin/main` permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`; Pages Production canónica `d5ae0595-dbdf-4b50-9208-f3ab5aa64e22`, Worker, Queue y D1 permanecen intactos.
+- Desviaciones: ninguna material. Se usó el flag oculto `--no-delegate-c3` solo para ejecutar la implementación incorporada de la operación oficial y evitar una instalación auxiliar; no alteró el alcance remoto. Una consulta concurrente inicial falló localmente por permisos/network y se repitió secuencialmente sin efecto remoto.
+- Rollback: revertir únicamente el nuevo commit de continuación F2.2; conservar el commit documental de bloqueo y no modificar Worker, Queue, D1, F2.1, Preview, Production o `main`.
+- Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización. No iniciar F2.3.
+- Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
