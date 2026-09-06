@@ -1,16 +1,17 @@
 # Estado de implementación
 
 - Fecha: 2026-09-06
-- Fase/lote: F2.3 — Worker gestionado + hardening local de resiliencia
-- Estado: F2.3 — COMPLETADO PARA REVISIÓN DE CHATGPT
+- Fase/lote: F2.4A — Identificación inequívoca del destino Notion
+- Estado: F2.4A — BLOQUEADO
 - Rama: `develop`
-- Commit base: `f9db03a90d9e1ce05679749f65f0a90d2e302d8d`
-- Commit del lote: único commit con mensaje `feat: harden contact sync worker locally`; su SHA se verifica fuera del propio commit
+- Commit base: `87d9a491da93e336e76160760cc944f1434638cd`
+- Commit del lote: único commit con mensaje `docs: verify notion destination for F2.4`; su SHA se verifica fuera del propio commit
+- Estado F2.3: **CERRADO** por revisión de ChatGPT
 - Estado F2: **ABIERTO**
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Cloudflare / recursos reales: metadata de solo lectura; cero escrituras remotas y cero deploys
-- Bloqueadores: ninguno; implementación y pruebas locales completas
-- Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización
+- Cloudflare / recursos reales: una consulta de solo lectura; cero escrituras remotas y cero deploys
+- Bloqueadores: la comparación segura del binding real devolvió `UNAVAILABLE`; el destino Notion no quedó demostrado
+- Siguiente paso: definir en un lote posterior otro método de lectura seguro; no iniciar F2.4
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -19,9 +20,45 @@
 - El cierre de F1 no requirió ni produjo escrituras adicionales en Cloudflare, D1, Queue, Worker, Notion, email, Preview o Production.
 - Queue, Worker, fallos y resiliencia pasan a F2. F2.1 solo inventaría el sistema actual; no construye F2.2.
 
+## Reglas de continuidad del proyecto
+
+- Todo traspaso entre chats debe conservar la situación técnica real, incluidos los hechos verificados, decisiones todavía no tomadas, gaps abiertos, riesgos conocidos, recursos externos afectados o intactos y la razón exacta del siguiente paso. Un PUNTO DE CONTINUIDAD no debe simplificar el estado de forma que convierta hipótesis en decisiones.
+- No se repetirá automáticamente la preparación o confirmación del entorno Codex después de cada traspaso cuando el proyecto y entorno ya estén establecidos y no exista evidencia de cambio. Se volverá a verificar solo cuando haya una razón factual para dudar del entorno.
+
+## F2.4A — Identificación inequívoca del destino Notion
+
+Estado: **F2.4A — BLOQUEADO**. F2.3 fue revisado por ChatGPT y queda **CERRADO**. F2 permanece **ABIERTO**.
+
+### Objetivo y precheck
+
+- Objetivo: comprobar exclusivamente en lectura si el binding real `NOTION_DATABASE_ID` de la versión activa conocida de `solaz-contact-worker` corresponde a la database page candidata titulada “CRM Seba Ogalde”, sin exponer ni persistir el valor del binding y sin leer filas o leads de Notion.
+- Precheck: PASS exacto. Repositorio `SolazStudio/solazstudio-web`, rama `develop`, working tree inicial limpio, HEAD local y `origin/develop` local/remoto en `87d9a491da93e336e76160760cc944f1434638cd`, `main` y `origin/main` local/remoto en `880610411ecb4d66f652e8bfaf89e5794231409d`; este documento fue leído íntegramente antes de escribir.
+- Wrangler instalado: `4.112.0`. La ayuda local y la documentación oficial vigente confirman `wrangler versions view <version-id> --name <worker> --json` como consulta de detalle de una versión.
+
+### Método y resultado
+
+- Se ejecutó una única consulta `versions view` sobre la versión activa conocida y el Worker exacto, con logs de Wrangler deshabilitados para este proceso.
+- Un proceso Node local capturó `stdout` exclusivamente en memoria, intentó parsear JSON, buscó solo el binding por nombre y tipo `plain_text` y quedó preparado para normalizar únicamente minúsculas y eliminación de guiones antes de comparar con el identificador candidato conocido.
+- El proceso emitió exclusivamente `UNAVAILABLE`; no obtuvo exactamente un valor comparable bajo esas condiciones. No se mostró, copió, guardó, documentó, fragmentó, midió ni derivó el valor del binding. El JSON bruto tampoco fue mostrado ni persistido.
+- Resultado: **UNAVAILABLE**. La correspondencia no pudo demostrarse de forma segura y no se intentó ningún fallback o workaround.
+
+### Qué quedó y no quedó demostrado
+
+- Quedó demostrado que el método seguro autorizado no produjo evidencia suficiente para decidir `MATCH` o `MISMATCH` sin debilitar la restricción de confidencialidad.
+- No quedó demostrado que “CRM Seba Ogalde” sea el destino del Worker; tampoco quedó demostrado que no lo sea. No se infiere nada sobre el destino real.
+- El esquema observado previamente en la base candidata no se adopta como contrato del destino real y no debe usarse todavía para diseñar F2.4.
+- No se validó ni descartó la diferencia potencial entre las propiedades construidas por el Worker y el esquema de la base candidata; esa comparación depende primero de identificar el destino.
+
+### Alcance, continuidad y rollback
+
+- Único archivo modificado: `docs/IMPLEMENTATION_STATE.md`. Código Worker gestionado, tests, baseline F2.2, migraciones, package files, frontend, Functions, templates y media permanecen intactos.
+- Cero escrituras Cloudflare, Notion, D1 o Queue; cero deploys, versiones, cambios de tráfico, bindings, cron, consumers, mensajes, SQL remoto, lecturas de leads, emails o acciones Pages/Preview/Production.
+- Siguiente paso: autorizar en otro lote un método de lectura seguro distinto que mantenga las mismas garantías de no exposición y no persistencia. No iniciar F2.4 ni diseñar idempotencia contra la base candidata mientras el destino siga sin demostrar.
+- Rollback: revertir únicamente el commit documental `docs: verify notion destination for F2.4`; no modificar Worker, Queue, D1, Notion, Preview, Production o `main`.
+
 ## F2.3 — Worker gestionado + hardening local de resiliencia
 
-Estado: **F2.3 — COMPLETADO PARA REVISIÓN DE CHATGPT**. Estado de F2: **ABIERTO**.
+Estado: **F2.3 — CERRADO por revisión de ChatGPT**; su cierre técnico previo fue `COMPLETADO PARA REVISIÓN DE CHATGPT`. Estado de F2: **ABIERTO**.
 
 ### Precheck, alcance y archivos
 
@@ -714,41 +751,21 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F2.3 — Worker gestionado + hardening local de resiliencia; F2.4 no iniciado.
+- Lote: F2.4A — Identificación inequívoca del destino Notion; F2.4 no iniciado.
 - Fecha: 2026-09-06.
-- Precheck: PASS exacto; repo `SolazStudio/solazstudio-web`, rama `develop`, árbol limpio, HEAD/`origin/develop` local y remoto `f9db03a90d9e1ce05679749f65f0a90d2e302d8d`, `origin/main` local/remoto `880610411ecb4d66f652e8bfaf89e5794231409d`, lecturas obligatorias completas y una sola migración previa.
-- Archivos: creados `workers/contact-sync/src/index.js`, `workers/contact-sync/test/worker.test.js` y `migrations/0002_add_sync_started_at.sql`; modificado solo `docs/IMPLEMENTATION_STATE.md`; ningún otro path.
-- Baseline: SHA-256 antes/después `f899e72d438bc63a871d6480349bba6f7fd618f8e2d68bba8902d22063f80b7c`; cero diff bajo `workers/contact-sync/baseline/`.
-- Managed Worker: ES module mantenible derivado conceptualmente de F2.2, separado de la baseline, sin bundling/minificación/source map y con D1, Queue, Notion, email, `queue()` y `scheduled()` preservados.
-- Migración: una sola columna nullable `sync_started_at TEXT`; sin otras columnas ni DML.
-- Migración aplicada: NO; cero SQL local contra una copia real y cero SQL remoto a D1 Production/Preview.
-- Claim: `UPDATE` D1 condicional y atómico, `syncing` + timestamp; solo `pending` bajo máximo o `syncing` stale con timestamp >20 minutos; Notion depende exclusivamente de `meta.changes===1`.
-- Estados D1: éxito limpia `sync_started_at` y confirma `synced`/Notion/timestamp; error incrementa en SQL, limpia claim y decide `pending`/`failed`; inexistente, `synced`, `failed` o claim perdido no llaman Notion.
-- Retry policy: solo 429, 5xx, red o error interno no persistido pueden reintentar; Notion 4xx salvo 429 y 2xx ambiguo terminan sin retry automático.
-- Retry-After: entero positivo exclusivamente, clamp 1–3600 segundos; inválido/ausente usa backoff.
-- Backoff: `min(60 * 2^(retryCountFinal - 1), 900)` verificado en 60/120/240/480/900 segundos, sin jitter.
-- Sexto intento: incrementa a 6, persiste `failed`, limpia `sync_started_at` y NO llama `message.retry()`.
-- 4xx definitivo: persiste `failed` incluso antes del sexto intento, ACK/retorno normal y queda elegible para alerta.
-- Notion defensivo: lectura de body protegida, JSON opcional y validación estricta de ID; extrae code/message/id pero solo conserva diagnóstico técnico filtrado. Un 2xx no JSON/sin ID no repite POST automáticamente.
-- Scheduled pending: reencola hasta 50 `pending` con más de 10 minutos.
-- Scheduled syncing stale: reencola `syncing` solo con `sync_started_at` no nulo y más de 20 minutos; no recupera antes.
-- Cron resiliente: cada `CONTACT_QUEUE.send({ id })` tiene catch propio; un fallo no aborta candidatos posteriores; no reencola `failed` ni sincroniza directo.
-- Alertas: cualquier `failed AND alerted=0 LIMIT 20`; email solo si existe binding y `alerted=1` únicamente tras éxito. Fallo de email conserva 0 y no rompe cron.
-- Logging: objetos estructurados con campos técnicos permitidos; test confirma ausencia de nombre, empresa, email, teléfono, mensaje y presupuesto sintéticos.
-- Tests ejecutados: `node --check` en Worker/test, `node --test`, escaneo de secretos, validación textual de migración, hash baseline, imports/exports/promesas, diff check y alcance Git.
-- Tests: **26 PASS, 0 FAIL, 0 skipped/cancelled/todo**.
-- Gap abierto: Notion creado + confirmación D1 fallida sigue sin idempotencia garantizada; el test 22 demuestra que una recuperación stale futura puede duplicar. No hay search, heurística, email único ni cambio de esquema Notion.
-- Gap de backoff: el retry individual respeta delay, pero el cron por `created_at` puede reencolar antes una fila `pending` antigua; el claim contiene concurrencia, no implementa un not-before durable.
-- Cero escrituras remotas: PASS; solo metadata GET/list/info/status y push Git. Sin deploy, Queue send, migración, SQL, Notion, email o Pages manual.
-- Worker remoto: intacto en deployment `1d21bf44-6d1c-472a-aba7-345ddf6c3172`, versión 6 `c1224de0-a9be-4aac-8143-aa2a5bd12ab7` al 100%, sin versión/deploy F2.3.
-- Queue: intacta, ID `dac558e81fd745f8b5b0f6fe97d7e380`, mismos timestamps, 2 productores y 1 consumidor.
-- Main: `origin/main` permanece exactamente en `880610411ecb4d66f652e8bfaf89e5794231409d`.
-- Production: intacta; main no cambió y no se ejecutó acción Pages/Production.
-- Commit: único commit con mensaje exacto `feat: harden contact sync worker locally`; SHA final se informa externamente porque no puede autocontenerse.
+- Precheck: PASS exacto; repo `SolazStudio/solazstudio-web`, rama `develop`, árbol inicial limpio, HEAD/`origin/develop` local y remoto `87d9a491da93e336e76160760cc944f1434638cd`, `main`/`origin/main` local y remoto `880610411ecb4d66f652e8bfaf89e5794231409d`; estado durable leído íntegramente.
+- F2.3: **CERRADO** por revisión de ChatGPT. Estado de F2: **ABIERTO**.
+- Resultado: **UNAVAILABLE**. No pudo demostrarse de forma segura si el binding real corresponde a la database page candidata.
+- Método: una consulta Wrangler 4.112.0 `versions view --json` a la versión activa conocida; captura y parseo exclusivamente en memoria, búsqueda por nombre/tipo y comparación preparada con normalización limitada. La salida visible fue solo `UNAVAILABLE`; no se expuso ni persistió el valor ni el JSON bruto.
+- Archivos: 0 creados, 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados; ningún otro path ni temporal dentro del repositorio.
+- Código y datos locales: `workers/contact-sync/src/index.js` byte-for-byte sin cambios respecto del HEAD inicial; baseline F2.2 y `migrations/` sin diff; package files, frontend, Functions, templates y media intactos.
+- Pruebas: `git status`, `git diff --check`, diff documental completo, control de único path, control de temporales Git, igualdad del Worker con el HEAD inicial, ausencia de diff en baseline/migraciones y verificación de `main`.
+- Cero escrituras externas de plataforma: PASS; Cloudflare solo lectura, cero Notion/D1/Queue/Worker/Pages, cero deploys y cero lectura de leads. El único cambio remoto previsto es el push Git autorizado a `origin/develop`.
+- Qué quedó demostrado: el método seguro autorizado no entregó evidencia suficiente para decidir; no se infiere destino, `MATCH` ni `MISMATCH`, y el esquema candidato no se adopta como contrato.
+- Commit: único commit con mensaje exacto `docs: verify notion destination for F2.4`; SHA final se informa externamente porque no puede autocontenerse.
 - Push: exclusivamente a `origin/develop`; sin rama, PR, merge, main o force push.
-- SHA final develop: verificado tras el push en el informe externo.
-- Desviaciones: ninguna material. Se consultaron documentación oficial y `@cloudflare/workers-types` 5.20260906.1 en temporal para validar APIs, sin instalar ni cambiar dependencias; el temporal fue descartado.
-- Rollback: revertir únicamente el commit F2.3; no tocar baseline F2.2, Worker, Queue, D1, Notion, Preview, Production o main.
-- Siguiente lote: pendiente de revisión de ChatGPT y autorización expresa; no iniciar F2.4.
-- Estado F2: **ABIERTO**.
-- Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
+- Main/Production: `origin/main` permanece exactamente en `880610411ecb4d66f652e8bfaf89e5794231409d`; no se ejecutó acción Pages/Production.
+- Siguiente paso: un lote posterior debe definir otro método de lectura seguro con las mismas garantías; no iniciar F2.4.
+- Rollback: revertir únicamente el commit documental F2.4A; no tocar Worker, Queue, D1, Notion, Preview, Production o `main`.
+- Estado F2.4A: **BLOQUEADO**.
+- Estado final exacto: BLOQUEADO
