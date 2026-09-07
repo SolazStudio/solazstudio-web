@@ -1,18 +1,19 @@
 # Estado de implementación
 
-- Fecha: 2026-09-06
-- Fase/lote: F2.4B — Verificación del destino mediante temporal aislado
-- Estado: F2.4B — COMPLETADO PARA REVISIÓN DE CHATGPT
+- Fecha: 2026-09-07
+- Fase/lote: F2.4C — Identificación definitiva del destino Notion
+- Estado: F2.4C — COMPLETADO PARA REVISIÓN DE CHATGPT
 - Rama: `develop`
-- Commit base: `123a7f431068282791c3aada20d97967a80a978f`
-- Commit del lote: único commit con mensaje `docs: verify notion destination safely`; su SHA se verifica fuera del propio commit
+- Commit base: `c53a1481551d031685a7b5ff44ce6bb34080284a`
+- Commit del lote: único commit con mensaje `docs: identify actual notion destination`; su SHA se verifica fuera del propio commit
 - Estado F2.3: **CERRADO** por revisión de ChatGPT
+- Estado F2.4B: **CERRADO** por revisión de ChatGPT; su resultado `MISMATCH` descartó “CRM Seba Ogalde”
 - Estado F2.4A: **BLOQUEADO**; su resultado histórico fue `UNAVAILABLE`
 - Estado F2: **ABIERTO**
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
 - Cloudflare / recursos reales: recuperación de solo lectura en temporal aislado; cero escrituras remotas y cero deploys
-- Resultado: `MISMATCH`; “CRM Seba Ogalde” no es la database page configurada en el binding real
-- Siguiente paso: investigación separada para identificar el destino correcto sin exponer el binding; no iniciar F2.4 funcional
+- Resultado: `AVAILABLE`; quedó identificado y documentado el database page ID configurado en el binding real
+- Siguiente paso: revisión de ChatGPT y, en un lote nuevo, lectura directa y exclusivamente read-only de ese ID en Notion para resolver recurso, título y esquema; no iniciar F2.4 funcional
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -25,6 +26,34 @@
 
 - Todo traspaso entre chats debe conservar la situación técnica real, incluidos los hechos verificados, decisiones todavía no tomadas, gaps abiertos, riesgos conocidos, recursos externos afectados o intactos y la razón exacta del siguiente paso. Un PUNTO DE CONTINUIDAD no debe simplificar el estado de forma que convierta hipótesis en decisiones.
 - No se repetirá automáticamente la preparación o confirmación del entorno Codex después de cada traspaso cuando el proyecto y entorno ya estén establecidos y no exista evidencia de cambio. Se volverá a verificar solo cuando haya una razón factual para dudar del entorno.
+
+## F2.4C — Identificación definitiva del destino Notion
+
+Estado: **F2.4C — COMPLETADO PARA REVISIÓN DE CHATGPT**. F2.4B queda **CERRADO** por revisión de ChatGPT; F2 permanece **ABIERTO** y F2.4 funcional no fue iniciado.
+
+### Objetivo y precheck
+
+- Objetivo: identificar de forma inequívoca el database page ID configurado en el binding `NOTION_DATABASE_ID` de `solaz-contact-worker`, documentarlo como identificador de recurso autorizado y preparar una verificación posterior directa en Notion, sin consultar Notion en este lote.
+- Precheck: PASS exacto. Repositorio `SolazStudio/solazstudio-web`, rama `develop`, working tree inicial limpio, HEAD local y `origin/develop` local/remoto en `c53a1481551d031685a7b5ff44ce6bb34080284a`, `main` y `origin/main` local/remoto en `880610411ecb4d66f652e8bfaf89e5794231409d`; este documento fue leído íntegramente.
+- El estado durable confirmó F2.3 cerrado, F2.4B cerrado tras demostrar `MISMATCH`, F2.4A históricamente bloqueado y F2 abierto. “CRM Seba Ogalde” continúa descartada como destino y no se usó como comparación ni fuente de contrato en este lote.
+- Wrangler `4.112.0`, su ayuda local y la documentación oficial vigente confirmaron `init --from-dash` como mecanismo de recuperación de un Worker existente sin deploy.
+
+### Método controlado y resultado
+
+- Se creó con el mecanismo nativo del sistema operativo un único directorio temporal nuevo, validado directamente bajo la carpeta temporal de Windows, fuera del repositorio y fuera de cualquier ruta detectable por Git.
+- Dentro de ese temporal se ejecutó exactamente `wrangler init --from-dash solaz-contact-worker --no-delegate-c3`, con logs de Wrangler deshabilitados y cache de npm acotada al propio temporal. La operación recuperó archivos solo en ese directorio y no realizó deploy ni escritura remota.
+- Un script efímero ejecutado desde memoria localizó una única configuración recuperada, comprobó exactamente una clave `NOTION_DATABASE_ID`, accedió exclusivamente a `vars.NOTION_DATABASE_ID` y validó que su valor fuera un ID de 32 hexadecimales o UUID estándar.
+- El database page ID configurado, normalizado en formato UUID canónico, es `37b7abcb-cbb1-8050-a745-d5edcab17eb8`.
+- Resultado: **AVAILABLE**. El identificador quedó establecido como recurso objetivo para la revisión posterior. No se leyó ni enumeró ningún otro binding; `NOTION_TOKEN` no fue accedido, extraído, impreso, copiado ni documentado.
+
+### Eliminación, alcance y continuidad
+
+- El temporal completo se eliminó directamente antes de modificar este documento, sin papelera. Su ausencia fue verificada después de la eliminación; no quedaron copias conocidas creadas por este lote y el repositorio seguía limpio.
+- No se realizó ninguna llamada a Notion. Por tanto, este lote no afirma el tipo de recurso que devolverá la API, título, esquema, propiedades, filas, compatibilidad con el Worker, idempotencia ni diseño de `next_attempt`.
+- Único archivo modificado: `docs/IMPLEMENTATION_STATE.md`. Worker gestionado, tests, baseline F2.2, migraciones, package files, frontend, Functions, templates y media permanecen intactos.
+- Cero escrituras en Cloudflare, Notion, D1, Queue, Worker o Pages; cero deploys, versiones, cambios de tráfico/bindings/cron/consumers, mensajes, SQL remoto, migraciones, leads, emails, Preview, Production, secrets, DNS, Ads o analítica.
+- Siguiente paso: revisión de ChatGPT y nueva autorización para una lectura directa y exclusivamente read-only en Notion usando el ID documentado, limitada a resolver el recurso, su título y su esquema, sin leer filas. No iniciar F2.4 funcional en este lote.
+- Rollback: revertir únicamente el commit documental `docs: identify actual notion destination`; no existe rollback de plataforma porque no hubo escrituras externas.
 
 ## F2.4B — Verificación del destino mediante temporal aislado
 
@@ -781,22 +810,22 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F2.4B — Verificación del destino mediante temporal aislado; F2.4 funcional no iniciado.
-- Fecha: 2026-09-06.
-- Precheck: PASS exacto; repo `SolazStudio/solazstudio-web`, rama `develop`, árbol inicial limpio, HEAD/`origin/develop` local y remoto `123a7f431068282791c3aada20d97967a80a978f`, `main`/`origin/main` local y remoto `880610411ecb4d66f652e8bfaf89e5794231409d`; estado durable leído íntegramente y estados previos coincidentes.
-- Resultado: **MISMATCH**. “CRM Seba Ogalde” no es la database page configurada en el binding real del Worker recuperado.
+- Lote: F2.4C — Identificación definitiva del destino Notion; F2.4 funcional no iniciado.
+- Fecha: 2026-09-07.
+- Precheck: PASS exacto; repo `SolazStudio/solazstudio-web`, rama `develop`, árbol inicial limpio, HEAD/`origin/develop` local y remoto `c53a1481551d031685a7b5ff44ce6bb34080284a`, `main`/`origin/main` local y remoto `880610411ecb4d66f652e8bfaf89e5794231409d`; estado durable leído íntegramente y estados previos coincidentes.
+- Resultado: **AVAILABLE**. El database page ID configurado en el binding real quedó validado y registrado una única vez en la sección F2.4C como identificador de recurso.
 - Recuperación: Wrangler 4.112.0 `init --from-dash solaz-contact-worker --no-delegate-c3` dentro de un único temporal nativo validado fuera del repositorio; cero deploy y cero escritura remota.
-- Comparación: exactamente un binding por nombre, valor plain-text esperado, database page candidata —no data source— y normalización exclusiva mediante trim/minúsculas/eliminación de guiones. `NOTION_TOKEN` se omitió explícitamente.
-- Confidencialidad: el valor real nunca se imprimió, copió, conservó, documentó ni transformó en un derivado; la configuración recuperada tampoco fue mostrada.
+- Extracción: una única configuración y una única clave objetivo; lectura exclusiva de `vars.NOTION_DATABASE_ID`, validación de formato y normalización a UUID canónico. No se enumeraron ni leyeron otros bindings.
+- Confidencialidad: `NOTION_TOKEN` no fue accedido y no se imprimieron secrets ni la configuración recuperada.
 - Temporal: eliminado directamente antes de documentar; ausencia posterior verificada, sin copias conocidas del lote y sin archivos nuevos en el repositorio.
 - Archivos: 0 creados, 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados; ningún otro path ni untracked.
-- Pruebas: `git status`, `git diff --check`, diff documental completo, alcance único, ausencia de untracked, Worker byte-for-byte contra el HEAD inicial, cero diff en baseline/migraciones/package files, `main`/`origin/main`, ausencia del temporal y control textual de no exposición.
-- Cero escrituras externas de plataforma: PASS; Cloudflare solo lectura y cero Notion/D1/Queue/Worker/Pages, deploys, SQL, leads, emails, Preview, Production, secrets, DNS, Ads o analítica. El único cambio remoto previsto es el push Git autorizado a `origin/develop`.
-- Estado F2.3: **CERRADO**. Estado histórico F2.4A: **BLOQUEADO**. Estado F2: **ABIERTO**.
-- Commit: único commit con mensaje exacto `docs: verify notion destination safely`; SHA final se informa externamente porque no puede autocontenerse.
+- Pruebas: `git status`, `git diff --check`, diff documental completo, alcance único, ausencia de untracked, Worker byte-for-byte contra el HEAD inicial, cero diff en tests/baseline/migraciones/package files, `main`/`origin/main`, ausencia del temporal y controles textuales de unicidad y no exposición.
+- Cero llamadas a Notion y cero escrituras externas de plataforma: PASS; Cloudflare solo lectura y cero D1/Queue/Worker/Pages, deploys, SQL, leads, emails, Preview, Production, secrets, DNS, Ads o analítica. El único cambio remoto previsto es el push Git autorizado a `origin/develop`.
+- Estado F2.3: **CERRADO**. Estado F2.4B: **CERRADO**. Estado histórico F2.4A: **BLOQUEADO**. Estado F2: **ABIERTO**.
+- Commit: único commit con mensaje exacto `docs: identify actual notion destination`; SHA final se informa externamente porque no puede autocontenerse.
 - Push: exclusivamente a `origin/develop`; sin rama, PR, merge, main o force push.
 - Main/Production: `origin/main` permanece exactamente en `880610411ecb4d66f652e8bfaf89e5794231409d`; no se ejecutó acción Pages/Production.
-- Siguiente paso: lote separado para identificar el destino correcto sin exponer el binding; no iniciar F2.4 funcional.
-- Rollback: revertir únicamente el commit documental F2.4B; no hay rollback Cloudflare/Notion/D1/Queue/Worker.
-- Estado F2.4B: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+- Siguiente paso: revisión de ChatGPT y lote nuevo para lectura directa y exclusivamente read-only en Notion por el ID documentado, limitada a recurso, título y esquema, sin filas; no iniciar F2.4 funcional.
+- Rollback: revertir únicamente el commit documental F2.4C; no hay rollback Cloudflare/Notion/D1/Queue/Worker.
+- Estado F2.4C: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
 - Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
