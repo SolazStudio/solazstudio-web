@@ -1,5 +1,6 @@
 const NOTION_VERSION = "2022-06-28";
-const NOTION_API = "https://api.notion.com/v1/pages";
+const NOTION_PAGES_API = "https://api.notion.com/v1/pages";
+const NOTION_DATABASES_API = "https://api.notion.com/v1/databases";
 const MAX_REINTENTOS = 6;
 const PENDING_REQUEUE_MINUTES = 10;
 const SYNCING_STALE_MINUTES = 20;
@@ -7,7 +8,7 @@ const INTERNAL_RETRY_DELAY_SECONDS = 60;
 const MAX_DIAGNOSTIC_LENGTH = 240;
 
 class NotionRequestError extends Error {
-  constructor({ code, retryable, status = null, retryAfterSeconds = null, diagnostic }) {
+  constructor({ code, retryable, status = null, retryAfterSeconds = null, diagnostic, ambiguousCreate = false }) {
     super(code);
     this.name = "NotionRequestError";
     this.code = code;
@@ -15,6 +16,7 @@ class NotionRequestError extends Error {
     this.status = status;
     this.retryAfterSeconds = retryAfterSeconds;
     this.diagnostic = diagnostic;
+    this.ambiguousCreate = ambiguousCreate;
   }
 }
 
@@ -40,6 +42,7 @@ function construirPropiedadesNotion(contacto) {
     Presupuesto: { rich_text: [{ text: { content: contacto.presupuesto || "" } }] },
     Marketing: { checkbox: contacto.consent_marketing === 1 },
     Tipo: { rich_text: [{ text: { content: tipoLegible(contacto.form_type) } }] },
+    "ID envío web": { rich_text: [{ text: { content: contacto.id } }] },
   };
 }
 
@@ -91,6 +94,32 @@ function parseNotionBody(text) {
   }
 }
 
+function parseNotionQueryBody(text) {
+  try {
+    const parsed = JSON.parse(text);
+    if (
+      !parsed
+      || typeof parsed !== "object"
+      || Array.isArray(parsed)
+      || !Array.isArray(parsed.results)
+      || typeof parsed.has_more !== "boolean"
+    ) {
+      return null;
+    }
+    const ids = [];
+    for (const result of parsed.results) {
+      if (!result || typeof result !== "object" || Array.isArray(result) || !isUsableNotionId(result.id)) {
+        return null;
+      }
+      ids.push(result.id);
+    }
+    if (parsed.has_more && ids.length === 0) return null;
+    return { ids, hasMore: parsed.has_more };
+  } catch {
+    return null;
+  }
+}
+
 function isUsableNotionId(value) {
   if (typeof value !== "string") return false;
   return /^[0-9a-f]{32}$/i.test(value) || /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value);
@@ -101,10 +130,78 @@ function notionDiagnostic(kind, status, code) {
   return `${kind};status=${status ?? "none"};code=${safeCode}`.slice(0, MAX_DIAGNOSTIC_LENGTH);
 }
 
+async function buscarFilasEnNotion(contacto, env) {
+  let response;
+  try {
+    response = await fetch(`${NOTION_DATABASES_API}/${encodeURIComponent(env.NOTION_DATABASE_ID)}/query`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.NOTION_TOKEN}`,
+        "Notion-Version": NOTION_VERSION,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        filter: {
+          property: "ID envío web",
+          rich_text: { equals: contacto.id },
+        },
+        page_size: 2,
+      }),
+    });
+  } catch {
+    throw new NotionRequestError({
+      code: "notion_query_network",
+      retryable: true,
+      diagnostic: notionDiagnostic("notion_query_network", null, null),
+    });
+  }
+
+  let bodyText = "";
+  let bodyReadFailed = false;
+  try {
+    bodyText = await response.text();
+  } catch {
+    bodyReadFailed = true;
+  }
+
+  const parsedError = bodyReadFailed ? null : parseNotionBody(bodyText);
+  const remoteCode = normalizeTechnicalCode(parsedError?.code, "unknown");
+  if (response.ok) {
+    const queryResult = bodyReadFailed ? null : parseNotionQueryBody(bodyText);
+    if (!queryResult) {
+      throw new NotionRequestError({
+        code: "notion_query_invalid_body",
+        retryable: true,
+        status: response.status,
+        diagnostic: notionDiagnostic("notion_query_invalid_body", response.status, remoteCode),
+      });
+    }
+    return queryResult;
+  }
+
+  const retryable = response.status === 429 || response.status >= 500;
+  const code = response.status === 429
+    ? "notion_query_http_429"
+    : retryable
+      ? "notion_query_http_5xx"
+      : "notion_query_http_4xx";
+  const retryAfterSeconds = response.status === 429
+    ? parseRetryAfterSeconds(response.headers.get("Retry-After"))
+    : null;
+
+  throw new NotionRequestError({
+    code,
+    retryable,
+    status: response.status,
+    retryAfterSeconds,
+    diagnostic: notionDiagnostic(code, response.status, remoteCode),
+  });
+}
+
 async function crearFilaEnNotion(contacto, env) {
   let response;
   try {
-    response = await fetch(NOTION_API, {
+    response = await fetch(NOTION_PAGES_API, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${env.NOTION_TOKEN}`,
@@ -121,6 +218,7 @@ async function crearFilaEnNotion(contacto, env) {
       code: "notion_network",
       retryable: true,
       diagnostic: notionDiagnostic("notion_network", null, null),
+      ambiguousCreate: true,
     });
   }
 
@@ -139,25 +237,28 @@ async function crearFilaEnNotion(contacto, env) {
     if (bodyReadFailed) {
       throw new NotionRequestError({
         code: "notion_ambiguous_success",
-        retryable: false,
+        retryable: true,
         status: response.status,
         diagnostic: notionDiagnostic("notion_ambiguous_success_body_read", response.status, remoteCode),
+        ambiguousCreate: true,
       });
     }
     if (!parsed) {
       throw new NotionRequestError({
         code: "notion_ambiguous_success",
-        retryable: false,
+        retryable: true,
         status: response.status,
         diagnostic: notionDiagnostic("notion_ambiguous_success_invalid_json", response.status, remoteCode),
+        ambiguousCreate: true,
       });
     }
     if (!isUsableNotionId(parsed.id)) {
       throw new NotionRequestError({
         code: "notion_ambiguous_success",
-        retryable: false,
+        retryable: true,
         status: response.status,
         diagnostic: notionDiagnostic("notion_ambiguous_success_missing_id", response.status, remoteCode),
+        ambiguousCreate: true,
       });
     }
     return parsed.id;
@@ -179,6 +280,7 @@ async function crearFilaEnNotion(contacto, env) {
     status: response.status,
     retryAfterSeconds,
     diagnostic: notionDiagnostic(code, response.status, remoteCode),
+    ambiguousCreate: response.status >= 500,
   });
 }
 
@@ -195,11 +297,16 @@ async function claimContact(env, id) {
   try {
     result = await env.DB.prepare(`
       UPDATE contacts
-      SET sync_status = 'syncing', sync_started_at = datetime('now')
+      SET sync_status = 'syncing',
+          sync_started_at = datetime('now'),
+          next_attempt_at = NULL
       WHERE id = ?
         AND COALESCE(retry_count, 0) < ?
         AND (
-          sync_status = 'pending'
+          (
+            sync_status = 'pending'
+            AND (next_attempt_at IS NULL OR next_attempt_at <= datetime('now'))
+          )
           OR (
             sync_status = 'syncing'
             AND sync_started_at IS NOT NULL
@@ -213,7 +320,42 @@ async function claimContact(env, id) {
   return Number(result?.meta?.changes) === 1;
 }
 
-async function persistFailure(env, id, error) {
+async function markReconciliationBeforeCreate(env, id) {
+  let result;
+  try {
+    result = await env.DB.prepare(`
+      UPDATE contacts
+      SET notion_reconcile_started_at = datetime('now')
+      WHERE id = ?
+        AND sync_status = 'syncing'
+        AND notion_reconcile_started_at IS NULL
+    `).bind(id).run();
+  } catch {
+    throw new WorkerInternalError("d1_reconciliation_mark_failed");
+  }
+  if (Number(result?.meta?.changes) !== 1) {
+    throw new WorkerInternalError("d1_reconciliation_mark_not_applied");
+  }
+}
+
+async function persistFailure(env, id, error, { clearReconciliation = false } = {}) {
+  let currentState;
+  try {
+    currentState = await env.DB.prepare(
+      "SELECT retry_count, sync_status FROM contacts WHERE id = ?",
+    ).bind(id).first();
+  } catch {
+    throw new WorkerInternalError("d1_failure_state_read_failed");
+  }
+  if (!currentState || currentState.sync_status !== "syncing") {
+    throw new WorkerInternalError("d1_failure_state_missing");
+  }
+
+  const expectedRetryCount = Number(currentState.retry_count || 0) + 1;
+  const retryable = error.retryable && expectedRetryCount < MAX_REINTENTOS;
+  const delaySeconds = retryable
+    ? error.retryAfterSeconds ?? calculateBackoffSeconds(expectedRetryCount)
+    : null;
   let update;
   try {
     update = await env.DB.prepare(`
@@ -224,9 +366,26 @@ async function persistFailure(env, id, error) {
             ELSE 'pending'
           END,
           last_error = ?,
-          sync_started_at = NULL
+          sync_started_at = NULL,
+          next_attempt_at = CASE
+            WHEN ? = 1 AND COALESCE(retry_count, 0) + 1 < ? THEN datetime('now', ?)
+            ELSE NULL
+          END,
+          notion_reconcile_started_at = CASE
+            WHEN ? = 1 THEN NULL
+            ELSE notion_reconcile_started_at
+          END
       WHERE id = ? AND sync_status = 'syncing'
-    `).bind(error.retryable ? 1 : 0, MAX_REINTENTOS, error.diagnostic, id).run();
+    `).bind(
+      error.retryable ? 1 : 0,
+      MAX_REINTENTOS,
+      error.diagnostic,
+      error.retryable ? 1 : 0,
+      MAX_REINTENTOS,
+      `+${delaySeconds ?? 0} seconds`,
+      clearReconciliation ? 1 : 0,
+      id,
+    ).run();
   } catch {
     throw new WorkerInternalError("d1_failure_persist_failed");
   }
@@ -252,7 +411,7 @@ async function persistFailure(env, id, error) {
       code: error.code,
       status: error.status,
       retryCountFinal,
-      delaySeconds: error.retryAfterSeconds ?? calculateBackoffSeconds(retryCountFinal),
+      delaySeconds,
     };
   }
 
@@ -274,7 +433,9 @@ async function persistSuccess(env, id, notionPageId) {
           notion_page_id = ?,
           synced_at = datetime('now'),
           last_error = NULL,
-          sync_started_at = NULL
+          sync_started_at = NULL,
+          next_attempt_at = NULL,
+          notion_reconcile_started_at = NULL
       WHERE id = ? AND sync_status = 'syncing'
     `).bind(notionPageId, id).run();
   } catch {
@@ -297,12 +458,49 @@ async function processContact(id, env) {
   const contacto = await readContact(env, id);
   if (!contacto) throw new WorkerInternalError("d1_claimed_contact_missing");
 
+  let notionQueryResult;
+  try {
+    notionQueryResult = await buscarFilasEnNotion(contacto, env);
+  } catch (error) {
+    if (error instanceof NotionRequestError) {
+      return persistFailure(env, id, error);
+    }
+    throw new WorkerInternalError("notion_unclassified_failure");
+  }
+
+  if (notionQueryResult.ids.length > 1 || notionQueryResult.hasMore) {
+    return persistFailure(env, id, new NotionRequestError({
+      code: "notion_idempotency_multiple_matches",
+      retryable: false,
+      status: 200,
+      diagnostic: notionDiagnostic("notion_idempotency_multiple_matches", 200, "multiple_matches"),
+    }));
+  }
+
+  if (notionQueryResult.ids.length === 1) {
+    await persistSuccess(env, id, notionQueryResult.ids[0]);
+    return { action: "ack", outcome: "reconciled" };
+  }
+
+  if (contacto.notion_reconcile_started_at !== null) {
+    return persistFailure(env, id, new NotionRequestError({
+      code: "notion_reconcile_not_found",
+      retryable: true,
+      status: 200,
+      diagnostic: notionDiagnostic("notion_reconcile_not_found", 200, "not_found"),
+    }));
+  }
+
+  await markReconciliationBeforeCreate(env, id);
+
   let notionPageId;
   try {
     notionPageId = await crearFilaEnNotion(contacto, env);
   } catch (error) {
     if (error instanceof NotionRequestError) {
-      return persistFailure(env, id, error);
+      return persistFailure(env, id, error, {
+        clearReconciliation: !error.ambiguousCreate,
+      });
     }
     throw new WorkerInternalError("notion_unclassified_failure");
   }
@@ -347,16 +545,29 @@ async function processQueueMessage(message, env) {
 async function requeueStaleContacts(env) {
   const candidates = await env.DB.prepare(`
     SELECT id FROM contacts
-    WHERE (
-      sync_status = 'pending'
-      AND created_at < datetime('now', ?)
-    ) OR (
-      sync_status = 'syncing'
-      AND sync_started_at IS NOT NULL
-      AND sync_started_at < datetime('now', ?)
-    )
+    WHERE COALESCE(retry_count, 0) < ?
+      AND (
+        (
+          sync_status = 'pending'
+          AND (
+            (next_attempt_at IS NOT NULL AND next_attempt_at <= datetime('now'))
+            OR (
+              next_attempt_at IS NULL
+              AND created_at < datetime('now', ?)
+            )
+          )
+        ) OR (
+          sync_status = 'syncing'
+          AND sync_started_at IS NOT NULL
+          AND sync_started_at < datetime('now', ?)
+        )
+      )
     LIMIT 50
-  `).bind(`-${PENDING_REQUEUE_MINUTES} minutes`, `-${SYNCING_STALE_MINUTES} minutes`).all();
+  `).bind(
+    MAX_REINTENTOS,
+    `-${PENDING_REQUEUE_MINUTES} minutes`,
+    `-${SYNCING_STALE_MINUTES} minutes`,
+  ).all();
 
   for (const row of candidates.results) {
     try {

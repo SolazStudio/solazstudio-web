@@ -1,19 +1,20 @@
 # Estado de implementación
 
 - Fecha: 2026-09-07
-- Fase/lote: F2.4C — Identificación definitiva del destino Notion
-- Estado: F2.4C — COMPLETADO PARA REVISIÓN DE CHATGPT
+- Fase/lote: F2.4D — Idempotencia Notion + backoff durable local
+- Estado: F2.4D — COMPLETADO PARA REVISIÓN DE CHATGPT
 - Rama: `develop`
-- Commit base: `c53a1481551d031685a7b5ff44ce6bb34080284a`
-- Commit del lote: único commit con mensaje `docs: identify actual notion destination`; su SHA se verifica fuera del propio commit
+- Commit base: `bf80bb45a5083e9c68e8dede1ac9e1f6134f80d6`
+- Commit del lote: único commit con mensaje `feat: add durable notion idempotency`; su SHA se verifica fuera del propio commit
 - Estado F2.3: **CERRADO** por revisión de ChatGPT
+- Estado F2.4C: **CERRADO** por revisión de ChatGPT
 - Estado F2.4B: **CERRADO** por revisión de ChatGPT; su resultado `MISMATCH` descartó “CRM Seba Ogalde”
 - Estado F2.4A: **BLOQUEADO**; su resultado histórico fue `UNAVAILABLE`
 - Estado F2: **ABIERTO**
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Cloudflare / recursos reales: recuperación de solo lectura en temporal aislado; cero escrituras remotas y cero deploys
-- Resultado: `AVAILABLE`; quedó identificado y documentado el database page ID configurado en el binding real
-- Siguiente paso: revisión de ChatGPT y, en un lote nuevo, lectura directa y exclusivamente read-only de ese ID en Notion para resolver recurso, título y esquema; no iniciar F2.4 funcional
+- Cloudflare / recursos reales: intactos; implementación y pruebas exclusivamente locales, sin llamadas a Notion, D1, Queue, Worker o Pages reales
+- Resultado: idempotencia Notion y backoff durable implementados localmente; **44 PASS, 0 FAIL**
+- Siguiente paso: revisión de ChatGPT y lote separado para crear/aplicar recursos aislados, verificar el contrato externo y ejecutar una prueba end-to-end antes de cualquier Production
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -27,9 +28,52 @@
 - Todo traspaso entre chats debe conservar la situación técnica real, incluidos los hechos verificados, decisiones todavía no tomadas, gaps abiertos, riesgos conocidos, recursos externos afectados o intactos y la razón exacta del siguiente paso. Un PUNTO DE CONTINUIDAD no debe simplificar el estado de forma que convierta hipótesis en decisiones.
 - No se repetirá automáticamente la preparación o confirmación del entorno Codex después de cada traspaso cuando el proyecto y entorno ya estén establecidos y no exista evidencia de cambio. Se volverá a verificar solo cuando haya una razón factual para dudar del entorno.
 
+## F2.4D — Idempotencia Notion + backoff durable local
+
+Estado: **F2.4D — COMPLETADO PARA REVISIÓN DE CHATGPT**. F2.4C queda **CERRADO** por revisión de ChatGPT; F2 permanece **ABIERTO** y la implementación nueva no está desplegada.
+
+### Contexto externo verificado al cierre de F2.4C
+
+- Workspace correcto: “Espacio de Solaz Studio”. Database page real: “CRM Solaz Studio”, ID `37b7abcb-cbb1-8050-a745-d5edcab17eb8`. Data source: `37b7abcb-cbb1-805c-93ce-000b6ea904b6`.
+- Schema observado sin consultar filas/leads: `Nombre`/title, `Empresa`/text, `Email`/email, `Teléfono`/phone_number, `Mensaje`/text, `Presupuesto`/text, `Marketing`/checkbox, `Tipo`/text, `Estado`/select y `Fecha`/date.
+- Las ocho propiedades de negocio que ya construía el Worker son compatibles por nombre y tipo. La propiedad técnica `ID envío web` todavía no existe en Notion real.
+- “CRM Seba Ogalde” permanece descartada. El 404 anterior correspondió al workspace incorrecto y queda descartado como evidencia técnica sobre “CRM Solaz Studio”. F2.4C no consultó filas/leads.
+
+### Precheck, alcance y migración
+
+- Precheck: PASS exacto. Repositorio `SolazStudio/solazstudio-web`, rama `develop`, working tree inicial limpio, HEAD local y `origin/develop` local/remoto en `bf80bb45a5083e9c68e8dede1ac9e1f6134f80d6`, `main` y `origin/main` local/remoto en `880610411ecb4d66f652e8bfaf89e5794231409d`; estado durable, Worker, suite, migración `0002` y baseline leídos íntegramente.
+- Archivos del lote: creada exclusivamente `migrations/0003_add_retry_reconciliation_state.sql`; modificados exclusivamente `workers/contact-sync/src/index.js`, `workers/contact-sync/test/worker.test.js` y este documento. Cero eliminados.
+- La migración `0003` contiene exactamente dos `ALTER TABLE contacts ADD COLUMN`: `next_attempt_at TEXT` y `notion_reconcile_started_at TEXT`. Ambas columnas son aditivas y nullable; no hay tablas, índices, reconstrucción ni DML. `0002_add_sync_started_at.sql` permanece intacta.
+
+### State machine e idempotencia
+
+- La clave única aprobada es `contacts.id`, representada en la futura propiedad Notion exacta `ID envío web` como `rich_text`. El Worker conserva sin cambios semánticos las ocho propiedades de negocio y añade únicamente esa propiedad técnica al payload de creación.
+- Tras obtener un claim, el Worker consulta siempre primero `POST /v1/databases/{NOTION_DATABASE_ID}/query` con `Notion-Version: 2022-06-28`, filtro `ID envío web` rich_text equals `contacts.id` y `page_size=2`. Solo considera page IDs válidos y nunca loggea body ni propiedades de negocio.
+- Cero coincidencias permiten CREATE únicamente cuando `notion_reconcile_started_at IS NULL`. Una coincidencia inequívoca reconcilia D1 a `synced` sin CREATE. Dos resultados o `has_more=true` generan el fallo definitivo estable `notion_idempotency_multiple_matches`, no eligen una página arbitraria y no crean.
+- Antes de un CREATE permitido se fija `notion_reconcile_started_at=datetime('now')`. El éxito confirmado por D1 limpia esa marca. HTTP 429 y 4xx —respuestas que no son ambiguas respecto de creación— la limpian; HTTP 5xx, error de red, body 2xx ilegible/no JSON o page ID ausente/inválido la conservan y entran en reconcile-only.
+- Reconcile-only ejecuta exclusivamente búsquedas. Si encuentra una página, confirma `synced`; si no encuentra, persiste `notion_reconcile_not_found`, incrementa el contador y programa backoff hasta que el sexto intento termina en `failed`. Nunca recupera permiso para CREATE automáticamente.
+- Si Notion devuelve éxito pero falla la escritura final D1, la marca preventiva deja la fila `syncing` recuperable. Al quedar stale, un nuevo claim busca primero, encuentra la página creada y confirma su ID en D1 sin segundo CREATE.
+
+### Backoff durable, cron y alertas
+
+- El claim de `pending` exige `retry_count < 6` y `next_attempt_at IS NULL OR next_attempt_at <= datetime('now')`; el claim de `syncing` conserva la recuperación stale de 20 minutos. Un claim fija `syncing`, `sync_started_at=datetime('now')` y limpia `next_attempt_at`, sin borrar la marca de reconciliación.
+- Cada retry Notion persiste en la misma transición D1 un `next_attempt_at=datetime('now', +delaySeconds)` y usa el mismo `delaySeconds` en `message.retry`. Se conservan 60/120/240/480/900 segundos y `Retry-After` entero clamped a 1–3600 para 429.
+- El cron reencola `pending` con fecha durable solo cuando vence; conserva la recuperación legacy de `pending` con `next_attempt_at IS NULL` y más de 10 minutos, y la de `syncing` stale. Aplica `retry_count < 6`, no reencola `failed`, mantiene `LIMIT 50` sin paginación y aísla cada fallo de `Queue.send`.
+- Alertas conservan `failed AND alerted=0 LIMIT 20`; múltiples coincidencias, reconciliación agotada y búsqueda 4xx quedan elegibles. `alerted=1` solo se persiste después de email exitoso y no se añadió PII a logs técnicos.
+
+### Pruebas, gate y gaps abiertos
+
+- `node --check` del Worker y tests: PASS. `node --test workers/contact-sync/test/worker.test.js`: **44 PASS, 0 FAIL**. La suite usa fakes deterministas de D1/Queue/email, IDs y PII sintéticos y `fetch` real bloqueado por defecto.
+- La suite cubre los 37 contratos mínimos: búsqueda previa, 0/1/múltiples coincidencias, concurrencia, estados no elegibles, clasificación completa de query/create, reconcile-only, recuperación Notion→D1 sin segundo CREATE, backoff durable/Retry-After, claim y cron, recuperación legacy, continuidad tras fallo de Queue, alertas, no-PII, migraciones y hash baseline.
+- Migración `0003` aplicada solo a SQLite in-memory sintético: columnas `TEXT` nullable y fila/valores previos intactos. Baseline F2.2 intacta con SHA-256 `f899e72d438bc63a871d6480349bba6f7fd618f8e2d68bba8902d22063f80b7c`.
+- **Gate de despliegue:** este Worker no puede desplegarse todavía. Antes de cualquier deploy, lotes separados y autorizados deben crear `ID envío web` en la database real, aplicar `sync_started_at`, `next_attempt_at` y `notion_reconcile_started_at` en el D1 exacto del entorno, y completar una prueba end-to-end aislada antes de Production.
+- Gaps no cerrados: la propiedad real aún no fue creada; migraciones `0002`/`0003` no fueron aplicadas a D1 real ni Preview; Worker nuevo no fue desplegado; prueba end-to-end aislada pendiente; `LIMIT 50` sin paginación permanece fuera de alcance; Production sigue intacta.
+- Cero red real desde tests y cero escrituras externas: no hubo llamadas Notion, SQL/migración D1 remota, mensajes/cambios Queue, deploy/cambio Worker, Pages/Preview/Production, email real, secrets, DNS, Ads o analítica. Solo hubo consulta de documentación pública y push Git autorizado.
+- Siguiente paso: revisión de ChatGPT y lote separado para preparar recursos aislados/contrato externo y prueba end-to-end antes de cualquier Production. Rollback: revertir exclusivamente el commit `feat: add durable notion idempotency`; no existe rollback de plataforma.
+
 ## F2.4C — Identificación definitiva del destino Notion
 
-Estado: **F2.4C — COMPLETADO PARA REVISIÓN DE CHATGPT**. F2.4B queda **CERRADO** por revisión de ChatGPT; F2 permanece **ABIERTO** y F2.4 funcional no fue iniciado.
+Estado: **F2.4C — CERRADO por revisión de ChatGPT**; su cierre técnico previo fue `COMPLETADO PARA REVISIÓN DE CHATGPT`. F2.4B queda **CERRADO** y F2 permanece **ABIERTO**.
 
 ### Objetivo y precheck
 
@@ -810,22 +854,26 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F2.4C — Identificación definitiva del destino Notion; F2.4 funcional no iniciado.
+- Lote: F2.4D — Idempotencia Notion + backoff durable local; implementación no desplegada.
 - Fecha: 2026-09-07.
-- Precheck: PASS exacto; repo `SolazStudio/solazstudio-web`, rama `develop`, árbol inicial limpio, HEAD/`origin/develop` local y remoto `c53a1481551d031685a7b5ff44ce6bb34080284a`, `main`/`origin/main` local y remoto `880610411ecb4d66f652e8bfaf89e5794231409d`; estado durable leído íntegramente y estados previos coincidentes.
-- Resultado: **AVAILABLE**. El database page ID configurado en el binding real quedó validado y registrado una única vez en la sección F2.4C como identificador de recurso.
-- Recuperación: Wrangler 4.112.0 `init --from-dash solaz-contact-worker --no-delegate-c3` dentro de un único temporal nativo validado fuera del repositorio; cero deploy y cero escritura remota.
-- Extracción: una única configuración y una única clave objetivo; lectura exclusiva de `vars.NOTION_DATABASE_ID`, validación de formato y normalización a UUID canónico. No se enumeraron ni leyeron otros bindings.
-- Confidencialidad: `NOTION_TOKEN` no fue accedido y no se imprimieron secrets ni la configuración recuperada.
-- Temporal: eliminado directamente antes de documentar; ausencia posterior verificada, sin copias conocidas del lote y sin archivos nuevos en el repositorio.
-- Archivos: 0 creados, 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados; ningún otro path ni untracked.
-- Pruebas: `git status`, `git diff --check`, diff documental completo, alcance único, ausencia de untracked, Worker byte-for-byte contra el HEAD inicial, cero diff en tests/baseline/migraciones/package files, `main`/`origin/main`, ausencia del temporal y controles textuales de unicidad y no exposición.
-- Cero llamadas a Notion y cero escrituras externas de plataforma: PASS; Cloudflare solo lectura y cero D1/Queue/Worker/Pages, deploys, SQL, leads, emails, Preview, Production, secrets, DNS, Ads o analítica. El único cambio remoto previsto es el push Git autorizado a `origin/develop`.
-- Estado F2.3: **CERRADO**. Estado F2.4B: **CERRADO**. Estado histórico F2.4A: **BLOQUEADO**. Estado F2: **ABIERTO**.
-- Commit: único commit con mensaje exacto `docs: identify actual notion destination`; SHA final se informa externamente porque no puede autocontenerse.
+- Precheck: PASS exacto; repo `SolazStudio/solazstudio-web`, rama `develop`, árbol inicial limpio, HEAD/`origin/develop` local y remoto `bf80bb45a5083e9c68e8dede1ac9e1f6134f80d6`, `main`/`origin/main` local y remoto `880610411ecb4d66f652e8bfaf89e5794231409d`; lecturas obligatorias completas, `0003` inicialmente ausente y baseline exacta.
+- Archivos: 1 creado (`migrations/0003_add_retry_reconciliation_state.sql`), 3 modificados (`workers/contact-sync/src/index.js`, `workers/contact-sync/test/worker.test.js`, `docs/IMPLEMENTATION_STATE.md`) y 0 eliminados; cero paths adicionales o untracked.
+- Decisión implementada: `contacts.id` es la clave; búsqueda Notion por `ID envío web` antes de cada CREATE, `page_size=2`, 0/1/múltiples coincidencias deterministas y CREATE con la propiedad técnica añadida sin cambiar las ocho propiedades actuales.
+- Migración `0003`: exactamente `next_attempt_at TEXT` y `notion_reconcile_started_at TEXT`, aditivas/nullable y sin DML, tablas o índices; aplicación únicamente SQLite in-memory sintética.
+- Idempotencia/reconcile-only: resultados de CREATE ambiguos conservan la marca durable y prohíben otro CREATE; un match reconcilia D1, cero matches reintenta búsqueda hasta agotar y múltiples matches fallan sin elegir página.
+- Backoff durable: D1 persiste el mismo límite temporal que usa Queue para 60/120/240/480/900 o `Retry-After` 1–3600; claim y cron respetan `next_attempt_at`, con recuperación legacy/stale preservada.
+- Pruebas: sintaxis PASS; suite dirigida **44 PASS, 0 FAIL**; SQLite sintético PASS; `git diff --check`, alcance, integridad y escaneos finales sujetos a la compuerta precommit.
+- No duplicación: concurrencia produce un claim/CREATE; página existente y múltiples matches producen cero CREATE; reconcile-only nunca crea.
+- Evidencia Notion→D1: el test de éxito Notion seguido por fallo final D1 deja `syncing` con marca durable; tras stale, la segunda ejecución busca `PAGE_ID_1`, hace cero segundo CREATE y termina `synced` con ese ID.
+- Baseline F2.2: intacta, SHA-256 `f899e72d438bc63a871d6480349bba6f7fd618f8e2d68bba8902d22063f80b7c`; migración `0002`, package files, Functions y frontend intactos.
+- Red real bloqueada: `fetch` falla por defecto en tests; todo dato, ID y credencial de prueba es sintético. No se usaron token ni database ID reales en llamadas externas.
+- Recursos externos: cero escrituras y cero llamadas funcionales a Notion/D1/Queue/Worker/Pages/email; no hubo deploy, SQL remoto, mensajes, cambios de bindings/cron, Preview o Production.
+- Estado F2.4C: **CERRADO** por revisión de ChatGPT. Estado histórico F2.4A: **BLOQUEADO**. Estado F2: **ABIERTO**.
+- Commit: único commit con mensaje exacto `feat: add durable notion idempotency`; SHA final se informa externamente porque no puede autocontenerse.
 - Push: exclusivamente a `origin/develop`; sin rama, PR, merge, main o force push.
 - Main/Production: `origin/main` permanece exactamente en `880610411ecb4d66f652e8bfaf89e5794231409d`; no se ejecutó acción Pages/Production.
-- Siguiente paso: revisión de ChatGPT y lote nuevo para lectura directa y exclusivamente read-only en Notion por el ID documentado, limitada a recurso, título y esquema, sin filas; no iniciar F2.4 funcional.
-- Rollback: revertir únicamente el commit documental F2.4C; no hay rollback Cloudflare/Notion/D1/Queue/Worker.
-- Estado F2.4C: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+- Gate/siguiente paso: revisión de ChatGPT y lote separado para crear/aplicar recursos aislados, verificar contrato externo y ejecutar prueba end-to-end antes de cualquier Production. No desplegar aún.
+- Rollback: revertir únicamente el commit F2.4D; no hay rollback Notion/D1/Queue/Worker/Pages porque no hubo escritura de plataforma.
+- Estado F2.4D: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+- Estado F2: **ABIERTO**.
 - Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
