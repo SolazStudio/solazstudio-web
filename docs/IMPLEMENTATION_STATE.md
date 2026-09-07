@@ -1,11 +1,11 @@
 # Estado de implementación
 
 - Fecha: 2026-09-07
-- Fase/lote: Continuidad F2 — cierre documental F2.4D
-- Estado: COMPLETADO PARA REVISIÓN DE CHATGPT
+- Fase/lote: F2.5A — Preparación del entorno end-to-end aislado
+- Estado: **BLOQUEADO** antes de escrituras externas
 - Rama: `develop`
-- Commit base: `9e21e8dcea1027729aac4f46be1250eba357bb52`
-- Commit del lote: único commit documental con mensaje `docs: close F2.4D and record continuity`; su SHA se verifica fuera del propio commit
+- Commit base: `7678873c8e5041b0adc7dda525a6c152eb9f7689`
+- Commit del lote: único commit documental de bloqueo; su SHA se verifica fuera del propio commit
 - Estado F1: **CERRADO**
 - Estado F2: **ABIERTO**
 - Estado F2.3: **CERRADO** por revisión de ChatGPT
@@ -14,9 +14,9 @@
 - Estado F2.4B: **CERRADO** por revisión de ChatGPT; su resultado `MISMATCH` descartó “CRM Seba Ogalde”
 - Estado F2.4A: **BLOQUEADO**; su resultado histórico fue `UNAVAILABLE`
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Cloudflare / Notion / recursos funcionales reales: intactos en este cierre documental; cero llamadas funcionales o escrituras sobre esos servicios
-- Resultado: F2.4D revisado y cerrado sin correcciones; continuidad técnica registrada con **44 PASS, 0 FAIL** heredados del lote implementador
-- Siguiente paso: `F2.5A — Preparación del entorno end-to-end aislado`, **NO INICIADO**
+- Cloudflare / Notion / recursos funcionales reales: cero escrituras; solo preflight e inspecciones técnicas de metadata/schema/conteos sin PII
+- Resultado: F2.5A **BLOQUEADO** porque las 2 filas `pending` existentes en `solaz-contactos-preview` serían elegibles inmediatamente para el cron y porque el entorno no permite crear/administrar la integración interna Notion aislada ni obtener su token
+- Siguiente paso: resolver explícitamente ambos bloqueos en un lote autorizado; F2.5B **NO INICIADO**
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -29,6 +29,25 @@
 
 - Todo traspaso entre chats debe conservar la situación técnica real, incluidos los hechos verificados, decisiones todavía no tomadas, gaps abiertos, riesgos conocidos, recursos externos afectados o intactos y la razón exacta del siguiente paso. Un PUNTO DE CONTINUIDAD no debe simplificar el estado de forma que convierta hipótesis en decisiones.
 - No se repetirá automáticamente la preparación o confirmación del entorno Codex después de cada traspaso cuando el proyecto y entorno ya estén establecidos y no exista evidencia de cambio. Se volverá a verificar solo cuando haya una razón factual para dudar del entorno.
+
+## F2.5A — Preparación del entorno end-to-end aislado — BLOQUEADO
+
+- Fecha: 2026-09-07.
+- Precheck Git: PASS exacto. Repositorio `SolazStudio/solazstudio-web`, rama `develop`, working tree inicial limpio, HEAD y `origin/develop` local/remoto en `7678873c8e5041b0adc7dda525a6c152eb9f7689`; `main` y `origin/main` local/remoto en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Lecturas obligatorias: `docs/IMPLEMENTATION_STATE.md`, `workers/contact-sync/src/index.js`, `workers/contact-sync/test/worker.test.js`, `functions/api/contact.js` y migraciones `0001`, `0002` y `0003` leídas íntegramente antes de escribir. Las dos fuentes permanentes nombradas en el encargo no estaban disponibles en workspace/contexto.
+- Preflight Cloudflare: Wrangler `4.112.0`, sesión autenticada y scopes suficientes observados para D1, Queues, Workers y Pages. No se extrajeron, imprimieron ni versionaron credenciales o tokens.
+- Preflight Notion: conexión de solo lectura verificada en el workspace correcto “Espacio de Solaz Studio”. El conector permite crear contenido, pero el entorno no expone capacidad para crear/administrar una integración interna exclusiva llamada `Solaz Web E2E Preview` ni para obtener su token aislado; no se usó una credencial real de mayor alcance como sustituto.
+- D1 inspeccionado: `solaz-contactos-preview`, ID `234b26b3-813f-46c8-9784-36ccf3037abc`, confirmado por metadata como el recurso Preview previsto.
+- Schema D1 observado sin PII: 23 columnas. Faltan `sync_started_at`, `next_attempt_at` y `notion_reconcile_started_at`; por tanto `0002_add_sync_started_at.sql` y `0003_add_retry_reconciliation_state.sql` siguen sin aplicar.
+- Conteos técnicos exclusivos: `pending = 2`; filas legacy `pending` con más de 10 minutos y `retry_count < 6`, elegibles inmediatamente para el cron de F2.4D: `2`.
+- Gate de seguridad: FAIL. El encargo prohíbe alterar o borrar automáticamente esas filas y ordena detenerse si impiden habilitar el circuito; no se aplicaron migraciones, no se habilitó cron y no se creó ni conectó infraestructura.
+- Escrituras externas: ninguna. Queue `solaz-contactos-preview-queue` no creada; Worker `solaz-contact-sync-preview` no creado/desplegado; base `CRM Solaz Studio — Pruebas Web E2E` no creada; integración/token Notion no creados; bindings Pages Preview y Production no modificados.
+- Archivos: 0 creados, 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados. No se creó `workers/contact-sync/wrangler.preview.jsonc` porque no se alcanzaron los gates previos.
+- Tests: no ejecutados. El lote se detuvo en los prechecks externos, antes de configuración, dependencias, validación o despliegue; el baseline heredado de F2.4D continúa en **44 PASS, 0 FAIL** sin revalidación en este lote.
+- Producción: `main` intacta; cero acciones sobre D1, Queue, Worker, Pages, CRM, email, DNS, Ads o analítica de Production. No existe binding `EMAIL` en un Worker Preview porque dicho Worker no fue creado.
+- Acción que falta: obtener autorización específica para neutralizar las 2 filas de prueba antiguas de la D1 Preview sin tocar datos reales; además, Seba debe crear manualmente en la interfaz de Notion la integración interna `Solaz Web E2E Preview` en el workspace correcto y dejar disponible su token mediante un flujo seguro, sin pegarlo en documentación ni commits. El lote debe reanudarse desde los gates y volver a comprobar el estado antes de cualquier escritura.
+- Rollback: no aplica sobre plataforma porque no hubo escrituras externas. El único cambio reversible es este registro documental en `develop`; las migraciones aditivas no se tocaron.
+- Estado: F2 permanece **ABIERTO**. F2.5A permanece **BLOQUEADO** y F2.5B **NO FUE INICIADO**.
 
 ## PUNTO DE CONTINUIDAD — F2 hacia F2.5A
 
@@ -918,7 +937,7 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 - Siguiente lote: pendiente de revisión de ChatGPT y nueva autorización. No iniciar F2.3.
 - Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
 
-## INFORME CODEX — ÚLTIMO LOTE
+## INFORME CODEX — LOTE ANTERIOR
 
 - Lote: Continuidad F2 — cierre documental F2.4D + punto de continuidad hacia F2.5A.
 - Fecha: 2026-09-07.
@@ -934,3 +953,20 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 - Rollback: revertir únicamente el commit documental de este cierre; no existe rollback de plataforma porque no hubo acciones externas.
 - Siguiente paso: `F2.5A — Preparación del entorno end-to-end aislado`, **NO INICIADO**. Debe decidir y preparar en un lote futuro `D1 aislada → Queue aislada → Worker aislado → destino Notion de prueba aislado`, método de pruebas y rollback, sin reutilizar recursos reales.
 - Estado final exacto: COMPLETADO PARA REVISIÓN DE CHATGPT
+
+## INFORME CODEX — ÚLTIMO LOTE
+
+- Lote: F2.5A — Preparación del entorno end-to-end aislado.
+- Fecha: 2026-09-07.
+- Resultado: **BLOQUEADO** en los gates previos; no se dejó infraestructura parcial.
+- Precheck Git: PASS exacto; `develop` y `origin/develop` en `7678873c8e5041b0adc7dda525a6c152eb9f7689`, `main` y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`, working tree inicial limpio.
+- Archivos: 0 creados, 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados. `workers/contact-sync/wrangler.preview.jsonc` no fue creado.
+- D1: reutilización prevista de `solaz-contactos-preview`, ID `234b26b3-813f-46c8-9784-36ccf3037abc`; identidad confirmada. Schema de 23 columnas, sin `sync_started_at`, `next_attempt_at` ni `notion_reconcile_started_at`; migraciones `0002`/`0003` no aplicadas.
+- Bloqueo D1: conteo técnico `pending = 2`; las 2 filas son legacy vencidas y elegibles inmediatamente para el cron. No se consultó ni imprimió PII; no se alteraron ni borraron filas.
+- Cloudflare: preflight autenticado y scopes suficientes; cero escrituras. Queue y Worker aislados no creados, cron no configurado, Pages Preview sin cambios y Production intacta. No existe binding `EMAIL` Preview.
+- Notion: workspace correcto confirmado por metadata. La sesión no permite crear/administrar la integración interna exclusiva ni obtener su token test; base test e integración no creadas, CRM real no consultado ni modificado.
+- Tests: no ejecutados debido a la detención obligatoria anterior a configuración/despliegue. Baseline heredado, no revalidado: **44 PASS, 0 FAIL**.
+- Git: único cambio documental autorizado; commit y push exclusivamente a `origin/develop` se verifican en el informe externo.
+- Gaps: autorización específica para neutralizar las 2 filas test antiguas y creación manual de `Solaz Web E2E Preview` con entrega segura del token; después deben repetirse gates antes de escribir.
+- Rollback: no hay rollback de plataforma; no hubo escrituras externas. Solo puede revertirse el commit documental si fuera necesario.
+- Estado: F2 **ABIERTO**, F2.5A **BLOQUEADO**, F2.5B **NO INICIADO**.
