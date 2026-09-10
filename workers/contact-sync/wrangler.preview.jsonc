@@ -1,0 +1,34 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "solaz-contact-sync-preview",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-07",
+  "workers_dev": false,
+  "preview_urls": false,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "solaz-contactos-preview",
+      "database_id": "234b26b3-813f-46c8-9784-36ccf3037abc"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "CONTACT_QUEUE",
+        "queue": "solaz-contactos-preview-queue"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "solaz-contactos-preview-queue"
+      }
+    ]
+  },
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  },
+  "vars": {
+    "NOTION_DATABASE_ID": "9546f10e-0793-4153-8ae0-6db05ec20888"
+  }
+}
