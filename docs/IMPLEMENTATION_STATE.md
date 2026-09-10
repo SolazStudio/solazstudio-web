@@ -1,22 +1,24 @@
 # Estado de implementación
 
 - Fecha: 2026-09-10
-- Fase/lote: F2.5B — ejecución controlada final de fallo post-Notion y reconciliación
-- Estado: **F2.5B COMPLETADO PARA REVISIÓN DE CHATGPT**
+- Fase/lote: F2.CIERRE — cierre durable de F2 y continuidad hacia F3
+- Estado: **F2 CERRADO**
 - Rama: `develop`
-- Commit base: `0dc200da3fc4bd99c69f53c23056b007c4f4b65b`
+- Commit base: `91eca4b58ad6eb4e3c0bc9fd38f93440f05e3057`
 - Commit de cierre: documental post-verificación; su SHA se verifica fuera del propio commit
 - Estado F1: **CERRADO**
-- Estado F2: **ABIERTO**
+- Estado F2: **CERRADO**
+- Estado F2.5B: **CERRADO** por revisión de ChatGPT
+- Estado F2.5A: **CERRADO** por revisión de ChatGPT
 - Estado F2.3: **CERRADO** por revisión de ChatGPT
 - Estado F2.4D: **CERRADO** por revisión de ChatGPT
 - Estado F2.4C: **CERRADO** por revisión de ChatGPT
 - Estado F2.4B: **CERRADO** por revisión de ChatGPT; su resultado `MISMATCH` descartó “CRM Seba Ogalde”
-- Estado F2.4A: **BLOQUEADO**; su resultado histórico fue `UNAVAILABLE`
+- Estado F2.4A: **BLOQUEADO / UNAVAILABLE (histórico)**; no constituye un pendiente activo
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
 - Cloudflare / Notion / recursos funcionales reales: solo recursos Preview/test autorizados; Production y CRM real intactos
-- Resultado: prueba aislada completada de `CREATE Notion → fallo final D1 → retry reciente sin claim → recuperación stale → reconciliación sin segundo CREATE → idempotencia terminal`; cron Preview restaurado
-- Siguiente paso: revisión independiente de ChatGPT, incluida la comprobación de una sola página Notion para el segundo ID. F2 permanece abierto
+- Resultado: F2.5B cerrado por revisión independiente de ChatGPT; F2 queda cerrado con su evidencia durable preservada
+- Siguiente fase: **F3 — NO INICIADA**
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -47,11 +49,22 @@
 - Resultado del segundo caso: `sync_status=synced`, `notion_page_id=3d77abcb-cbb1-81b1-86b6-d5bf9486f0ac`, `synced_at=2026-09-10 20:59:16`, `retry_count=0`; `sync_started_at`, `next_attempt_at`, `notion_reconcile_started_at` y `last_error` nulos.
 - Idempotencia terminal: una tercera copia del mismo objeto JSON dejó sin cambios el estado, `synced_at`, page ID, retry count y conteo D1; no apareció una nueva fila.
 - D1 final: total `4`; dos legacy `failed` neutralizadas y dos sintéticos `synced`; ambos sintéticos se preservan como evidencia. No se leyó PII legacy. Trigger exacto y cualquier trigger `f25b%`: `0`.
-- Notion: no existía un mecanismo directo seguro disponible para contar páginas sin exponer el secreto y no se creó endpoint. La página y el segundo `notion_page_id` se preservan; ChatGPT debe verificar independientemente que existe exactamente una página para el segundo ID y que coincide con D1. CRM real no fue consultado ni modificado.
+- Notion: durante la ejecución no existía un mecanismo directo seguro disponible para contar páginas sin exponer el secreto y no se creó endpoint. Posteriormente, ChatGPT verificó de forma independiente que existe exactamente una página para el segundo ID `f25b0000-0000-4000-8000-000000000002` y que su page ID `3d77abcb-cbb1-81b1-86b6-d5bf9486f0ac` coincide con D1. CRM real no fue consultado ni modificado.
 - Restauración: se desplegó la configuración oficial versionada sin cambios como versión final `33bb3670-9af5-4572-8e7f-5edbf06c5d1f`; cron `*/5 * * * *`, Queue producer/consumer, D1 Preview, Notion test y secreto permanecen correctos, sin `EMAIL`, rutas ni Production. La configuración temporal se eliminó.
 - Integridad: SHA-256 final del Worker `CDC0B34F70825C165A61C824F5774C9ADC9190B8C7E7F97A8C09F827EFB0A1AE`; SHA-256 de `wrangler.preview.jsonc` `80DE08095F73EABEE3D0481C6D096AD2EFF5ADC21D8CF10ACA8DC05DE4A60D0C`; sin diffs funcionales ni temporales en el repositorio.
 - Pruebas: `node --check` PASS; Worker **44 PASS, 0 FAIL**; `npm ci` PASS con `129` paquetes y `0` vulnerabilidades. El build en Dropbox encontró `EBUSY` heredado sobre `_site` y no se forzó ni borró; en clon temporal limpio con historial, `npm ci` y build Eleventy PASS (`24` HTML, `742` copiados). `npm run qa` repitió únicamente el gap heredado de `qa:parity` por `functions/api/contact.js` frente a `main`, sin fallo nuevo.
-- Alcance final: Pages Preview, Production, `main`, CRM real, email, DNS, analítica y Ads intactos. Solo se versiona este documento. F2 permanece **ABIERTO**; F2.5B queda **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+- Alcance final: Pages Preview, Production, `main`, CRM real, email, DNS, analítica y Ads intactos. Solo se versiona este documento. Tras la revisión independiente de ChatGPT, F2.5B queda **CERRADO** y F2 queda **CERRADO**; F3 es la siguiente fase y permanece **NO INICIADA**.
+
+## F2.CIERRE — cierre durable y continuidad hacia F3
+
+- ChatGPT revisó independientemente la evidencia de F2.5B y cerró el lote, incluida la comprobación de exactamente una página Notion para el segundo ID sintético y su correspondencia con el page ID registrado en D1.
+- Estado vigente: F2.4B, F2.4C, F2.4D, F2.5A y F2.5B están **CERRADOS**; con ello F2 queda **CERRADO**. F2.4A conserva su resultado **BLOQUEADO / UNAVAILABLE** como antecedente histórico y no constituye un pendiente activo.
+- Se preserva íntegramente la evidencia técnica F2.5B: CREATE Notion, fallo final deliberado en D1, marcador durable, retry reciente sin claim, recuperación stale, búsqueda de página existente, reconciliación D1, ausencia de un segundo CREATE e idempotencia terminal.
+- Se preservan ambos IDs sintéticos y sus page IDs: `f25b0000-0000-4000-8000-000000000001` → `3d77abcb-cbb1-811f-a614-dee152e742ae`; `f25b0000-0000-4000-8000-000000000002` → `3d77abcb-cbb1-81b1-86b6-d5bf9486f0ac`.
+- Estado final heredado de Preview: D1, Queue, Worker y destino Notion de prueba aislados; cron `*/5 * * * *`; sin binding `EMAIL` ni rutas de Production. Production, `main` y CRM real permanecen intactos.
+- Persiste como gap heredado `qa:parity` para `functions/api/contact.js` frente a `main`; este cierre documental no lo corrige ni lo reinterpreta.
+- Las fuentes permanentes `01_FUENTE_MAESTRA_WEB_SOLAZ.docx` y `02_PROTOCOLO_Y_ESTADO_WEB_SOLAZ.md` no estaban disponibles localmente al ejecutar este cierre. Se usaron el presente documento completo y el encargo aprobado, sin completar vacíos mediante inferencias.
+- Este cierre no incluyó pruebas funcionales ni escrituras en Cloudflare, Notion, D1, Queue, Worker, Pages, Preview o Production. F3 es la fase siguiente y permanece **NO INICIADA**; no se diseña ni inicia en este lote.
 
 ## Reanudación F2.5A — checkpoint pre-secreto
 
@@ -1026,15 +1039,18 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F2.5B — ejecución controlada final de fallo post-Notion y reconciliación sin duplicado.
+- Lote: F2.CIERRE — cierre durable de F2 y continuidad hacia F3.
 - Fecha: 2026-09-10.
-- Precheck: PASS exacto; base `0dc200da3fc4bd99c69f53c23056b007c4f4b65b`, `main`/`origin/main` `880610411ecb4d66f652e8bfaf89e5794231409d`, árbol inicial limpio, segundo ID ausente, primer sintético y recursos Preview intactos.
-- Historia previa incorporada: el primer mensaje F2.5B fue `Texto` y se descartó; trigger retirado; el cron sincronizó luego el primer sintético con page ID `3d77abcb-cbb1-811f-a614-dee152e742ae`, cuya unicidad ChatGPT verificó. La primera reanudación se bloqueó sin nuevas escrituras al encontrarlo ya `synced`.
-- Control del cron: configuración temporal no versionada idéntica salvo `crons: []`; versión sin cron `b12f89e0-97d2-4129-8cd9-dac5b9f866c1`, bindings Preview/test y consumidor preservados. Restauración final con configuración oficial, cron `*/5 * * * *` y versión `33bb3670-9af5-4572-8e7f-5edbf06c5d1f`; temporal eliminado.
-- Prueba: segundo ID único insertado `pending`; trigger acotado creado; primer mensaje JSON produjo CREATE Notion y fallo final D1, dejando `syncing` con marcador. Trigger eliminado inmediatamente y count `0`. Tras más de 90 s, el retry de 60 s no adquirió claim. Solo `sync_started_at` se volvió stale; segundo JSON reconcilió la página existente sin segundo CREATE.
-- Resultado: segundo sintético `synced`, `retry_count=0`, marcadores y errores nulos, `notion_page_id=3d77abcb-cbb1-81b1-86b6-d5bf9486f0ac`. Tercer JSON confirmó idempotencia terminal sin cambios ni nueva fila.
-- D1 final: total `4`, dos legacy neutralizadas en `failed` y dos sintéticos `synced`; trigger exacto y cualquier `f25b%` en `0`. Evidencia preservada, sin lectura de PII legacy.
-- Notion: sin consulta directa segura disponible y sin endpoint adicional; ChatGPT debe verificar exactamente una página para el segundo ID y correspondencia con el page ID D1. CRM real no se consultó ni modificó.
-- Tests: sintaxis PASS; **44 PASS, 0 FAIL**; `npm ci` PASS, 129 paquetes y 0 vulnerabilidades; build limpio PASS con 24 HTML y 742 copiados. Solo persiste `qa:parity` heredado por `functions/api/contact.js` frente a `main`; no hubo fallo nuevo.
-- Archivos versionados: 0 creados, 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados; código y `wrangler.preview.jsonc` sin cambios, temporales eliminados.
-- Alcance: Pages Preview, Production, `main`, CRM real, email, DNS, analítica y Ads intactos. F2 **ABIERTO**; F2.5B **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+- Precheck: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, working tree inicial limpio, HEAD y `origin/develop` en `91eca4b58ad6eb4e3c0bc9fd38f93440f05e3057`, `main` y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`, divergencia develop `0/0`.
+- Fuentes: se leyó íntegramente `docs/IMPLEMENTATION_STATE.md`. `01_FUENTE_MAESTRA_WEB_SOLAZ.docx` y `02_PROTOCOLO_Y_ESTADO_WEB_SOLAZ.md` no estaban disponibles localmente; se registra la limitación sin inventar contenido.
+- Archivos: 0 creados, 1 modificado (`docs/IMPLEMENTATION_STATE.md`), 0 eliminados y 0 untracked. No hubo cambios funcionales.
+- Cierre: F2.5B queda **CERRADO** por revisión independiente de ChatGPT y F2 queda **CERRADO**. F2.4B, F2.4C, F2.4D y F2.5A permanecen cerrados.
+- F2.4A: conserva **BLOQUEADO / UNAVAILABLE** como estado histórico; no es un pendiente activo ni reabre F2.
+- Evidencia preservada: CREATE Notion, fallo final deliberado en D1, marcador durable, retry reciente sin claim, recuperación stale, búsqueda de página existente, reconciliación D1, ningún segundo CREATE e idempotencia terminal. ChatGPT verificó exactamente una página Notion para `f25b0000-0000-4000-8000-000000000002`, con page ID `3d77abcb-cbb1-81b1-86b6-d5bf9486f0ac` coincidente con D1; también se preservan `f25b0000-0000-4000-8000-000000000001` y `3d77abcb-cbb1-811f-a614-dee152e742ae`.
+- Preview heredado: D1, Queue, Worker y Notion test aislados; cron `*/5 * * * *`; sin `EMAIL` ni rutas de Production. Production, CRM real y `main` permanecen intactos.
+- Gap heredado: `qa:parity` para `functions/api/contact.js` frente a `main` permanece documentado y fuera del alcance de este cierre.
+- Validación documental: status inicial/final, paths exactos, `git diff --check`, revisión completa del diff y comprobación textual de estados y evidencia. Por prohibición expresa no se ejecutaron npm, tests, build ni QA funcional.
+- Acciones externas: 0 escrituras funcionales y 0 acciones en Cloudflare, Notion, D1, Queue, Worker, Pages, Preview, Production, CRM real, email, DNS, analítica o Ads.
+- Commit y push: un único commit documental con mensaje exacto `docs: close F2 and record F3 continuity`, exclusivamente a `origin/develop`; su SHA y sincronía se verifican fuera del propio commit. Sin rama nueva, PR, merge, force push ni escritura a `main`.
+- Rollback: revertir únicamente el commit documental `docs: close F2 and record F3 continuity`; no existe rollback de plataforma porque este lote no realizó escrituras externas.
+- Continuidad: F3 es la fase siguiente y permanece **NO INICIADA**. Este lote no la diseñó, propuso ni inició.
