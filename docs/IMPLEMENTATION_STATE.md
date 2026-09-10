@@ -1,11 +1,10 @@
 # Estado de implementación
 
 - Fecha: 2026-09-10
-- Fase/lote: Reanudación F2.5A — preparación del entorno end-to-end aislado
-- Estado: **F2.5A COMPLETADO PARA REVISIÓN DE CHATGPT**
+- Fase/lote: F2.5B — ejecución controlada final de fallo post-Notion y reconciliación
+- Estado: **F2.5B COMPLETADO PARA REVISIÓN DE CHATGPT**
 - Rama: `develop`
-- Commit base: `49ebcfcb605dc06fd472b04976d614063139be4c`
-- Commit de checkpoint: `b7a0655eb2c3805fd1ecf752ee4ab7855a6982e1`
+- Commit base: `0dc200da3fc4bd99c69f53c23056b007c4f4b65b`
 - Commit de cierre: documental post-verificación; su SHA se verifica fuera del propio commit
 - Estado F1: **CERRADO**
 - Estado F2: **ABIERTO**
@@ -16,8 +15,8 @@
 - Estado F2.4A: **BLOQUEADO**; su resultado histórico fue `UNAVAILABLE`
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
 - Cloudflare / Notion / recursos funcionales reales: solo recursos Preview/test autorizados; Production y CRM real intactos
-- Resultado: circuito aislado F2.5A preparado y verificado sin enviar contactos: D1 Preview → Queue Preview → Worker Preview → Notion test; Pages Preview configurada solo con recursos Preview
-- Siguiente paso: revisión de ChatGPT. F2 permanece abierto y F2.5B no fue iniciado
+- Resultado: prueba aislada completada de `CREATE Notion → fallo final D1 → retry reciente sin claim → recuperación stale → reconciliación sin segundo CREATE → idempotencia terminal`; cron Preview restaurado
+- Siguiente paso: revisión independiente de ChatGPT, incluida la comprobación de una sola página Notion para el segundo ID. F2 permanece abierto
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -30,6 +29,29 @@
 
 - Todo traspaso entre chats debe conservar la situación técnica real, incluidos los hechos verificados, decisiones todavía no tomadas, gaps abiertos, riesgos conocidos, recursos externos afectados o intactos y la razón exacta del siguiente paso. Un PUNTO DE CONTINUIDAD no debe simplificar el estado de forma que convierta hipótesis en decisiones.
 - No se repetirá automáticamente la preparación o confirmación del entorno Codex después de cada traspaso cuando el proyecto y entorno ya estén establecidos y no exista evidencia de cambio. Se volverá a verificar solo cuando haya una razón factual para dudar del entorno.
+
+## F2.5B — Ejecución controlada final de fallo y reconciliación
+
+- Fecha: 2026-09-10. Autorización expresa para conservar la primera evidencia, crear exclusivamente el segundo ID `f25b0000-0000-4000-8000-000000000002`, desactivar temporalmente solo el cron Preview, usar el trigger acotado y enviar únicamente mensajes JSON a la Queue Preview.
+- Antecedente del primer intento: se creó `f25b0000-0000-4000-8000-000000000001`; el primer envío manual se hizo como `Texto`, no JSON, y el Worker lo descartó. El trigger se retiró y la fila quedó `pending`; después el cron activo la procesó normalmente. Quedó `synced`, `retry_count=0`, `notion_page_id=3d77abcb-cbb1-811f-a614-dee152e742ae` y marcadores nulos. ChatGPT verificó posteriormente exactamente una página Notion con ese ID y page ID.
+- Primera reanudación: se detuvo en precheck porque el primer sintético ya estaba `synced`, no `pending`. No se recreó trigger, no se enviaron mensajes y no hubo nuevas escrituras.
+- Precheck actual: PASS exacto. Repositorio correcto, rama `develop`, working tree limpio, HEAD y `origin/develop` en `0dc200da3fc4bd99c69f53c23056b007c4f4b65b`; `main` y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`; divergencia develop `0/0`. Segundo ID ausente, total D1 `3`, dos legacy neutralizadas en `failed`, primer sintético intacto y trigger `0`.
+- Invariantes F2.4D revalidados: retry interno `60 s`, stale `20 min`, `syncing` reciente sin claim, `syncing` stale reclamable, marcador durable que impide un nuevo CREATE ante cero coincidencias, una coincidencia que reconcilia y `synced` terminal.
+- Aislamiento inicial: Worker versión `eb4a5c21-90c2-403f-867e-5a956ca1619f`, D1 `234b26b3-813f-46c8-9784-36ccf3037abc`, Queue `solaz-contactos-preview-queue`, Notion test `9546f10e-0793-4153-8ae0-6db05ec20888`, secreto `NOTION_TOKEN` verificado solo por nombre, sin `EMAIL`; Queue con 2 producers y 1 consumer. Pages conservó Preview sobre D1/Queue Preview y Production sobre D1/Queue reales; hash técnico descargado `B69D1ADED33AE90097A1AB925C106F4FB5CC86B542C1B6D36E3A5945C2A09F5A`.
+- Cron controlado: se creó una configuración temporal idéntica a `workers/contact-sync/wrangler.preview.jsonc` salvo `crons: []`; no contenía secretos y nunca se versionó. Se desplegó el mismo código como versión `b12f89e0-97d2-4129-8cd9-dac5b9f866c1`. Dashboard confirmó cron count `0`, Queue consumer activo, bindings Preview/test intactos, secreto presente por nombre y ausencia de email.
+- Segundo sintético: inserción directa única en D1 Preview, `pending`, `retry_count=0`, sin page ID, `synced_at`, `sync_started_at` ni marcador. La operación afectó exactamente 1 fila y llevó el total a `4`.
+- Fallo objetivo: trigger `f25b_force_final_d1_failure` creado exclusivamente para el segundo ID y la transición `syncing → synced`, con aborto `f25b_forced_final_d1_failure`; count `1`. Se envió exactamente un objeto JSON `{"id":"f25b0000-0000-4000-8000-000000000002"}`. Tras el CREATE Notion y el aborto final D1, la fila quedó `syncing`, con `sync_started_at` y `notion_reconcile_started_at` presentes, `notion_page_id=NULL`, `synced_at=NULL`, `retry_count=0`, `next_attempt_at=NULL` y `last_error=NULL`.
+- Cleanup obligatorio: el trigger se eliminó inmediatamente después de registrar la evidencia; count verificado `0` antes de cualquier modificación adicional.
+- Retry automático: la fila permaneció intacta durante más de 90 segundos. El retry interno de `60 s` no pudo adquirir claim sobre un `syncing` reciente; estado y marcador permanecieron iguales y `retry_count` siguió en `0`.
+- Recuperación stale: se modificó únicamente `sync_started_at` a `datetime('now','-21 minutes')`, con guardas por ID, `syncing` y marcador no nulo; exactamente 1 fila afectada. El segundo envío JSON recuperó la fila stale, encontró la página existente y reconcilió sin un segundo CREATE.
+- Resultado del segundo caso: `sync_status=synced`, `notion_page_id=3d77abcb-cbb1-81b1-86b6-d5bf9486f0ac`, `synced_at=2026-09-10 20:59:16`, `retry_count=0`; `sync_started_at`, `next_attempt_at`, `notion_reconcile_started_at` y `last_error` nulos.
+- Idempotencia terminal: una tercera copia del mismo objeto JSON dejó sin cambios el estado, `synced_at`, page ID, retry count y conteo D1; no apareció una nueva fila.
+- D1 final: total `4`; dos legacy `failed` neutralizadas y dos sintéticos `synced`; ambos sintéticos se preservan como evidencia. No se leyó PII legacy. Trigger exacto y cualquier trigger `f25b%`: `0`.
+- Notion: no existía un mecanismo directo seguro disponible para contar páginas sin exponer el secreto y no se creó endpoint. La página y el segundo `notion_page_id` se preservan; ChatGPT debe verificar independientemente que existe exactamente una página para el segundo ID y que coincide con D1. CRM real no fue consultado ni modificado.
+- Restauración: se desplegó la configuración oficial versionada sin cambios como versión final `33bb3670-9af5-4572-8e7f-5edbf06c5d1f`; cron `*/5 * * * *`, Queue producer/consumer, D1 Preview, Notion test y secreto permanecen correctos, sin `EMAIL`, rutas ni Production. La configuración temporal se eliminó.
+- Integridad: SHA-256 final del Worker `CDC0B34F70825C165A61C824F5774C9ADC9190B8C7E7F97A8C09F827EFB0A1AE`; SHA-256 de `wrangler.preview.jsonc` `80DE08095F73EABEE3D0481C6D096AD2EFF5ADC21D8CF10ACA8DC05DE4A60D0C`; sin diffs funcionales ni temporales en el repositorio.
+- Pruebas: `node --check` PASS; Worker **44 PASS, 0 FAIL**; `npm ci` PASS con `129` paquetes y `0` vulnerabilidades. El build en Dropbox encontró `EBUSY` heredado sobre `_site` y no se forzó ni borró; en clon temporal limpio con historial, `npm ci` y build Eleventy PASS (`24` HTML, `742` copiados). `npm run qa` repitió únicamente el gap heredado de `qa:parity` por `functions/api/contact.js` frente a `main`, sin fallo nuevo.
+- Alcance final: Pages Preview, Production, `main`, CRM real, email, DNS, analítica y Ads intactos. Solo se versiona este documento. F2 permanece **ABIERTO**; F2.5B queda **COMPLETADO PARA REVISIÓN DE CHATGPT**.
 
 ## Reanudación F2.5A — checkpoint pre-secreto
 
@@ -1004,16 +1026,15 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F2.5A — preparación del entorno end-to-end aislado, cierre post-secreto.
+- Lote: F2.5B — ejecución controlada final de fallo post-Notion y reconciliación sin duplicado.
 - Fecha: 2026-09-10.
-- Precheck y continuidad: PASS; base inicial `49ebcfcb605dc06fd472b04976d614063139be4c`, checkpoint `b7a0655eb2c3805fd1ecf752ee4ab7855a6982e1`; `main`/`origin/main` permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`.
-- Archivos versionados: 1 creado (`workers/contact-sync/wrangler.preview.jsonc`), 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados. Temporales fuera del repositorio retirados o aislados.
-- D1: `solaz-contactos-preview` (`234b26b3-813f-46c8-9784-36ccf3037abc`), migraciones `0002`/`0003`, tres columnas nuevas verificadas, total `2`, neutralizadas `2`, elegibles `0`; sin lectura de PII.
-- Queue: `solaz-contactos-preview-queue` (`68c08b23b1c642439758c80aa831a9e3`), sin DLQ, `2` producers (Worker y Pages Preview) y `1` consumer (Worker).
-- Worker: `solaz-contact-sync-preview`, versión final `eb4a5c21-90c2-403f-867e-5a956ca1619f`, código F2.4D exacto, D1/Queue/cron `*/5 * * * *`/Notion test correctos; `NOTION_TOKEN` presente por nombre; sin `EMAIL` ni rutas de Production.
-- Aislamiento Notion: prueba temporal autorizada `200` para la base test y `404` para el CRM real; solo códigos HTTP, sin cuerpos, filas ni modificaciones. Variante temporal retirada y endpoint comprobado con `404` tras restaurar el Worker final.
-- Notion test: `CRM Solaz Studio — Pruebas Web E2E`, database `9546f10e-0793-4153-8ae0-6db05ec20888`, data source `a4b7252e-88e8-4d98-b12e-57e684a5e155`, esquema compatible con `ID envío web`; 0 filas antes de F2.5B y ningún contacto enviado.
-- Pages: Preview conserva `DB` → D1 Preview y añade `CONTACT_QUEUE` → Queue Preview; implementación post-binding confirmada activa. Production conservó exactamente `DB` → `cc1a1efa-7e4a-4e12-a9d9-d65b5cd56380` y `CONTACT_QUEUE` → `solaz-contactos-sync`.
-- Tests: sintaxis PASS; Worker **44 PASS, 0 FAIL**; `npm ci` temporal PASS, 0 vulnerabilidades; build PASS; dry-run PASS. Único gap: `qa:parity` heredado falla al comparar `functions/api/contact.js` con `main`; F2.5A no modificó esa Function ni el verificador.
-- Alcance: Production, CRM real, email, DNS, analítica y Ads intactos. Cero contactos sintéticos, cero pruebas de fallo/retry/reconciliación/duplicación.
-- Estado: F2 **ABIERTO**; F2.5A **COMPLETADO PARA REVISIÓN DE CHATGPT**; F2.5B **NO INICIADO**.
+- Precheck: PASS exacto; base `0dc200da3fc4bd99c69f53c23056b007c4f4b65b`, `main`/`origin/main` `880610411ecb4d66f652e8bfaf89e5794231409d`, árbol inicial limpio, segundo ID ausente, primer sintético y recursos Preview intactos.
+- Historia previa incorporada: el primer mensaje F2.5B fue `Texto` y se descartó; trigger retirado; el cron sincronizó luego el primer sintético con page ID `3d77abcb-cbb1-811f-a614-dee152e742ae`, cuya unicidad ChatGPT verificó. La primera reanudación se bloqueó sin nuevas escrituras al encontrarlo ya `synced`.
+- Control del cron: configuración temporal no versionada idéntica salvo `crons: []`; versión sin cron `b12f89e0-97d2-4129-8cd9-dac5b9f866c1`, bindings Preview/test y consumidor preservados. Restauración final con configuración oficial, cron `*/5 * * * *` y versión `33bb3670-9af5-4572-8e7f-5edbf06c5d1f`; temporal eliminado.
+- Prueba: segundo ID único insertado `pending`; trigger acotado creado; primer mensaje JSON produjo CREATE Notion y fallo final D1, dejando `syncing` con marcador. Trigger eliminado inmediatamente y count `0`. Tras más de 90 s, el retry de 60 s no adquirió claim. Solo `sync_started_at` se volvió stale; segundo JSON reconcilió la página existente sin segundo CREATE.
+- Resultado: segundo sintético `synced`, `retry_count=0`, marcadores y errores nulos, `notion_page_id=3d77abcb-cbb1-81b1-86b6-d5bf9486f0ac`. Tercer JSON confirmó idempotencia terminal sin cambios ni nueva fila.
+- D1 final: total `4`, dos legacy neutralizadas en `failed` y dos sintéticos `synced`; trigger exacto y cualquier `f25b%` en `0`. Evidencia preservada, sin lectura de PII legacy.
+- Notion: sin consulta directa segura disponible y sin endpoint adicional; ChatGPT debe verificar exactamente una página para el segundo ID y correspondencia con el page ID D1. CRM real no se consultó ni modificó.
+- Tests: sintaxis PASS; **44 PASS, 0 FAIL**; `npm ci` PASS, 129 paquetes y 0 vulnerabilidades; build limpio PASS con 24 HTML y 742 copiados. Solo persiste `qa:parity` heredado por `functions/api/contact.js` frente a `main`; no hubo fallo nuevo.
+- Archivos versionados: 0 creados, 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados; código y `wrangler.preview.jsonc` sin cambios, temporales eliminados.
+- Alcance: Pages Preview, Production, `main`, CRM real, email, DNS, analítica y Ads intactos. F2 **ABIERTO**; F2.5B **COMPLETADO PARA REVISIÓN DE CHATGPT**.
