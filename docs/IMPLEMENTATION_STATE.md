@@ -2,10 +2,11 @@
 
 - Fecha: 2026-09-10
 - Fase/lote: Reanudación F2.5A — preparación del entorno end-to-end aislado
-- Estado: **PAUSA MANUAL — INSTALAR NOTION_TOKEN**
+- Estado: **F2.5A COMPLETADO PARA REVISIÓN DE CHATGPT**
 - Rama: `develop`
 - Commit base: `49ebcfcb605dc06fd472b04976d614063139be4c`
-- Commit del lote: checkpoint pre-secreto con configuración Preview y estado durable; su SHA se verifica fuera del propio commit
+- Commit de checkpoint: `b7a0655eb2c3805fd1ecf752ee4ab7855a6982e1`
+- Commit de cierre: documental post-verificación; su SHA se verifica fuera del propio commit
 - Estado F1: **CERRADO**
 - Estado F2: **ABIERTO**
 - Estado F2.3: **CERRADO** por revisión de ChatGPT
@@ -15,8 +16,8 @@
 - Estado F2.4A: **BLOQUEADO**; su resultado histórico fue `UNAVAILABLE`
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
 - Cloudflare / Notion / recursos funcionales reales: solo recursos Preview/test autorizados; Production y CRM real intactos
-- Resultado: bloqueos previos resueltos; D1 preparada, Queue creada, configuración validada y Worker creado en modo inerte, sin triggers ni bindings
-- Siguiente paso: Seba instala manualmente `NOTION_TOKEN` en `solaz-contact-sync-preview` y responde `SECRETO INSTALADO`; no continuar antes
+- Resultado: circuito aislado F2.5A preparado y verificado sin enviar contactos: D1 Preview → Queue Preview → Worker Preview → Notion test; Pages Preview configurada solo con recursos Preview
+- Siguiente paso: revisión de ChatGPT. F2 permanece abierto y F2.5B no fue iniciado
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -43,6 +44,22 @@
 - Worker Preview inerte creado: `solaz-contact-sync-preview`, versión `9f379977-4195-4f95-8ea7-63c51525f6e3`, deployment al 100%. La versión expone handlers de código `queue`/`scheduled` pero tiene `bindings=[]`, cero secrets y ningún target; no hay D1, Queue, cron, ruta, Pages ni EMAIL conectado. La configuración temporal de despliegue se eliminó.
 - Pages Preview no fue modificada y Production permanece intacta. No se envió ningún contacto, no se ejecutó fallo/retry/reconciliación, y F2.5B no fue iniciado.
 - Estado exacto: **PAUSA MANUAL — INSTALAR NOTION_TOKEN** en el Worker `solaz-contact-sync-preview`. Esperar la frase `SECRETO INSTALADO` antes de cualquier verificación o activación posterior.
+
+## Cierre F2.5A — verificación post-secreto y activación aislada
+
+- Seba confirmó `SECRETO INSTALADO`. Cloudflare verificó únicamente el nombre `NOTION_TOKEN` y el tipo `secret_text`; el valor nunca fue leído, impreso, copiado, versionado ni documentado.
+- Prueba temporal expresamente autorizada: versión `77dd60c3-8bfa-42f5-a942-e1095290f9bc`, sin Queue consumer, cron, Pages ni EMAIL. Solo consultó metadata de ambas bases y devolvió códigos técnicos: base test `200`; CRM real `404`. No se consultaron filas, leads ni cuerpos de respuesta y no hubo modificaciones.
+- La variante temporal se retiró inmediatamente. Se volvió a desplegar el código F2.4D exacto del repositorio con `workers/contact-sync/wrangler.preview.jsonc`; versión final `eb4a5c21-90c2-403f-867e-5a956ca1619f`. El endpoint temporal fue comprobado después con HTTP `404`.
+- Worker final: handlers `queue` y `scheduled`; `DB` → `solaz-contactos-preview` (`234b26b3-813f-46c8-9784-36ccf3037abc`), `CONTACT_QUEUE` → `solaz-contactos-preview-queue`, `NOTION_DATABASE_ID` → base test y secreto `NOTION_TOKEN`. El despliegue registró consumer de la Queue Preview y cron `*/5 * * * *`. No existe binding `EMAIL`, ruta ni recurso de Production.
+- Queue final previa al siguiente despliegue de Pages: `solaz-contactos-preview-queue` (`68c08b23b1c642439758c80aa831a9e3`), sin DLQ, `1` producer y `1` consumer correspondientes al Worker Preview.
+- Pages antes del cambio: Preview tenía solo `DB` → D1 Preview; Production tenía `DB` → `cc1a1efa-7e4a-4e12-a9d9-d65b5cd56380` y `CONTACT_QUEUE` → `solaz-contactos-sync`. SHA-256 de la descarga técnica previa: `3789E6B521E3FCF9A9D8A13BC26C30CCF2E47F1D675E376760B532577E858488`.
+- Pages después del cambio: el panel se fijó expresamente en `/settings/preview` y se añadió solo `CONTACT_QUEUE` → `solaz-contactos-preview-queue`; `DB` Preview conservó el ID esperado. Una nueva descarga registró SHA-256 `62C9E73855E18B575658A78E49393CE45F7B4B64AA71C4F63D061EAB2E8377CE`. Production conservó exactamente sus dos bindings previos. Cloudflare indicó que el binding Preview entra en vigor en la siguiente implementación Preview.
+- D1 final verificada sin PII: `26` columnas; `sync_started_at`, `next_attempt_at` y `notion_reconcile_started_at` existen como `TEXT` nullable; total `2`, neutralizadas `2`, elegibles `0`, estado agregado `failed=2`.
+- Notion test conserva el contrato verificado: `CRM Solaz Studio — Pruebas Web E2E`, database `9546f10e-0793-4153-8ae0-6db05ec20888`, data source `a4b7252e-88e8-4d98-b12e-57e684a5e155`, 11 propiedades e `ID envío web` como texto. La base estaba vacía antes de F2.5B y no se envió ningún contacto en F2.5A.
+- Tests: sintaxis PASS; Worker **44 PASS, 0 FAIL**; `npm ci` PASS en clon temporal limpio con `129` paquetes y `0` vulnerabilidades; build Eleventy PASS (`24` HTML, `742` copiados); dry-run Wrangler PASS. `npm run qa` mantuvo el único FAIL heredado conocido de `qa:parity` por comparar `functions/api/contact.js` contra `main`; F2.5A no modificó esa Function ni el verificador.
+- Archivos versionados del lote: 1 creado (`workers/contact-sync/wrangler.preview.jsonc`), 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados. Las configuraciones temporales de despliegue/prueba y las descargas técnicas quedaron fuera del repositorio y fueron retiradas o aisladas en el directorio temporal.
+- Producción y alcance: `main` permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`; CRM real, email, DNS, analítica, Ads y recursos web de Production no fueron modificados. F2 permanece **ABIERTO**; F2.5A queda **COMPLETADO PARA REVISIÓN**; F2.5B **NO FUE INICIADO**.
+- Rollback: retirar primero `CONTACT_QUEUE` de Pages Preview; desplegar el Worker Preview sin consumer ni cron; conservar D1 para diagnóstico; no reactivar las 2 filas neutralizadas ni tocar Production. Las migraciones aditivas no se revierten automáticamente.
 
 ## F2.5A — Preparación del entorno end-to-end aislado — BLOQUEADO
 
@@ -987,14 +1004,16 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: Reanudación F2.5A — checkpoint previo a instalación manual del secreto.
+- Lote: F2.5A — preparación del entorno end-to-end aislado, cierre post-secreto.
 - Fecha: 2026-09-10.
-- Precheck: PASS; `develop`/`origin/develop` en `49ebcfcb605dc06fd472b04976d614063139be4c`, `main`/`origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`; se conservó el único archivo local válido ya creado.
-- D1: `solaz-contactos-preview` (`234b26b3-813f-46c8-9784-36ccf3037abc`), 2 filas legacy neutralizadas sin PII, total 2, elegibles 0; migraciones `0002`/`0003` aplicadas y tres columnas F2.4D verificadas.
-- Queue: `solaz-contactos-preview-queue` (`68c08b23b1c642439758c80aa831a9e3`), sin DLQ y todavía con 0 productores/0 consumidores.
-- Notion test: `CRM Solaz Studio — Pruebas Web E2E`, database `9546f10e-0793-4153-8ae0-6db05ec20888`, data source `a4b7252e-88e8-4d98-b12e-57e684a5e155`, schema compatible con `ID envío web`, 0 filas.
-- Worker: `solaz-contact-sync-preview`, versión inerte `9f379977-4195-4f95-8ea7-63c51525f6e3`; bindings vacíos, cero secrets y ningún target. Configuración temporal eliminada.
-- Archivo técnico: creado `workers/contact-sync/wrangler.preview.jsonc`; excluye token, EMAIL, rutas y Production. Único otro archivo modificado: este documento.
-- Tests: sintaxis PASS; Worker **44 PASS, 0 FAIL**; `npm ci` temporal PASS con 0 vulnerabilidades; build PASS; dry-run PASS. `npm run qa` ejecutado con build PASS y paridad FAIL exclusivamente por la comparación histórica conocida de `functions/api/contact.js` contra `main`, sin cambio F2.5A en esa Function.
-- Plataforma real: Pages Preview aún sin cambios; Production, `main`, CRM real, email, DNS, analítica y Ads intactos. Cero contactos enviados y F2.5B no iniciado.
-- Estado: **PAUSA MANUAL — INSTALAR NOTION_TOKEN**. El Worker preparado es `solaz-contact-sync-preview`; esperar `SECRETO INSTALADO`.
+- Precheck y continuidad: PASS; base inicial `49ebcfcb605dc06fd472b04976d614063139be4c`, checkpoint `b7a0655eb2c3805fd1ecf752ee4ab7855a6982e1`; `main`/`origin/main` permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Archivos versionados: 1 creado (`workers/contact-sync/wrangler.preview.jsonc`), 1 modificado (`docs/IMPLEMENTATION_STATE.md`) y 0 eliminados. Temporales fuera del repositorio retirados o aislados.
+- D1: `solaz-contactos-preview` (`234b26b3-813f-46c8-9784-36ccf3037abc`), migraciones `0002`/`0003`, tres columnas nuevas verificadas, total `2`, neutralizadas `2`, elegibles `0`; sin lectura de PII.
+- Queue: `solaz-contactos-preview-queue` (`68c08b23b1c642439758c80aa831a9e3`), sin DLQ, `1` producer y `1` consumer del Worker al cierre previo al siguiente despliegue Pages.
+- Worker: `solaz-contact-sync-preview`, versión final `eb4a5c21-90c2-403f-867e-5a956ca1619f`, código F2.4D exacto, D1/Queue/cron `*/5 * * * *`/Notion test correctos; `NOTION_TOKEN` presente por nombre; sin `EMAIL` ni rutas de Production.
+- Aislamiento Notion: prueba temporal autorizada `200` para la base test y `404` para el CRM real; solo códigos HTTP, sin cuerpos, filas ni modificaciones. Variante temporal retirada y endpoint comprobado con `404` tras restaurar el Worker final.
+- Notion test: `CRM Solaz Studio — Pruebas Web E2E`, database `9546f10e-0793-4153-8ae0-6db05ec20888`, data source `a4b7252e-88e8-4d98-b12e-57e684a5e155`, esquema compatible con `ID envío web`; 0 filas antes de F2.5B y ningún contacto enviado.
+- Pages: Preview conserva `DB` → D1 Preview y añade `CONTACT_QUEUE` → Queue Preview. Production conservó exactamente `DB` → `cc1a1efa-7e4a-4e12-a9d9-d65b5cd56380` y `CONTACT_QUEUE` → `solaz-contactos-sync`.
+- Tests: sintaxis PASS; Worker **44 PASS, 0 FAIL**; `npm ci` temporal PASS, 0 vulnerabilidades; build PASS; dry-run PASS. Único gap: `qa:parity` heredado falla al comparar `functions/api/contact.js` con `main`; F2.5A no modificó esa Function ni el verificador.
+- Alcance: Production, CRM real, email, DNS, analítica y Ads intactos. Cero contactos sintéticos, cero pruebas de fallo/retry/reconciliación/duplicación.
+- Estado: F2 **ABIERTO**; F2.5A **COMPLETADO PARA REVISIÓN DE CHATGPT**; F2.5B **NO INICIADO**.
