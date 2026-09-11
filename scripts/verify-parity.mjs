@@ -28,10 +28,6 @@ function normalizePath(path) {
   return path.split(sep).join("/");
 }
 
-function normalizeLineEndings(value) {
-  return value.replace(/\r\n?/g, "\n");
-}
-
 async function pathExists(path) {
   try {
     await access(path);
@@ -79,72 +75,16 @@ function assertSameSet(actual, expected, label) {
   }
 }
 
-function normalizeTagAttributes(attributes) {
-  return attributes.replace(/\s+/g, " ").trim();
-}
-
-function canonicalizeJson(value) {
-  if (Array.isArray(value)) {
-    return value.map(canonicalizeJson);
-  }
-  if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.keys(value)
-        .sort()
-        .map((key) => [key, canonicalizeJson(value[key])])
-    );
-  }
-  return value;
-}
-
-function analyzeHtml(html, label) {
-  const normalized = normalizeLineEndings(html);
-  const styles = [];
-  const scripts = [];
-  const jsonLd = [];
-  let styleIndex = 0;
-  let scriptIndex = 0;
-  let jsonLdIndex = 0;
-
-  let remainder = normalized.replace(
-    /<style\b([^>]*)>([\s\S]*?)<\/style>/gi,
-    (_match, attributes, content) => {
-      styles.push({ attributes: normalizeTagAttributes(attributes), content });
-      return `<parity-style data-index="${styleIndex++}"></parity-style>`;
+function assertJsonLdIsParseable(html, label) {
+  for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+    const [, attributes, content] = match;
+    if (!/\btype\s*=\s*["']application\/ld\+json["']/i.test(attributes)) continue;
+    try {
+      JSON.parse(content.trim());
+    } catch (error) {
+      throw new Error(`${label} contains invalid JSON-LD: ${error.message}`);
     }
-  );
-
-  remainder = remainder.replace(
-    /<script\b([^>]*)>([\s\S]*?)<\/script>/gi,
-    (_match, attributes, content) => {
-      const normalizedAttributes = normalizeTagAttributes(attributes);
-      if (/\btype\s*=\s*["']application\/ld\+json["']/i.test(attributes)) {
-        let parsed;
-        try {
-          parsed = JSON.parse(content.trim());
-        } catch (error) {
-          throw new Error(`${label} contains invalid JSON-LD: ${error.message}`);
-        }
-        jsonLd.push({
-          attributes: normalizedAttributes,
-          canonical: JSON.stringify(canonicalizeJson(parsed))
-        });
-        return `<parity-jsonld data-index="${jsonLdIndex++}"></parity-jsonld>`;
-      }
-
-      scripts.push({ attributes: normalizedAttributes, content });
-      return `<parity-script data-index="${scriptIndex++}"></parity-script>`;
-    }
-  );
-
-  const structure = remainder.replace(/>\s+</g, "><").trim();
-  const visibleText = remainder
-    .replace(/<!--[\s\S]*?-->/g, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  return { styles, scripts, jsonLd, structure, visibleText };
+  }
 }
 
 async function hashFile(path) {
@@ -231,7 +171,7 @@ assertSameSet(outputHtmlFiles, EXPECTED_HTML_FILES, "Public HTML output set");
 
 for (const route of EXPECTED_HTML_FILES) {
   const generatedHtml = await readFile(join(outputRoot, route), "utf8");
-  analyzeHtml(generatedHtml, `generated ${route}`);
+  assertJsonLdIsParseable(generatedHtml, `generated ${route}`);
   if (
     !/^<!DOCTYPE html>/i.test(generatedHtml) ||
     !/<html\b[^>]*\blang="es"/i.test(generatedHtml) ||

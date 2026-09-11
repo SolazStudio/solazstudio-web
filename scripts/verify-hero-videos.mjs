@@ -88,7 +88,8 @@ function normalizedTags(html, tagName) {
 }
 
 function scriptBlocks(html) {
-  return html.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) ?? [];
+  return (html.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) ?? [])
+    .map((block) => block.replace(/\r\n?/g, "\n"));
 }
 
 function sameJson(left, right, message) {

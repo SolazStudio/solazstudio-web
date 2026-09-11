@@ -21,6 +21,10 @@ for (const route of EXPECTED_HTML_FILES) {
   const ids = [...html.matchAll(/\bid\s*=\s*["']([^"']+)["']/gi)].map(match => match[1]);
   const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
 
+  if (!/<html\b[^>]*\blang=["']es["']/i.test(html)) {
+    throw new Error(`${route}: falta html lang=es`);
+  }
+
   if (countMatches(html, /<a class="skip-link" href="#main-content">Saltar al contenido principal<\/a>/g) !== 1) {
     throw new Error(`${route}: se esperaba exactamente un skip link con texto y href canónicos`);
   }
