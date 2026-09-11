@@ -1,16 +1,17 @@
 # Estado de implementación
 
 - Fecha: 2026-09-11
-- Fase/lote: F3.3 — optimización conservadora de videos hero
-- Estado: **F3.3 COMPLETADO PARA REVISIÓN DE CHATGPT**
+- Fase/lote: F3.CIERRE — cierre durable de F3 y continuidad hacia F4
+- Estado: **F3 CERRADA**
 - Rama: `develop`
-- Commit base: `3f07bc311ed25708528b5b2c3226bc64726737f3`
+- Commit base: `fffa1b2854c19ca84b7e688a6f4376d49bfa2152`
 - Commit de cierre: documental post-verificación; su SHA se verifica fuera del propio commit
 - Estado F1: **CERRADO**
 - Estado F2: **CERRADO**
 - Estado F3.1: **CERRADO** por revisión independiente de ChatGPT y validación visual de Seba en Preview automático
 - Estado F3.2: **CERRADO** por revisión independiente de ChatGPT y validación de Seba
-- Estado F3.3: **COMPLETADO PARA REVISIÓN DE CHATGPT**; pendiente únicamente de revisión independiente y Preview
+- Estado F3.3: **CERRADO** por revisión independiente de ChatGPT y validación de Seba en Preview automático
+- Estado F3: **CERRADA**
 - Estado F2.5B: **CERRADO** por revisión de ChatGPT
 - Estado F2.5A: **CERRADO** por revisión de ChatGPT
 - Estado F2.3: **CERRADO** por revisión de ChatGPT
@@ -20,8 +21,8 @@
 - Estado F2.4A: **BLOQUEADO / UNAVAILABLE (histórico)**; no constituye un pendiente activo
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
 - Cloudflare / Notion / recursos funcionales reales: solo recursos Preview/test autorizados; Production y CRM real intactos
-- Resultado: los tres videos hero conservan reproducción automática y contenido, usan política explícita `preload="metadata"` y disponen de poster; Home usa un fotograma del propio `hero-reel.mp4`
-- Siguiente paso: revisión independiente de ChatGPT/Seba en el Preview automático de F3.3; F3 todavía no se declara cerrada y no se inicia F4
+- Resultado: F3 cerrada como conjunto con carga progresiva, dimensiones intrínsecas, imágenes responsivas 480/960 y videos hero con posters/preload conservador, preservando contenido y autoplay
+- Siguiente paso: preparar un lote sustantivo de F4 solo después de revisar fuentes/estado, definir alcance y obtener aprobación explícita de Seba; F4 **NO INICIADA**
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -55,8 +56,49 @@
 - `node --check scripts/verify-hero-videos.mjs` y `git diff --check`: PASS. No se ejecutaron `qa:media`, `qa:parity`, navegador, Lighthouse, PageSpeed, scroll, capturas, currentSrc, medición de requests o bytes de red.
 - Archivos del lote: 2 creados (`img/hero-reel-poster.webp`, `scripts/verify-hero-videos.mjs`), 5 modificados (`src/index.njk`, `src/produccion-audiovisual.njk`, `src/fotografia-corporativa.njk`, `package.json` y este documento), 0 eliminados.
 - F3.1 y F3.2 permanecen intactos: no cambiaron Portfolio, proyectos, `config/responsive-images.js`, `scripts/verify-media-loading.mjs`, originales de galerías, derivados, loading/decoding, lightbox ni videos de proyecto.
-- Cero acciones manuales sobre Cloudflare, Pages, Preview, Production, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads. El único Preview autorizado será la consecuencia automática del push a `origin/develop`; `main`/Production permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`.
-- F3.3 queda pendiente únicamente de revisión independiente y validación visual/runtime del Preview por ChatGPT/Seba. F3 todavía no se declara cerrada dentro de este commit y F4 no fue iniciado.
+- Cero acciones manuales sobre Cloudflare, Pages, Preview, Production, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads. El Preview automático fue la única consecuencia autorizada del push a `origin/develop`; `main`/Production permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Al cierre técnico del commit F3.3 quedaron pendientes únicamente la revisión independiente y la validación visual/runtime del Preview por ChatGPT/Seba. Ambas se completaron después y se registran en la sección de cierre siguiente; F4 no fue iniciado.
+
+## Cierre de F3 por revisión de ChatGPT y validación de Seba
+
+- ChatGPT revisó independientemente el commit F3.3 `fffa1b2854c19ca84b7e688a6f4376d49bfa2152` (`perf: optimize hero video loading`) y confirmó que solo afectó los archivos autorizados.
+- La revisión confirmó que los tres heroes conservaron `autoplay`, `muted`, `loop` y `playsinline`; las URLs MP4 permanecieron idénticas; `preload` cambió de `auto` a `metadata`; los tres heroes quedaron con poster; y Home usa el poster extraído del propio `hero-reel.mp4`.
+- La misma revisión confirmó que F3.1 y F3.2 quedaron intactos y que `main` permaneció en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Seba revisó el Preview automático F3.3 y respondió: “Todo Ok”. Esa validación completa el criterio perceptual/runtime que estaba pendiente.
+- F3.3 queda **CERRADO**. F3 queda **CERRADA** como conjunto: carga progresiva de Portfolio/galerías, dimensiones intrínsecas, imágenes responsivas 480/960 con `srcset`/`sizes`, videos hero con posters y preload conservador, y autoplay preservado.
+
+## PUNTO DE CONTINUIDAD — CIERRE F3 / ENTRADA A F4
+
+### Estado general
+
+- F1 **CERRADO**.
+- F2 **CERRADO**.
+- F3 **CERRADA**.
+- F4 **NO INICIADA**.
+- `main` continúa siendo Production y permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- `develop` es la rama de implementación y revisión.
+
+### Resultado acumulado F3
+
+- F3.1: lazy/progressive loading sobre las 719 imágenes preservadas, con el mismo orden editorial y todas accesibles mediante scroll; dimensiones intrínsecas; sin curaduría; autoplay no fue tocado.
+- F3.2: derivados WebP responsivos 480/960, `srcset`/`sizes`, originales conservados y usados por lightbox; 719 imágenes cubiertas y 1.398 derivados de build no versionados.
+- F3.3: tres videos hero con `autoplay`/`muted`/`loop`/`playsinline` preservados, `preload="metadata"` y poster; Home usa `img/hero-reel-poster.webp` extraído del propio MP4; ningún MP4 ni URL cambió.
+
+### Restricciones permanentes relevantes
+
+- No rediseñar ni cambiar identidad, colores, tipografías, fotos, videos, navegación, copy o URLs sin aprobación expresa.
+- No existe curaduría autorizada de Portfolio; el orden actual de imágenes es editorial y todas deben seguir disponibles mediante scroll.
+- Autoplay de los heroes es requisito editorial.
+- No tocar `main`/Production sin autorización expresa. Un push a `develop` puede generar Preview automático.
+- Preview debe permanecer aislado de recursos reales por defecto.
+- No trasladar diagnósticos técnicos a Seba.
+
+### Entrada a F4
+
+- Siguiente fase: F4 — UX, accesibilidad, privacidad y seguridad.
+- F4 todavía **NO está aprobada ni iniciada**.
+- Antes de preparar el primer lote F4, ChatGPT debe revisar las fuentes permanentes y este estado durable, definir un lote sustantivo, explicar objetivo, cambios, límites, riesgos, pruebas, rollback y permisos, y obtener aprobación explícita de Seba.
+- `sebaogalde.cl` solo puede usarse en F4 como base de investigación o estructura para páginas legales. No se copiarán su identidad, diseño ni contenido legal literalmente.
 
 ## F3.2 — Imágenes responsivas para Portfolio y galerías
 
@@ -1145,22 +1187,16 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F3.3 — optimización conservadora de videos hero.
+- Lote: F3.CIERRE — cierre durable de F3 y continuidad hacia F4.
 - Fecha: 2026-09-11.
-- Cierre heredado: F1, F2, F3.1 y F3.2 **CERRADOS**; F3.2 fue revisado independientemente por ChatGPT y validado por Seba.
-- Precheck Git: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, working tree limpio, HEAD y `origin/develop` en `3f07bc311ed25708528b5b2c3226bc64726737f3`, `main` y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`, divergencia `0/0`.
-- Archivos: 2 creados (`img/hero-reel-poster.webp`, `scripts/verify-hero-videos.mjs`), 5 modificados (`src/index.njk`, `src/produccion-audiovisual.njk`, `src/fotografia-corporativa.njk`, `package.json`, este documento) y 0 eliminados. `package-lock.json` intacto.
-- Home: source antes/después `https://media.solazstudio.cl/hero/hero-reel.mp4`; poster `img/hero-reel-poster.webp`; autoplay/muted/loop/playsinline intactos; preload `auto → metadata`.
-- Producción Audiovisual: source antes/después `https://media.solazstudio.cl/hero/hero-produccion-audiovisual.mp4`; poster reutilizado `img/produccion-audiovisual.webp`; autoplay/muted/loop/playsinline intactos; preload `auto → metadata`.
-- Fotografía Corporativa: source antes/después `https://media.solazstudio.cl/hero/hero-fotografia-corporativa.mp4`; poster reutilizado `img/fotografia-corporativa.webp`; autoplay/muted/loop/playsinline intactos; preload `auto → metadata`.
-- Poster Home: primer fotograma decodificable del propio `hero-reel.mp4`, descargado temporalmente con Node 24 y convertido mediante `ffmpeg-static@5.2.0`/libwebp calidad 82; WebP válido `1920 × 1080`, `283.010 B`. MP4 y herramienta temporales eliminados.
-- Integridad: ningún MP4, URL, codec, fallback interno, clase, aria, control visual, copy, CSS o JavaScript funcional cambió. No se añadió controls ni lógica para iniciar o retrasar autoplay.
-- Build: único `npm run build` PASS en clon temporal limpio, `225,68 s`, 24 HTML y 743 archivos copiados. El workspace carecía del ejecutable Eleventy local; no se alteró su `node_modules` y no se repitió el build.
-- QA: `npm run qa:video` PASS; `node --check scripts/verify-hero-videos.mjs` PASS; `git diff --check` PASS. No se ejecutaron `qa:media` ni `qa:parity`.
-- Browser/red: no se abrió navegador, Preview, Lighthouse o PageSpeed; no hubo scroll, capturas, currentSrc, requests medidos ni bytes de red medidos o inventados.
-- F3.1/F3.2: intactos; sin cambios en Portfolio, proyectos, pipeline responsivo, QA media, originales/derivados de galerías, lightbox o videos de proyecto.
-- Externos: cero escrituras Cloudflare, Pages, Preview, Production, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads. El push a `origin/develop` es el único disparador del Preview automático autorizado; `main` permanece intacta.
-- Commit y push: un único commit con mensaje exacto `perf: optimize hero video loading`, exclusivamente a `origin/develop`; SHA y sincronía se verifican fuera del commit. Sin rama, PR, merge, rebase, force push ni deploy manual.
-- Rollback: revertir únicamente el commit F3.3 en `develop`; retirará el poster Home, devolverá preload auto, quitará los tres posters y `qa:video`. No revertir F3.1/F3.2 ni tocar `main` o Cloudflare manualmente.
-- Continuidad: F3.3 queda técnicamente completado para revisión independiente y Preview automático. F3 todavía no se declara cerrada; F4 no fue iniciado.
+- Base exacta: `fffa1b2854c19ca84b7e688a6f4376d49bfa2152`; repositorio correcto, `develop`, working tree inicial limpio, HEAD igual a `origin/develop` y divergencia `0/0`.
+- Único archivo modificado: `docs/IMPLEMENTATION_STATE.md`; 0 creados y 0 eliminados.
+- F3.3 **CERRADO** tras revisión independiente de ChatGPT del commit `fffa1b2854c19ca84b7e688a6f4376d49bfa2152` y validación del Preview automático por Seba: “Todo Ok”.
+- F3 **CERRADA** como conjunto; F1, F2, F3.1 y F3.2 permanecen cerrados.
+- Punto de Continuidad añadido con estado general, resultado acumulado de F3, restricciones permanentes y entrada controlada a F4.
+- F4 **NO INICIADA** y todavía no aprobada.
+- `git diff --check`: PASS. Cero cambios funcionales y cero ejecución innecesaria de npm, build, QA técnico, navegador, Lighthouse o Preview.
+- `main`/Production intacta en `880610411ecb4d66f652e8bfaf89e5794231409d`; cero modificaciones manuales de recursos externos.
+- Commit y push: un único commit con mensaje exacto `docs: close F3 and record continuity`, exclusivamente a `origin/develop`; SHA y sincronía se verifican fuera del commit.
+- Rollback: revertir únicamente el commit documental F3.CIERRE en `develop`; no tocar los commits funcionales F3.1/F3.2/F3.3 ni `main`.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
