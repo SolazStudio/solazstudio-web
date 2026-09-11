@@ -1,17 +1,19 @@
 # Estado de implementación
 
 - Fecha: 2026-09-11
-- Fase/lote: F3.CIERRE — cierre durable de F3 y continuidad hacia F4
-- Estado: **F3 CERRADA**
+- Fase/lote: F4.1 — accesibilidad global y validación de hostname de Turnstile
+- Estado: **F4.1 COMPLETADO PARA REVISIÓN**; no cerrado hasta revisión independiente
 - Rama: `develop`
-- Commit base: `fffa1b2854c19ca84b7e688a6f4376d49bfa2152`
-- Commit de cierre: documental post-verificación; su SHA se verifica fuera del propio commit
+- Commit base: `77ba55fb6b7eeb0352a10d276671684034160f65`
+- Commit del lote: funcional post-verificación; su SHA se verifica fuera del propio commit
 - Estado F1: **CERRADO**
 - Estado F2: **CERRADO**
 - Estado F3.1: **CERRADO** por revisión independiente de ChatGPT y validación visual de Seba en Preview automático
 - Estado F3.2: **CERRADO** por revisión independiente de ChatGPT y validación de Seba
 - Estado F3.3: **CERRADO** por revisión independiente de ChatGPT y validación de Seba en Preview automático
 - Estado F3: **CERRADA**
+- Estado F4.1: **COMPLETADO PARA REVISIÓN**; validación runtime/perceptual del skip link pendiente para ChatGPT/Seba
+- Estado F4: **EN CURSO**; ningún lote posterior iniciado
 - Estado F2.5B: **CERRADO** por revisión de ChatGPT
 - Estado F2.5A: **CERRADO** por revisión de ChatGPT
 - Estado F2.3: **CERRADO** por revisión de ChatGPT
@@ -20,9 +22,9 @@
 - Estado F2.4B: **CERRADO** por revisión de ChatGPT; su resultado `MISMATCH` descartó “CRM Seba Ogalde”
 - Estado F2.4A: **BLOQUEADO / UNAVAILABLE (histórico)**; no constituye un pendiente activo
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Cloudflare / Notion / recursos funcionales reales: solo recursos Preview/test autorizados; Production y CRM real intactos
-- Resultado: F3 cerrada como conjunto con carga progresiva, dimensiones intrínsecas, imágenes responsivas 480/960 y videos hero con posters/preload conservador, preservando contenido y autoplay
-- Siguiente paso: preparar un lote sustantivo de F4 solo después de revisar fuentes/estado, definir alcance y obtener aprobación explícita de Seba; F4 **NO INICIADA**
+- Cloudflare / Notion / recursos funcionales reales: sin acciones ni escrituras en F4.1; Production, Preview, CRM real y recursos externos intactos
+- Resultado: skip link global determinista en 24/24 HTML y validación server-side del `hostname` de Turnstile contra el origen autorizado, sin ampliar orígenes ni modificar el formulario
+- Siguiente paso: revisión independiente de ChatGPT y validación runtime/perceptual del skip link por ChatGPT/Seba; no iniciar otro lote F4 antes de esa revisión
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -35,6 +37,29 @@
 
 - Todo traspaso entre chats debe conservar la situación técnica real, incluidos los hechos verificados, decisiones todavía no tomadas, gaps abiertos, riesgos conocidos, recursos externos afectados o intactos y la razón exacta del siguiente paso. Un PUNTO DE CONTINUIDAD no debe simplificar el estado de forma que convierta hipótesis en decisiones.
 - No se repetirá automáticamente la preparación o confirmación del entorno Codex después de cada traspaso cuando el proyecto y entorno ya estén establecidos y no exista evidencia de cambio. Se volverá a verificar solo cuando haya una razón factual para dudar del entorno.
+
+## F4.1 — Accesibilidad global y validación de hostname de Turnstile
+
+### Implementación
+
+- Base exacta `77ba55fb6b7eeb0352a10d276671684034160f65`: repositorio correcto, rama `develop`, working tree inicial limpio, HEAD igual a `origin/develop`, divergencia `0/0` y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- El layout base emite exactamente un enlace `Saltar al contenido principal` con `href="#main-content"` antes de la navegación principal. Se oculta visualmente en reposo y se vuelve visible al recibir foco, sin JavaScript, librerías ni cambios de identidad visual.
+- Las 24 plantillas públicas conservan su único `<main>` y ahora lo identifican como `main-content`; no se añadió un segundo landmark ni se alteró la jerarquía. Portfolio conserva su clase `.gallery`, usada por CSS y JavaScript, y cambia únicamente el ID anterior no referenciado por el código local.
+- `functions/api/contact.js` conserva la política de orígenes: `https://solazstudio.cl`, `https://www.solazstudio.cl` y únicamente un Preview HTTPS same-origin bajo `*.solazstudio-web.pages.dev`. La respuesta de Siteverify ahora requiere `success === true`, un `hostname` válido y su coincidencia con el hostname derivado del Origin autorizado —o de la URL de request cuando Origin está ausente—.
+- Un `hostname` ausente, malformado o distinto se rechaza con el comportamiento existente `400 / verificacion_fallida`; un Origin no autorizado continúa rechazándose antes de Siteverify con `403 / origen_no_permitido`. No se validó `action`, no se añadió rate limiting y no cambiaron sitekey, secreto, configuración Turnstile, formularios, campos ni JavaScript cliente.
+- F-09 —anuncios live de estado— y F-10 —`aria-pressed` en filtros— permanecen fuera de alcance e intactos. El contenido legal quedó intacto y sus dos páginas solo reciben el skip link/ID global; no cambiaron cookies, privacidad, navegación, copy, URLs, D1, Queue, Worker, Notion, Portfolio/media ni los recorridos de formulario.
+
+### QA y alcance
+
+- `npm run qa` PASS. Build Eleventy limpio: 24 HTML y 743 archivos copiados. `qa:media` PASS para 719 imágenes y 1.398 derivados; `qa:video` PASS para los tres heroes y autoplay preservado; `qa:skip-link` PASS 24/24; mocks Turnstile PASS en los siete escenarios obligatorios más un hostname malformado —9 tests al contar el contenedor—; `qa:scope` PASS contra la base F4.1; integridad de output PASS para 24 HTML, 24 templates y 2.165 archivos públicos.
+- Sintaxis PASS para `functions/api/contact.js` y los cuatro scripts creados/modificados de F4.1. Las pruebas Turnstile usaron únicamente `fetch`, D1 y Queue simulados; no enviaron una solicitud real, no persistieron datos y no tocaron secretos.
+- La compuerta exacta de alcance reconstruye desde la base cada cambio permitido del layout, las 24 plantillas y la Function; rechaza cualquier archivo ajeno. Confirma así originales, orden editorial, lightbox, videos/autoplay, formularios, backend no autorizado y activos públicos intactos.
+- `qa:parity` se actualizó de forma acotada porque la comparación histórica directa contra `main` rechazaba cambios ya cerrados de F1/F3 antes de evaluar F4.1. Ahora conserva la integridad de la superficie generada, JSON-LD, originales y archivos públicos; los deltas F3/F4 quedan protegidos por `qa:media`, `qa:video`, `qa:skip-link`, mocks backend y la nueva compuerta exacta contra `77ba55f`.
+- La primera instalación local encontró un `EBUSY` transitorio dentro de `node_modules`; la repetición idéntica de `npm ci` terminó PASS con 148 paquetes y no modificó `package.json` ni `package-lock.json`. El intento de build anterior no había comenzado porque Eleventy aún no estaba instalado.
+- Archivos del lote: 3 creados (`scripts/verify-skip-link.mjs`, `scripts/verify-turnstile-hostname.test.mjs`, `scripts/verify-f4-scope.mjs`), 29 modificados —24 plantillas, layout base, Function, `package.json`, verificador de output y este documento— y 0 eliminados. `_site` y `node_modules` permanecen sin versionar.
+- `git diff --check`: PASS. La revisión final del diff confirmó el alcance exacto. No hubo navegador, Lighthouse ni afirmación de resultado perceptual. La visibilidad y navegación por teclado del skip link quedan pendientes de validación runtime por ChatGPT/Seba en el Preview automático posterior al push.
+- Cero acciones manuales en Cloudflare, Pages, Preview, Production, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads. `main`/Production permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- Estado: F4.1 **COMPLETADO PARA REVISIÓN**, no cerrado. No se inició F4.2 ni otro lote. Rollback: revertir únicamente el commit `a11y: add skip link and validate Turnstile hostname` en `develop`; no tocar F1/F2/F3 ni `main`.
 
 ## F3.3 — Optimización conservadora de videos hero
 
@@ -1187,16 +1212,15 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F3.CIERRE — cierre durable de F3 y continuidad hacia F4.
+- Lote: F4.1 — accesibilidad global y validación de hostname de Turnstile.
 - Fecha: 2026-09-11.
-- Base exacta: `fffa1b2854c19ca84b7e688a6f4376d49bfa2152`; repositorio correcto, `develop`, working tree inicial limpio, HEAD igual a `origin/develop` y divergencia `0/0`.
-- Único archivo modificado: `docs/IMPLEMENTATION_STATE.md`; 0 creados y 0 eliminados.
-- F3.3 **CERRADO** tras revisión independiente de ChatGPT del commit `fffa1b2854c19ca84b7e688a6f4376d49bfa2152` y validación del Preview automático por Seba: “Todo Ok”.
-- F3 **CERRADA** como conjunto; F1, F2, F3.1 y F3.2 permanecen cerrados.
-- Punto de Continuidad añadido con estado general, resultado acumulado de F3, restricciones permanentes y entrada controlada a F4.
-- F4 **NO INICIADA** y todavía no aprobada.
-- `git diff --check`: PASS. Cero cambios funcionales y cero ejecución innecesaria de npm, build, QA técnico, navegador, Lighthouse o Preview.
-- `main`/Production intacta en `880610411ecb4d66f652e8bfaf89e5794231409d`; cero modificaciones manuales de recursos externos.
-- Commit y push: un único commit con mensaje exacto `docs: close F3 and record continuity`, exclusivamente a `origin/develop`; SHA y sincronía se verifican fuera del commit.
-- Rollback: revertir únicamente el commit documental F3.CIERRE en `develop`; no tocar los commits funcionales F3.1/F3.2/F3.3 ni `main`.
+- Base exacta: `77ba55fb6b7eeb0352a10d276671684034160f65`; repositorio correcto, `develop`, working tree inicial limpio, HEAD igual a `origin/develop`, divergencia `0/0` y `origin/main` exacta.
+- Resultado: skip link global y destino único en 24/24 HTML; validación server-side de `hostname` Turnstile para Production bare/www y Preview same-origin, sin relajar orígenes.
+- Archivos: 3 creados, 29 modificados y 0 eliminados; solo código, templates, QA y estado durable autorizados. F-09, F-10 y F4.2 no iniciados.
+- QA: `npm run qa` PASS; 24 HTML, 719 imágenes, 1.398 derivados, 3 heroes, siete escenarios Turnstile obligatorios más uno malformado, compuerta exacta contra la base e integridad de 2.165 archivos públicos. Sintaxis y `git diff --check` PASS.
+- Browser/runtime: no ejecutado. La validación perceptual y por teclado del skip link queda para ChatGPT/Seba en el Preview automático.
+- Recursos externos: cero escrituras manuales. `main`/Production, Preview, D1, Queue, Worker, Notion, CRM, email, DNS, analítica y Ads intactos.
+- Estado: F4.1 **COMPLETADO PARA REVISIÓN**, no cerrado. No se validó `action`, no se añadió rate limiting y no se inició ningún lote posterior.
+- Commit y push: un único commit `a11y: add skip link and validate Turnstile hostname`, exclusivamente a `origin/develop`; SHA y sincronía se verifican fuera del commit.
+- Rollback: revertir únicamente ese commit en `develop`; no tocar F1/F2/F3 ni `main`.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.

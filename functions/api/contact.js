@@ -131,7 +131,44 @@ function obtenerContextoOrigen(sourcePage, referer, requestUrl) {
   };
 }
 
-async function verificarTurnstile(token, secretKey, ip) {
+function normalizarHostnameTurnstile(hostname) {
+  if (
+    typeof hostname !== 'string' ||
+    !hostname ||
+    hostname !== hostname.trim()
+  ) {
+    return null;
+  }
+
+  try {
+    const url = new URL(`https://${hostname}`);
+    const normalizado = hostname.toLowerCase();
+    if (
+      url.hostname !== normalizado ||
+      url.host !== normalizado ||
+      url.pathname !== '/' ||
+      url.search ||
+      url.hash ||
+      url.username ||
+      url.password
+    ) {
+      return null;
+    }
+    return url.hostname;
+  } catch {
+    return null;
+  }
+}
+
+function obtenerHostnameEsperado(origin, requestUrl) {
+  try {
+    return new URL(origin || requestUrl).hostname;
+  } catch {
+    return null;
+  }
+}
+
+async function verificarTurnstile(token, secretKey, ip, hostnameEsperado) {
   const body = new URLSearchParams();
   body.set('secret', secretKey);
   body.set('response', token || '');
@@ -147,7 +184,11 @@ async function verificarTurnstile(token, secretKey, ip) {
       }
     );
     const data = await res.json();
-    return data.success === true;
+    return (
+      data.success === true &&
+      Boolean(hostnameEsperado) &&
+      normalizarHostnameTurnstile(data.hostname) === hostnameEsperado
+    );
   } catch {
     return false;
   }
@@ -161,6 +202,7 @@ export async function onRequestPost(context) {
   if (origin && !esOrigenPermitido(origin, request.url)) {
     return respuestaJson({ ok: false, error: 'origen_no_permitido' }, 403);
   }
+  const hostnameEsperado = obtenerHostnameEsperado(origin, request.url);
 
   let form;
   try {
@@ -255,7 +297,8 @@ export async function onRequestPost(context) {
   const turnstileOk = await verificarTurnstile(
     datos['cf-turnstile-response'],
     env.TURNSTILE_SECRET_KEY,
-    ip
+    ip,
+    hostnameEsperado
   );
   if (!turnstileOk) {
     return respuestaJson({ ok: false, error: 'verificacion_fallida' }, 400);
