@@ -12,10 +12,11 @@
     "qa:contact": "node --test scripts/verify-turnstile-hostname.test.mjs",
     "qa:turnstile": "node --test scripts/verify-turnstile-hostname.test.mjs",
     "qa:compliance": "node scripts/verify-compliance-gates.mjs",
+    "qa:privacy": "node --test scripts/verify-privacy-measurement.mjs",
     "qa:f4": "npm run qa:skip-link && npm run qa:contact && npm run qa:compliance",
     "qa:scope": "node scripts/verify-f4-scope.mjs",
     "qa:parity": "node scripts/verify-parity.mjs",
-    "qa": "npm run build && npm run qa:media && npm run qa:video && npm run qa:f4 && npm run qa:scope && npm run qa:parity"
+    "qa": "npm run build && npm run qa:media && npm run qa:video && npm run qa:f4 && npm run qa:privacy && npm run qa:scope && npm run qa:parity"
   },
   "devDependencies": {
     "@11ty/eleventy": "3.1.5",

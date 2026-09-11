@@ -1,11 +1,11 @@
 # Estado de implementación
 
 - Fecha: 2026-09-11
-- Fase/lote: F4.2B — Política de Privacidad, Términos de Uso y avisos de tratamiento
-- Estado: **F4.2B COMPLETADO PARA REVISIÓN DE CHATGPT**
+- Fase/lote: F5.1 — Preferencias de privacidad, medición segura y eventos sin PII
+- Estado: **F5.1 COMPLETADO PARA REVISIÓN DE CHATGPT**
 - Rama: `develop`
-- Commit base: `816b5a991d1d57611c2ed8eaff98009b13230aef`
-- Commit del lote: `legal: align privacy terms and contact notices`; su SHA se verifica fuera del propio commit
+- Commit base: `49f7666f250c1d90bd7ccaa183b7763848e71cb8`
+- Commit del lote: `feat: add privacy preferences and measurement gate`; su SHA se verifica fuera del propio commit
 - Estado F1: **CERRADO**
 - Estado F2: **CERRADO**
 - Estado F3.1: **CERRADO** por revisión independiente de ChatGPT y validación visual de Seba en Preview automático
@@ -14,8 +14,10 @@
 - Estado F3: **CERRADA**
 - Estado F4.1: **CERRADO** por revisión independiente de ChatGPT y validación runtime por teclado de Seba en Preview
 - Estado F4.2A: **CERRADO** por revisión independiente de ChatGPT
-- Estado F4.2B: **COMPLETADO PARA REVISIÓN DE CHATGPT**; no cerrado hasta revisión independiente
-- Estado F4: **EN CURSO**; F5 no iniciada
+- Estado F4.2B: **CERRADO** por revisión independiente de ChatGPT
+- Estado F4: **CERRADA**
+- Estado F5: **EN CURSO**
+- Estado F5.1: **COMPLETADO PARA REVISIÓN DE CHATGPT**
 - Estado F2.5B: **CERRADO** por revisión de ChatGPT
 - Estado F2.5A: **CERRADO** por revisión de ChatGPT
 - Estado F2.3: **CERRADO** por revisión de ChatGPT
@@ -24,9 +26,9 @@
 - Estado F2.4B: **CERRADO** por revisión de ChatGPT; su resultado `MISMATCH` descartó “CRM Seba Ogalde”
 - Estado F2.4A: **BLOQUEADO / UNAVAILABLE (histórico)**; no constituye un pendiente activo
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Cloudflare / Notion / recursos funcionales reales: sin acciones ni escrituras en F4.2B; Production, Preview, D1, Queue, Worker, CRM real y recursos externos intactos
-- Resultado: F4.2A cerrado; contenido legal aprobado publicado en fuente; dos avisos de tratamiento añadidos y contrato de marketing opcional preservado; guardas automatizadas actualizadas para F4.2B
-- Siguiente paso: revisión independiente de ChatGPT; F5 permanece pendiente y no iniciada
+- Cloudflare / Google / Notion / recursos funcionales reales: sin acciones ni escrituras en F5.1; no se configuraron IDs ni cuentas reales; Production, D1, Queue, Worker, CRM real y recursos externos intactos
+- Resultado: preferencias globales y persistentes; Consent Mode v2 básico; host gate estricto; eventos `generate_lead` y contacto directo con payload mínimo; guardas deterministas de privacidad
+- Siguiente paso: revisión independiente de ChatGPT y validación del Preview automático; F5.2 permanece pendiente y no iniciada
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -97,7 +99,9 @@ Estado: **CERRADO** por revisión independiente de ChatGPT.
 
 ## F4.2B — Política de Privacidad, Términos de Uso y avisos de tratamiento
 
-Estado: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+Estado: **CERRADO** por revisión independiente de ChatGPT.
+
+ChatGPT revisó independientemente el commit `49f7666f250c1d90bd7ccaa183b7763848e71cb8` (`legal: align privacy terms and contact notices`) y declaró F4.2B **CERRADO**. Según la continuidad aprobada, F4.2B era el último lote material de F4; por ello F4 queda **CERRADA** y F5 puede comenzar.
 
 ### Implementación legal y editorial
 
@@ -117,8 +121,41 @@ Estado: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
 - `qa:contact` y `qa:turnstile`: **28 PASS, 0 FAIL** cada uno. `qa:compliance`: PASS para 2 páginas legales, 2 avisos, marketing opcional y 24 HTML sin tracking, Ads, cookies ni Web3Forms ejecutable. `qa:skip-link`: PASS 24/24; `qa:media`: PASS para 719 imágenes y 1.398 derivados; `qa:video`: PASS para 3 heroes; `qa:scope`: PASS; `qa:parity`: PASS para 24 HTML, 24 templates y 2.165 archivos públicos. `npm run qa`: PASS local completo.
 - `git diff --check`: PASS. Archivos del lote: 0 creados, 6 modificados (`src/politica-privacidad.njk`, `src/terminos-uso.njk`, `src/contacto.njk`, `scripts/verify-compliance-gates.mjs`, `scripts/verify-f4-scope.mjs` y este documento) y 0 eliminados. `package.json`, `package-lock.json` y `functions/api/contact.js` permanecen intactos.
 - La prueba del commit en un worktree temporal limpio ejecutó `npm ci` —148 paquetes, 0 vulnerabilidades— y `npm run qa`: PASS completo usando solo archivos versionados. El worktree temporal fue eliminado después de la verificación.
-- F5 permanece **NO INICIADA**. Su estado objetivo aprobado contempla Preferencias de privacidad con Aceptar/Rechazar, bloqueo previo de medición opcional, GA4 y Google Ads; `ad_personalization` denegado inicialmente; sin Customer Match ni enhanced conversions; y sin enviar PII de los formularios a Google. F4.2B no implementa popup, cookies/preferencias, GTM, Consent Mode, GA4 ni Google Ads.
+- Al cierre histórico de F4.2B, F5 permanecía no iniciada. El estado vigente posterior se registra en F5.1: F5 está **EN CURSO** y F5.1 queda completado para revisión.
 - Backend, D1, Queue, Worker, Notion real, Cloudflare real, email, DNS, analítica, Ads y `main`/Production permanecen intactos. Rollback: revertir únicamente `legal: align privacy terms and contact notices` en `develop`, regresando a `816b5a991d1d57611c2ed8eaff98009b13230aef`; no revertir F4.2A/F4.1 ni tocar F1/F2/F3 o `main`.
+
+## F5.1 — Preferencias de privacidad y capa segura de medición
+
+Estado: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+
+### Arquitectura, privacidad y configuración
+
+- Base exacta `49f7666f250c1d90bd7ccaa183b7763848e71cb8`; repositorio correcto, rama `develop`, working tree inicial limpio, HEAD igual a `origin/develop`, divergencia `0/0` y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- El layout base incluye una sola vez el nuevo partial global de preferencias. Las 24 páginas comparten el panel no modal, accesible por teclado, con acciones semánticas y equivalentes **Aceptar**/**Rechazar**, enlace a `/politica-privacidad` y un botón permanente en el footer para reabrirlo. Al cerrar una preferencia reabierta, el foco vuelve al botón del footer.
+- La decisión se conserva en `localStorage` bajo `solaz_privacy_preferences`, en un objeto versionado `{ version: 1, decision, updatedAt }`. Datos ausentes, corruptos, antiguos o almacenamiento no disponible vuelven al estado seguro; la decisión en memoria sigue funcionando durante la sesión.
+- Google tag directo mediante `gtag.js`; Google Tag Manager no se usa. El runtime instala primero el default local de Consent Mode v2 básico con `analytics_storage`, `ad_storage`, `ad_user_data` y `ad_personalization` en `denied`, sin cargar red Google. Rechazar conserva los cuatro en `denied`; aceptar concede los tres primeros y mantiene `ad_personalization` siempre en `denied`.
+- La carga queda detrás de tres compuertas acumulativas: decisión aceptada, hostname exacto `solazstudio.cl` o `www.solazstudio.cl`, y configuración habilitada con un ID GA válido. Preview `*.solazstudio-web.pages.dev`, localhost y cualquier otro hostname permanecen inelegibles incluso con preferencia aceptada e IDs simulados.
+- `src/_data/measurement.js` lee exclusivamente `MEASUREMENT_ENABLED`, `GA_MEASUREMENT_ID` y `GOOGLE_ADS_ID`. Sus valores por defecto son deshabilitado/vacíos; F5.1 no contiene IDs reales ni realizó solicitudes Google. F5.2 deberá instalar los IDs reales, realizar la configuración externa y validar el comportamiento real, siempre con autorización separada.
+- No se habilitó Customer Match, enhanced conversions, remarketing personalizado ni listas de clientes. El objeto de diagnóstico `window.__solazMeasurementDebug` es exclusivamente en memoria, contiene solo estados y payloads técnicos permitidos, no muestra interfaz ni envía red.
+
+### Eventos y contrato del contacto
+
+- `generate_lead` solo se solicita después de una respuesta de contacto con `ok === true` y `deduplicated === false`, condición comprobada tanto en la plantilla de Contacto como en la capa central. Duplicados, honeypot, error HTTP/aplicativo o una respuesta sin el flag estricto no generan el evento.
+- Mensaje y reunión usan el mismo evento; `lead_type` distingue `mensaje` y `reunion`. El payload queda limitado a `lead_type`, `service_code`, `source_page` y `cta_id`, con normalización local. Se prohíben y descartan nombre, email, teléfono, mensaje, `submission_id`, `case_id`, consentimiento de marketing y cualquier campo adicional.
+- Los enlaces directos generan `contact_whatsapp`, `contact_phone` o `contact_email` con el único parámetro `page_path`. La URL/destino, número o dirección nunca se incorpora al evento. Sin consentimiento aceptado pueden observarse en el debug local, pero no se envían a Google.
+- `functions/api/contact.js` permanece byte a byte intacto; no cambió la persistencia, idempotencia, Turnstile, D1, Queue, Worker ni la UX de confirmación. Las páginas legales, `package-lock.json`, media, videos y archivos públicos raíz permanecen intactos.
+
+### QA, alcance y continuidad
+
+- Sintaxis `node --check`: PASS para los cuatro archivos JS/MJS creados o modificados. Build Eleventy: PASS con 24 HTML y 743 archivos copiados.
+- `qa:privacy`: **40 PASS, 0 FAIL**, determinista y sin red. Cubre las 24 páginas, UI/footer, defaults, aceptación/rechazo, persistencia/corrupción/versión/fallo de storage, reapertura/foco, cuatro señales, hostnames, carga única controlada simulada, `ad_personalization`, leads nuevos/duplicados/honeypot/error/reunión, contactos directos, PII y configuración vacía.
+- `qa:contact` y `qa:turnstile`: **28 PASS, 0 FAIL** cada uno. `qa:compliance`, `qa:skip-link` 24/24, `qa:media` 719/719 con 1.398 derivados, `qa:video` 3/3, `qa:scope` y `qa:parity` 24 HTML/24 templates/2.165 públicos: PASS. `npm run qa`: PASS local completo.
+- La guarda de cumplimiento permite únicamente el loader controlado dentro del runtime aprobado y rechaza carga estática/incondicional, tracking fuera de ese bloque, GTM, IDs reales, `ad_personalization: granted`, PII en `generate_lead`, Web3Forms ejecutable y banners ajenos. La compuerta de alcance usa la base F5.1 exacta y admite solo los diez paths del lote.
+- Archivos: 3 creados (`src/_data/measurement.js`, `src/_includes/partials/privacy-preferences.njk`, `scripts/verify-privacy-measurement.mjs`), 7 modificados (`src/_includes/layouts/base.njk`, `src/_includes/partials/footer.njk`, `src/contacto.njk`, `scripts/verify-compliance-gates.mjs`, `scripts/verify-f4-scope.mjs`, `package.json` y este documento), 0 eliminados.
+- Prueba reproducible previa al push: PASS sobre el commit en un worktree temporal limpio. `npm ci` instaló 148 paquetes con 0 vulnerabilidades y `npm run qa` pasó completo usando solo archivos versionados; el worktree no alteró paths versionados y fue eliminado. `git diff --check` y la revisión final de alcance: PASS.
+- No hubo navegador, deploy manual, POST real ni acciones sobre Google, Cloudflare, Pages, Production, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads. El único efecto remoto autorizado será el Preview automático que pueda derivar del push a `origin/develop`; no se validará en este lote.
+- Rollback: revertir únicamente `feat: add privacy preferences and measurement gate` en `develop` para volver funcionalmente a `49f7666f250c1d90bd7ccaa183b7763848e71cb8`; no tocar F4, F1/F2/F3 ni `main`.
+- Pendiente exacto: **F5.2 — IDs reales GA4/Google Ads, configuración externa y validación real**. No está iniciado ni autorizado por F5.1.
 
 ## F3.3 — Optimización conservadora de videos hero
 
@@ -1271,17 +1308,19 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F4.2B — Política de Privacidad, Términos de Uso y avisos de tratamiento en Contacto.
+- Lote: F5.1 — Preferencias de privacidad, capa segura de medición y eventos sin PII.
 - Fecha: 2026-09-11.
-- Base exacta: `816b5a991d1d57611c2ed8eaff98009b13230aef`; repositorio correcto, rama `develop`, working tree inicial limpio, HEAD igual a `origin/develop`, divergencia `0/0` y `origin/main` exacta.
-- Continuidad: F4.2A **CERRADO** por revisión independiente de ChatGPT. F4.2B queda **COMPLETADO PARA REVISIÓN DE CHATGPT**.
-- Archivos: 0 creados, 6 modificados y 0 eliminados; únicamente las tres plantillas autorizadas, dos scripts QA y este documento.
-- Legales: Política y Términos sustituidos por el contenido aprobado con Solaz Studio SpA, RUT 77.734.441-2, representante legal Sebastián Silva Ogalde y domicilio Eulogio Sánchez 065, Providencia, Santiago, Chile. URLs, canonical, diseño y `noindex` preservados.
-- Formularios: dos avisos exactos con enlace interno, sin checkbox obligatorio; consentimiento de marketing existente separado, opcional, desmarcado y con su contrato `name/value` intacto. Backend y submit sin cambios.
-- QA: sintaxis PASS; build 24 HTML/743 copiados; Contacto y Turnstile 28/28 cada uno; compliance PASS; skip link 24/24; media 719/719 y 1.398 derivados; video 3/3; scope PASS; paridad 24 HTML/24 templates/2.165 públicos; `npm run qa` PASS local y PASS en worktree limpio tras `npm ci`; `git diff --check` PASS.
-- Integridad: `package-lock.json`, `package.json` y `functions/api/contact.js` intactos; sin tracking, Ads, Web3Forms ni popup ejecutables. No se implementaron Preferencias de privacidad, GA4, Google Ads, GTM ni Consent Mode.
-- Recursos externos: cero escrituras manuales; no hubo navegador, POST real, deploy ni acciones sobre Cloudflare, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads. `main`/Production permanece intacta.
-- Commit y push: un único commit `legal: align privacy terms and contact notices`, exclusivamente a `origin/develop`; SHA y sincronía se verifican fuera del propio commit y después de superar el worktree limpio.
-- Rollback: revertir únicamente ese commit en `develop` para volver a `816b5a991d1d57611c2ed8eaff98009b13230aef`; no tocar F4.2A, F4.1, F1/F2/F3 ni `main`.
-- Siguiente pendiente: F5; **NO INICIADA**.
+- Base exacta: `49f7666f250c1d90bd7ccaa183b7763848e71cb8`; repositorio correcto, rama `develop`, working tree inicial limpio, HEAD igual a `origin/develop`, divergencia `0/0` y `origin/main` exacta.
+- Continuidad: F4.2B **CERRADO** por revisión independiente de ChatGPT; F4 **CERRADA**; F5 **EN CURSO**; F5.1 **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+- Arquitectura: un partial global incluido por el layout, configuración separada deshabilitada/vacía, botón de reapertura en footer y runtime en memoria. Persistencia versionada en `localStorage`; ausencia, corrupción o fallo vuelven al estado seguro.
+- Consentimiento: Consent Mode v2 básico con cuatro defaults `denied`; Aceptar concede analytics/ad storage y ad user data, pero `ad_personalization` permanece `denied`; Rechazar no carga ni envía Google. Se usa Google tag directo, nunca GTM.
+- Aislamiento: Google solo sería elegible con aceptación + hostname Production exacto + configuración válida. Preview, localhost y terceros no cargan Google. Google real cargado: **NO**. IDs reales: **NO**.
+- Eventos: `generate_lead` solo para `ok === true` y `deduplicated === false`, con reunión diferenciada por `lead_type=reunion`; contactos directos `contact_whatsapp`, `contact_phone` y `contact_email`. Payloads mínimos y cero PII/IDs internos.
+- Archivos: 3 creados, 7 modificados y 0 eliminados; exactamente los diez paths permitidos. Backend, legales, `package-lock.json`, media y recursos externos intactos.
+- QA: sintaxis PASS; build 24 HTML/743 copiados; privacidad 40/40; Contacto y Turnstile 28/28 cada uno; compliance, skip link 24/24, media 719/719 y 1.398 derivados, video 3/3, scope y paridad 24 HTML/24 templates/2.165 públicos PASS; `npm run qa` local PASS.
+- Reproducibilidad: worktree temporal limpio PASS tras `npm ci` —148 paquetes, 0 vulnerabilidades— y `npm run qa`; fue eliminado sin cambios versionados. `git diff --check`: PASS.
+- Recursos externos: cero escrituras; no hubo navegador, POST real, deploy ni acciones sobre Google, Cloudflare, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads. `main`/Production permanece intacta.
+- Commit y push: un único commit `feat: add privacy preferences and measurement gate`, exclusivamente a `origin/develop`, después de superar el worktree limpio.
+- Rollback: revertir únicamente ese commit en `develop` para volver a `49f7666f250c1d90bd7ccaa183b7763848e71cb8`; no tocar F4, F1/F2/F3 ni `main`.
+- Pendiente exacto: F5.2 — IDs reales GA4/Google Ads, configuración externa y validación real; **NO INICIADO**.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.

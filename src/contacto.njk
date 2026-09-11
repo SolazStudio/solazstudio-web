@@ -892,6 +892,19 @@ permalink: "contacto.html"
             return;
           }
 
+          if (data.deduplicated === false) {
+            try {
+              window.solazMeasurement?.trackLead(data, {
+                lead_type: formData.get('form_type') === 'reunion' ? 'reunion' : 'mensaje',
+                service_code: String(formData.get('service_code') || ''),
+                source_page: String(formData.get('source_page') || ''),
+                cta_id: String(formData.get('cta_id') || '')
+              });
+            } catch {
+              // La medición nunca interrumpe la confirmación visible del formulario.
+            }
+          }
+
           form.hidden = true;
           success.hidden = false;
           success.classList.add('visible');

@@ -184,22 +184,66 @@ const trackingPatterns = [
   /\bfbq\s*\(/i,
   /\bhj\s*\(/i
 ];
+const approvedRuntimePattern = /<script\b[^>]*data-solaz-privacy-runtime[^>]*>[\s\S]*?<\/script>/gi;
+const staticGoogleScriptPattern = /<script\b[^>]*\bsrc=["'][^"']*(?:googletagmanager\.com|google-analytics\.com|googleadservices\.com|doubleclick\.net)[^"']*["'][^>]*>/i;
+const forbiddenMeasurementPatterns = [
+  /googletagmanager\.com\/gtm\.js/i,
+  /\bGTM-[A-Z0-9]+\b/i,
+  /ad_personalization\s*:\s*["']granted["']/i,
+  /\bG-[A-Z0-9]{6,}\b/,
+  /\bAW-\d{6,}\b/
+];
 const cookieBannerPatterns = [
   /\bcookie[-_ ](?:consent|banner)\b/i,
   /\bconsent[-_ ]banner\b/i
 ];
+const measurementSource = await readFile(join(projectRoot, "src/_data/measurement.js"), "utf8");
+const approvedRuntimeSource = await readFile(join(projectRoot, "src/_includes/partials/privacy-preferences.njk"), "utf8");
+const leadTrackingBlock = approvedRuntimeSource.match(/function trackLead\b[\s\S]*?function trackDirectContact\b/)?.[0] ?? "";
+assert.ok(leadTrackingBlock, "privacy-preferences.njk: falta la guarda central de generate_lead");
+assert.doesNotMatch(
+  leadTrackingBlock,
+  /\b(?:email|phone|telefono|nombre|name|message|submission_id|case_id|consent_marketing)\b/i,
+  "privacy-preferences.njk: PII o identificador interno detectado en el bloque generate_lead"
+);
+assert.equal(
+  countOccurrences(approvedRuntimeSource, "https://www.googletagmanager.com/gtag/js?id="),
+  1,
+  "privacy-preferences.njk: el loader directo de Google debe existir exactamente una vez"
+);
+for (const [file, source] of [
+  ["src/_data/measurement.js", measurementSource],
+  ["src/_includes/partials/privacy-preferences.njk", approvedRuntimeSource]
+]) {
+  const forbidden = forbiddenMeasurementPatterns.find((pattern) => pattern.test(source));
+  if (forbidden) throw new Error(`${file}: configuración de medición prohibida (${forbidden})`);
+}
+
 for (const file of EXPECTED_HTML_FILES) {
   const html = await readFile(join(outputRoot, file), "utf8");
+  const approvedRuntimes = [...html.matchAll(approvedRuntimePattern)];
+  assert.equal(approvedRuntimes.length, 1, `${file}: debe existir exactamente un runtime de privacidad aprobado`);
+  assert.equal(
+    countOccurrences(approvedRuntimes[0][0], "https://www.googletagmanager.com/gtag/js?id="),
+    1,
+    `${file}: el loader controlado de Google debe aparecer exactamente una vez dentro del runtime aprobado`
+  );
+  if (staticGoogleScriptPattern.test(html)) {
+    throw new Error(`${file}: carga estática o incondicional de Google detectada`);
+  }
+  const outsideApprovedRuntime = html.replace(approvedRuntimePattern, "");
   const executable = [
-    ...html.matchAll(/<script\b[^>]*>[\s\S]*?<\/script>/gi),
-    ...html.matchAll(/<(?:iframe|img)\b[^>]*>/gi)
+    ...outsideApprovedRuntime.matchAll(/<script\b[^>]*>[\s\S]*?<\/script>/gi),
+    ...outsideApprovedRuntime.matchAll(/<(?:iframe|img)\b[^>]*>/gi)
   ].map((match) => match[0]).join("\n");
   const tracking = trackingPatterns.find((pattern) => pattern.test(executable));
-  if (tracking) throw new Error(`${file}: tracking o Ads ejecutable detectado (${tracking})`);
+  if (tracking) throw new Error(`${file}: tracking fuera del runtime aprobado detectado (${tracking})`);
+  const forbidden = forbiddenMeasurementPatterns.find((pattern) => pattern.test(html));
+  if (forbidden) throw new Error(`${file}: medición o identificador prohibido detectado (${forbidden})`);
   const cookieBanner = cookieBannerPatterns.find((pattern) => pattern.test(html));
   if (cookieBanner) throw new Error(`${file}: banner de cookies no autorizado detectado (${cookieBanner})`);
 }
 
 console.log(
-  `qa:compliance PASS (${legalPages.size} páginas legales; 2 avisos; marketing opcional; ${EXPECTED_HTML_FILES.length} HTML sin tracking, Ads, cookies ni Web3Forms ejecutable)`
+  `qa:compliance PASS (${legalPages.size} páginas legales; 2 avisos; marketing opcional; ${EXPECTED_HTML_FILES.length} HTML con loader consentido y sin tracking estático, IDs, GTM, PII ni Web3Forms ejecutable)`
 );

@@ -1,0 +1,346 @@
+  <style data-solaz-privacy-styles>
+    .privacy-preferences {
+      position: fixed;
+      right: 1.5rem;
+      bottom: 1.5rem;
+      z-index: 9999;
+      width: min(36rem, calc(100vw - 3rem));
+      padding: 1.5rem;
+      border: 1px solid var(--grey-mid, #444240);
+      background: var(--black-soft, #111111);
+      color: var(--white, #f5f3ef);
+      box-shadow: 0 1.25rem 4rem rgba(0, 0, 0, 0.42);
+      font-family: var(--font-body, 'Inter', sans-serif);
+    }
+
+    .privacy-preferences[hidden] { display: none !important; }
+    .privacy-preferences__title {
+      margin: 0 0 0.75rem;
+      color: var(--white, #f5f3ef);
+      font-family: var(--font-display, 'Bebas Neue', sans-serif);
+      font-size: clamp(1.75rem, 5vw, 2.25rem);
+      font-weight: 400;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+    .privacy-preferences__copy {
+      margin: 0;
+      color: var(--grey-light, #888580);
+      font-size: 1rem;
+      font-weight: 300;
+      line-height: 1.6;
+    }
+    .privacy-preferences__copy a {
+      color: var(--accent, #c8b99a);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 0.2em;
+    }
+    .privacy-preferences__actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+    .privacy-preferences__button {
+      min-height: 2.875rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--white, #f5f3ef);
+      background: transparent;
+      color: var(--white, #f5f3ef);
+      font: 500 0.875rem/1 var(--font-body, 'Inter', sans-serif);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    .privacy-preferences__button:hover,
+    .privacy-preferences__button[aria-pressed="true"] {
+      border-color: var(--accent, #c8b99a);
+      background: var(--accent, #c8b99a);
+      color: var(--black, #0a0a0a);
+    }
+    .privacy-preferences__button:focus-visible,
+    .privacy-preferences__copy a:focus-visible,
+    .footer-privacy-button:focus-visible,
+    .privacy-preferences__title:focus-visible {
+      outline: 2px solid var(--accent, #c8b99a);
+      outline-offset: 4px;
+    }
+    .footer-privacy-button {
+      appearance: none;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      letter-spacing: inherit;
+      opacity: 0.7;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .footer-privacy-button:hover { opacity: 1; }
+
+    @media (max-width: 640px) {
+      .privacy-preferences {
+        right: 0.75rem;
+        bottom: 0.75rem;
+        width: calc(100vw - 1.5rem);
+        padding: 1.25rem;
+      }
+      .privacy-preferences__actions { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <section
+    class="privacy-preferences"
+    data-solaz-privacy-preferences
+    data-measurement-enabled="{{ measurement.enabled }}"
+    data-ga-measurement-id="{{ measurement.gaMeasurementId }}"
+    data-google-ads-id="{{ measurement.googleAdsId }}"
+    aria-labelledby="privacy-preferences-title"
+    hidden
+  >
+    <h2 class="privacy-preferences__title" id="privacy-preferences-title" tabindex="-1">Preferencias de privacidad</h2>
+    <p class="privacy-preferences__copy">Usamos tecnologías opcionales para medición y publicidad. Puedes aceptarlas o rechazarlas. <a href="/politica-privacidad">Política de Privacidad</a>.</p>
+    <div class="privacy-preferences__actions">
+      <button class="privacy-preferences__button" type="button" data-privacy-action="accept" aria-pressed="false">Aceptar</button>
+      <button class="privacy-preferences__button" type="button" data-privacy-action="reject" aria-pressed="false">Rechazar</button>
+    </div>
+  </section>
+
+  <script data-solaz-privacy-runtime>
+  (() => {
+    'use strict';
+
+    const root = document.querySelector('[data-solaz-privacy-preferences]');
+    if (!root || window.solazMeasurement) return;
+
+    const STORAGE_KEY = 'solaz_privacy_preferences';
+    const PREFERENCE_VERSION = 1;
+    const PRODUCTION_HOSTS = new Set(['solazstudio.cl', 'www.solazstudio.cl']);
+    const TOKEN_PATTERN = /^[a-z0-9]+(?:[\/_-][a-z0-9]+)*$/i;
+    const GA_ID_PATTERN = /^G-[A-Z0-9]+$/;
+    const ADS_ID_PATTERN = /^AW-[0-9]+$/;
+    const DENIED = Object.freeze({
+      analytics_storage: 'denied',
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied'
+    });
+    const ACCEPTED = Object.freeze({
+      analytics_storage: 'granted',
+      ad_storage: 'granted',
+      ad_user_data: 'granted',
+      ad_personalization: 'denied'
+    });
+    const config = Object.freeze({
+      enabled: root.dataset.measurementEnabled === 'true',
+      gaMeasurementId: String(root.dataset.gaMeasurementId || '').trim(),
+      googleAdsId: String(root.dataset.googleAdsId || '').trim()
+    });
+    const debug = {
+      consentState: { decision: null, ...DENIED },
+      tagLoadAttempted: false,
+      tagLoaded: false,
+      eventsEmitted: [],
+      eventsSent: []
+    };
+
+    let consentState = { decision: null, ...DENIED };
+    let preferencesOpener = null;
+
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { window.dataLayer.push(arguments); }
+    gtag('consent', 'default', { ...DENIED });
+    window.__solazMeasurementDebug = debug;
+
+    function setConsentState(decision) {
+      const values = decision === 'accepted' ? ACCEPTED : DENIED;
+      consentState = { decision, ...values };
+      debug.consentState = { ...consentState };
+      gtag('consent', 'update', { ...values });
+    }
+
+    function readPreference() {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        const saved = JSON.parse(raw);
+        if (
+          saved?.version !== PREFERENCE_VERSION ||
+          !['accepted', 'rejected'].includes(saved?.decision) ||
+          typeof saved?.updatedAt !== 'string'
+        ) {
+          return null;
+        }
+        return saved;
+      } catch {
+        return null;
+      }
+    }
+
+    function savePreference(decision) {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          version: PREFERENCE_VERSION,
+          decision,
+          updatedAt: new Date().toISOString()
+        }));
+      } catch {
+        // El estado en memoria mantiene la decisión para esta sesión.
+      }
+    }
+
+    function googleIsEligible() {
+      return (
+        consentState.decision === 'accepted' &&
+        PRODUCTION_HOSTS.has(window.location.hostname) &&
+        config.enabled &&
+        GA_ID_PATTERN.test(config.gaMeasurementId)
+      );
+    }
+
+    function loadGoogleTag() {
+      if (!googleIsEligible()) return false;
+      if (debug.tagLoadAttempted) return true;
+
+      debug.tagLoadAttempted = true;
+      const script = document.createElement('script');
+      script.id = 'solaz-google-tag';
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(config.gaMeasurementId)}`;
+      script.addEventListener('load', () => { debug.tagLoaded = true; }, { once: true });
+      document.head.appendChild(script);
+
+      gtag('js', new Date());
+      gtag('config', config.gaMeasurementId);
+      if (ADS_ID_PATTERN.test(config.googleAdsId)) {
+        gtag('config', config.googleAdsId);
+      }
+      return true;
+    }
+
+    function updateActionState() {
+      root.querySelector('[data-privacy-action="accept"]')?.setAttribute(
+        'aria-pressed',
+        String(consentState.decision === 'accepted')
+      );
+      root.querySelector('[data-privacy-action="reject"]')?.setAttribute(
+        'aria-pressed',
+        String(consentState.decision === 'rejected')
+      );
+    }
+
+    function closePreferences() {
+      root.hidden = true;
+      if (preferencesOpener?.focus) preferencesOpener.focus();
+      preferencesOpener = null;
+    }
+
+    function applyDecision(decision, { persist = true } = {}) {
+      const normalizedDecision = decision === 'accepted' ? 'accepted' : 'rejected';
+      setConsentState(normalizedDecision);
+      if (persist) savePreference(normalizedDecision);
+      updateActionState();
+      if (normalizedDecision === 'accepted') loadGoogleTag();
+      closePreferences();
+      return { ...consentState };
+    }
+
+    function openPreferences(opener = null) {
+      preferencesOpener = opener;
+      root.hidden = false;
+      updateActionState();
+      root.querySelector('#privacy-preferences-title')?.focus();
+    }
+
+    function safeToken(value, maxLength) {
+      const token = typeof value === 'string' ? value.trim() : '';
+      return token && token.length <= maxLength && TOKEN_PATTERN.test(token) ? token : '';
+    }
+
+    function safePagePath(value) {
+      const path = typeof value === 'string' ? value : '';
+      if (!path || path.length > 300 || !path.startsWith('/') || path.startsWith('//') || /[?#\\]/.test(path)) return '';
+      return path;
+    }
+
+    function emitEvent(name, parameters) {
+      const event = { name, parameters: { ...parameters } };
+      debug.eventsEmitted.push(event);
+      if (!googleIsEligible() || !loadGoogleTag()) return false;
+      gtag('event', name, { ...parameters });
+      debug.eventsSent.push({ name, parameters: { ...parameters } });
+      return true;
+    }
+
+    function trackLead(response, parameters = {}) {
+      if (response?.ok !== true || response?.deduplicated !== false) return false;
+      const leadType = parameters.lead_type === 'reunion' ? 'reunion' : parameters.lead_type === 'mensaje' ? 'mensaje' : '';
+      if (!leadType) return false;
+
+      const payload = { lead_type: leadType };
+      const serviceCode = safeToken(parameters.service_code, 100);
+      const sourcePage = safePagePath(parameters.source_page);
+      const ctaId = safeToken(parameters.cta_id, 100);
+      if (serviceCode) payload.service_code = serviceCode;
+      if (sourcePage) payload.source_page = sourcePage;
+      if (ctaId) payload.cta_id = ctaId;
+      return emitEvent('generate_lead', payload);
+    }
+
+    function trackDirectContact(type, pagePath = window.location.pathname) {
+      const eventNames = {
+        whatsapp: 'contact_whatsapp',
+        phone: 'contact_phone',
+        email: 'contact_email'
+      };
+      const eventName = eventNames[type];
+      const normalizedPath = safePagePath(pagePath);
+      if (!eventName || !normalizedPath) return false;
+      return emitEvent(eventName, { page_path: normalizedPath });
+    }
+
+    window.solazMeasurement = Object.freeze({
+      trackLead,
+      trackDirectContact,
+      getConsentState: () => ({ ...consentState }),
+      openPreferences
+    });
+
+    root.querySelector('[data-privacy-action="accept"]')?.addEventListener('click', () => applyDecision('accepted'));
+    root.querySelector('[data-privacy-action="reject"]')?.addEventListener('click', () => applyDecision('rejected'));
+    document.querySelectorAll('[data-open-privacy-preferences]').forEach(button => {
+      button.addEventListener('click', () => openPreferences(button));
+    });
+    document.addEventListener('click', event => {
+      const link = event.target?.closest?.('a[href]');
+      if (!link) return;
+      const href = String(link.getAttribute('href') || '');
+      const lowerHref = href.toLowerCase();
+      if (lowerHref.startsWith('mailto:')) {
+        trackDirectContact('email');
+        return;
+      }
+      if (lowerHref.startsWith('tel:')) {
+        trackDirectContact('phone');
+        return;
+      }
+      try {
+        const hostname = new URL(href, window.location.href).hostname.toLowerCase();
+        if (hostname === 'wa.me' || hostname === 'whatsapp.com' || hostname.endsWith('.whatsapp.com')) {
+          trackDirectContact('whatsapp');
+        }
+      } catch {
+        // Un enlace inválido no afecta la navegación ni genera medición.
+      }
+    });
+
+    const savedPreference = readPreference();
+    if (savedPreference) {
+      applyDecision(savedPreference.decision, { persist: false });
+    } else {
+      root.hidden = false;
+      updateActionState();
+    }
+  })();
+  </script>
