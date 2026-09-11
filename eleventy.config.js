@@ -2,8 +2,11 @@ import {
   PASSTHROUGH_DIRECTORIES,
   ROOT_PUBLIC_FILES
 } from "./config/public-surface.js";
+import registerResponsiveImages from "./config/responsive-images.js";
 
 export default function (eleventyConfig) {
+  registerResponsiveImages(eleventyConfig);
+
   for (const file of ROOT_PUBLIC_FILES) {
     eleventyConfig.addPassthroughCopy({ [file]: file });
   }

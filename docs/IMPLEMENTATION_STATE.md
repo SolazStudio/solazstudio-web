@@ -1,14 +1,14 @@
 # Estado de implementación
 
-- Fecha: 2026-09-10
-- Fase/lote: F3.1 — carga progresiva de Portfolio y galerías
-- Estado: **F3.1 COMPLETADO PARA REVISIÓN DE CHATGPT**
+- Fecha: 2026-09-11
+- Fase/lote: F3.2 — imágenes responsivas para Portfolio y galerías
+- Estado: **F3.2 COMPLETADO PARA REVISIÓN DE CHATGPT**
 - Rama: `develop`
-- Commit base: `262410c82b33c09d35f10abe446906b239417c67`
+- Commit base: `ef353a388f8b2dc9624914dc9143b89888f83e62`
 - Commit de cierre: documental post-verificación; su SHA se verifica fuera del propio commit
 - Estado F1: **CERRADO**
 - Estado F2: **CERRADO**
-- Estado F3.1: **COMPLETADO PARA REVISIÓN DE CHATGPT**
+- Estado F3.1: **CERRADO** por revisión independiente de ChatGPT y validación visual de Seba en Preview automático
 - Estado F2.5B: **CERRADO** por revisión de ChatGPT
 - Estado F2.5A: **CERRADO** por revisión de ChatGPT
 - Estado F2.3: **CERRADO** por revisión de ChatGPT
@@ -18,8 +18,8 @@
 - Estado F2.4A: **BLOQUEADO / UNAVAILABLE (histórico)**; no constituye un pendiente activo
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
 - Cloudflare / Notion / recursos funcionales reales: solo recursos Preview/test autorizados; Production y CRM real intactos
-- Resultado: carga progresiva y estabilidad dimensional implementadas y verificadas en Portfolio y las nueve galerías de proyecto, sin cambios editoriales ni de video
-- Siguiente paso: revisión independiente de ChatGPT; no iniciar F3.2 ni optimización de video
+- Resultado: pipeline central de imágenes responsivas WebP 480/960 con `srcset`/`sizes` para Portfolio y nueve galerías, conservando originales, orden, lazy loading, lightbox y video
+- Siguiente paso: revisión independiente de ChatGPT/Seba en el Preview automático de F3.2; no iniciar F3.3 ni optimización de video
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -32,6 +32,46 @@
 
 - Todo traspaso entre chats debe conservar la situación técnica real, incluidos los hechos verificados, decisiones todavía no tomadas, gaps abiertos, riesgos conocidos, recursos externos afectados o intactos y la razón exacta del siguiente paso. Un PUNTO DE CONTINUIDAD no debe simplificar el estado de forma que convierta hipótesis en decisiones.
 - No se repetirá automáticamente la preparación o confirmación del entorno Codex después de cada traspaso cuando el proyecto y entorno ya estén establecidos y no exista evidencia de cambio. Se volverá a verificar solo cuando haya una razón factual para dudar del entorno.
+
+## F3.2 — Imágenes responsivas para Portfolio y galerías
+
+### Cierre de F3.1 y arquitectura vigente
+
+- F3.1 está **CERRADO**. Seba validó personalmente su Preview automático y confirmó que la mejora de carga progresiva se percibe y funciona.
+- F3.2 agrega entrega responsiva, no contenido: las 719 imágenes, `src`, orden editorial, alt, categorías, enlaces, filtros, masonry y lightbox permanecen. No existe curaduría autorizada y todas las imágenes siguen accesibles mediante scroll.
+- `config/responsive-images.js` registra un transform async central de Eleventy limitado a `portafolio.html` y las nueve páginas objetivo. Resuelve tanto `img/...` como `../img/...` contra el `/img` real sin moverlo, duplicarlo ni crear symlinks.
+- `@11ty/eleventy-img` está fijado exactamente en `7.0.0`; Node probado `24.18.0`, Sharp `0.35.4`. Genera WebP con calidad 85, anchos 480/960 solo bajo el ancho original, concurrencia 8 y caché en memoria por fuente/ancho original.
+- Los derivados viven exclusivamente en `_site/img/_responsive/`, usan URLs `/img/_responsive/...` y no se versionan. El `src` original se conserva como fallback y como candidato máximo del `srcset`; el lightbox continúa usando el original.
+- Un derivado solo se anuncia cuando pesa menos que el original. En este conjunto, los 1.398 candidatos posibles fueron beneficiosos: 719 de 480 px y 679 de 960 px; 0 descartados y 0 upscale.
+- Perfiles `sizes`: Portfolio normal/video `50vw / 33.34vw / 20vw`; tarjeta de proyecto horizontal/cuadrada `100vw / 66.67vw / 40vw`; proyecto vertical usa perfil normal. Galería de proyecto normal `50vw / 33.34vw / 25vw`; destacada `100vw / 66.67vw / 50vw`, con los breakpoints aprobados.
+- F3.1 queda intacto: `46` imágenes eager y `673` lazy, `decoding="async"` en las diferidas y dimensiones intrínsecas reales. Videos, sources, autoplay, muted, loop, playsinline, preload, controls, codec y lógica de lightbox permanecen sin cambios.
+
+### Baseline y métricas deterministas
+
+La base F3.1 `ef353a388f8b2dc9624914dc9143b89888f83e62` tenía las mismas 719 imágenes y `108.671.664 B` de originales, 46 eager, 673 lazy, 0 imágenes con `srcset` y 0 imágenes objetivo con `sizes`. Las cifras siguientes son tamaños de archivos y reducción potencial por candidato, no transferencia de red medida.
+
+| Página | Imágenes / bytes originales | 480 px: cantidad / bytes / reducción media-mediana | 960 px: cantidad / bytes / reducción media-mediana |
+| --- | ---: | ---: | ---: |
+| Portfolio | 101 / 16.486.192 B | 101 / 3.180.456 B / 77,6%-78,7% | 88 / 7.483.088 B / 47,2%-48,7% |
+| WEG Seminarios | 129 / 20.311.080 B | 129 / 3.160.682 B / 83,5%-84,5% | 129 / 8.508.892 B / 56,6%-59,3% |
+| Cassone | 62 / 8.035.224 B | 62 / 1.898.006 B / 76,3%-75,7% | 62 / 5.196.454 B / 35,6%-34,0% |
+| Diez galerías | 719 / 108.671.664 B | 719 / 22.968.218 B / 76,7%-76,0% | 679 / 57.132.162 B / 43,0%-35,7% |
+
+- F3.2 deja `srcset` y `sizes` en 719/719 imágenes objetivo. Los 1.398 derivados ocupan `80.100.380 B` como artefactos de build; el navegador descarga el candidato que corresponda, no ambos grupos de forma sistemática.
+- Ejemplo vertical, `fotografia-gastronomia-pollo-rostizado-embalaje-delivery.webp`: original `427.464 B`; 480 `97.268 B` (-77,2%); 960 `291.938 B` (-31,7%).
+- Ejemplo horizontal, `fotografia-industrial-trabajadores-subestacion-electrica-epp.webp`: original `330.120 B`; 480 `46.608 B` (-85,9%); 960 `136.458 B` (-58,7%).
+- Cubierta estática de video, `video-corporativo-weg-antofagasta-transformador-extended-cover.webp`: original `176.174 B`; 480 `29.780 B` (-83,1%); 960 `80.032 B` (-54,6%). El archivo y comportamiento de video no cambiaron.
+
+### Preflight, builds y QA
+
+- Preflight temporal PASS antes de escribir en `develop`: import ESM de Eleventy Image, carga de Sharp, tres orientaciones/casos, formato, dimensiones, relación de aspecto, no upscale, beneficio en bytes, resolución de ambas formas de URL y supervivencia bajo `_site/img/_responsive/`.
+- Build limpio base F3.1: `10,165 s`. Build responsivo de preflight: `78,842 s`. Validación final limpia: `npm ci` `3,944 s`, primer build `80,436 s` y segundo build desde cero `76,945 s`; ambos PASS. El aumento corresponde a generar 1.398 derivados locales y no produjo consumo problemático.
+- Ambos builds finales produjeron 24 HTML, 734 originales bajo `img/` byte a byte intactos y 1.398 derivados con nombres/tamaños reproducibles; output total 2.164 archivos. `_site` continúa ignorado y no hay binarios derivados en Git.
+- `npm run qa:media` PASS sobre 10 galerías y base funcional F3.1: valida secuencia protegida permitiendo altas futuras, atributos editoriales y F3.1, `srcset`, `sizes`, descriptores/ancho real, orden/deduplicación, rutas existentes, proporción, no upscale, bytes beneficiosos, candidato original, lightbox, output sin huérfanos y firma de video.
+- `node --check eleventy.config.js`, `node --check config/responsive-images.js`, `node --check scripts/verify-media-loading.mjs` y `git diff --check`: PASS. `qa:parity` no fue ejecutado ni modificado.
+- Selección runtime local obtenida antes de la reanudación, viewport disponible `910 × 714`: Portfolio normal 480w, tarjeta horizontal 960w y cubierta de video 480w; WEG normal 480w y destacada 960w. Portfolio completó 101/101 sin fallos ni superposiciones; filtros, restauración a Todo, lightbox de imagen/original, navegación, cierre, lightbox de video y nueve tarjetas funcionaron. No se amplió ni repitió QA de navegador al reanudar; la revisión publicada F3.2 queda para ChatGPT/Seba en Preview automático.
+- Archivos del lote: 1 creado (`config/responsive-images.js`), 5 modificados (`eleventy.config.js`, `package.json`, `package-lock.json`, `scripts/verify-media-loading.mjs` y este documento), 0 eliminados. Las diez plantillas, originales, videos, CSS, copy, SEO y backend no cambiaron.
+- Cero acciones manuales sobre Cloudflare, Pages, Preview, Production, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads. El único Preview autorizado será la consecuencia automática del push a `origin/develop`; `main`/Production permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`.
 
 ## F3.1 — Carga progresiva de Portfolio y galerías
 
@@ -1080,26 +1120,25 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F3.1 — carga progresiva de Portfolio y galerías sin cambios editoriales.
-- Fecha: 2026-09-10.
-- Precheck: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, working tree inicial limpio, HEAD y `origin/develop` en `262410c82b33c09d35f10abe446906b239417c67`, `main` y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`, divergencia `0/0`.
-- Archivos: 1 creado (`scripts/verify-media-loading.mjs`), 12 modificados (`package.json`, `src/portafolio.njk`, nueve plantillas de proyecto y este documento), 0 eliminados. `package-lock.json`, imágenes, videos, CSS editorial y backend intactos.
-- Cambio simple: primeras 10 imágenes de Portfolio y primeras 4 de cada proyecto eager; las demás lazy con decodificación asíncrona. Todas usan dimensiones intrínsecas exactas, y el mismo masonry puede calcular su layout antes de descargarlas.
-- Alcance: Portfolio y las nueve galerías de proyecto enlazadas, incluidos WEG Seminarios y Cassone. Se preservan exactamente 719 imágenes, sus `src`, orden, alt, categorías, enlaces y lightbox.
-- Desktop `1440 × 900`, métricas deterministas antes/después: Portfolio `101 eager → 10 eager + 91 lazy`; WEG `129 → 4 + 125`; Cassone `62 → 4 + 58`. Los conteos y bytes son iguales para móvil porque provienen del HTML y archivos reales.
-- Móvil `390 × 844`, métricas deterministas antes/después: Portfolio `101 eager → 10 + 91`; WEG `129 → 4 + 125`; Cassone `62 → 4 + 58`.
-- Bytes: Portfolio total `16.486.192 B`, diferidos `13.951.976 B`; WEG total `20.311.080 B`, diferidos `19.744.766 B`; Cassone total `8.035.224 B`, diferidos `7.396.756 B`. Agregado: `108.671.664 B` totales y `100.611.194 B` bajo estrategia lazy final.
-- Reducción del conjunto eager potencial: Portfolio `91` requests/imágenes y `84,6%` del peso; WEG `125` y `97,2%`; Cassone `58` y `92,1%`. Son métricas deterministas de estrategia, no bytes de red observados.
-- Runtime local: en desktop y móvil, scroll progresivo completo dejó Portfolio `101/101`, WEG `129/129` y Cassone `62/62` cargadas, sin fallos ni superposiciones. Mineduc añadió una tercera comprobación `37/37` sin superposiciones.
-- Portfolio funcional: nueve filtros ejercitados y Todo restaurado; lightbox abrió, avanzó `1 / 92 → 2 / 92` y cerró; nueve tarjetas de proyecto presentes. No existen carga manual, paginación ni truncamiento.
-- Estabilidad: `width`/`height` provienen de cada WebP real y el cálculo conserva preferencia por dimensiones naturales cuando ya existen. No cambiaron tamaño visual, crop, proporción, columnas, gaps ni composición.
-- Videos: firma idéntica a la base; autoplay y todos los demás atributos, sources, covers, orden y comportamiento permanecen intactos. Optimización de video no iniciada.
-- Pruebas: baseline limpia `npm ci` PASS (`129` paquetes, `0` vulnerabilidades) y build PASS (`24` HTML, `742` copiados). Final limpio: `npm ci` PASS, build PASS y `npm run qa:media` PASS para 10 galerías. `git diff --check` PASS; `qa:parity` no ejecutado ni modificado.
-- QA reproducible: protege secuencia editorial base sin impedir nuevas fotografías, igualdad plantilla/build, metadata editorial, política eager/lazy, dimensiones reales, decoding lazy y videos intactos.
-- Métricas runtime de red: no se midieron bytes mediante Resource Timing; quedan pendientes de validación Preview. No se inventaron ni mezclaron con tamaños locales.
-- Incidencia: `npm ci` del workspace encontró `EBUSY` en `node_modules/.bin` y dejó Eleventy local no disponible; no se borró ni forzó. Baseline y final pasaron en un clon temporal limpio de la base exacta con el diff autorizado.
-- Externos: cero acciones o escrituras Cloudflare, Pages, Preview, Production, D1, Queue, Worker, Notion, CRM real, email, DNS, analítica o Ads. `main` intacta.
-- Commit y push: un único commit funcional con mensaje `perf: defer below-fold gallery images`, exclusivamente a `origin/develop`; SHA y sincronía se verifican fuera del propio commit. Sin rama, PR, merge ni force push.
-- Rollback: revertir únicamente el commit F3.1; no revertir F2 ni modificar `main` o plataformas externas.
-- Continuidad: F3.1 queda completado técnicamente para revisión de ChatGPT. No se inició F3.2, Preview, video, srcset, derivados ni recompresión.
+- Lote: F3.2 — imágenes responsivas para Portfolio y galerías.
+- Fecha: 2026-09-11.
+- Cierre heredado: F3.1 **CERRADO**; Seba validó su Preview automático y confirmó que la carga progresiva se percibe y funciona.
+- Preflight temporal: PASS con Node `24.18.0`, `@11ty/eleventy-img@7.0.0`, Sharp `0.35.4`, ESM, vertical/horizontal/cubierta de video, calidad 85, 480/960, no upscale, rutas reales y build completo.
+- Precheck Git: PASS exacto; repositorio correcto, rama `develop`, HEAD y `origin/develop` en `ef353a388f8b2dc9624914dc9143b89888f83e62`, `main` y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`, divergencia `0/0`. La reanudación preservó el working tree F3.2 parcial.
+- Arquitectura: transform async central `config/responsive-images.js`, limitado a Portfolio y nueve proyectos, sin modificar las plantillas. Conserva `src` y añade `srcset`/`sizes`; escribe solo WebP de build bajo `_site/img/_responsive/` y descarta automáticamente cualquier derivado sin beneficio en bytes.
+- Archivos: 1 creado (`config/responsive-images.js`), 5 modificados (`eleventy.config.js`, `package.json`, `package-lock.json`, `scripts/verify-media-loading.mjs`, este documento), 0 eliminados. Ningún binario derivado versionado.
+- Contenido protegido: 719 imágenes, mismos `src`, cantidad, SHA de orden, alt, categorías, enlaces, lightbox, eager/lazy, decoding y dimensiones. Originales `img/`, diez plantillas, CSS, copy, SEO, formulario y backend intactos.
+- Derivados: 719 de 480 px y 679 de 960 px, 1.398 archivos y `80.100.380 B`; 0 descartados, 0 upscale. 719/719 imágenes tienen `srcset` y `sizes`, más el original como candidato máximo.
+- Métrica agregada: originales `108.671.664 B`; 480 `22.968.218 B`, reducción media/mediana `76,7%/76,0%`; 960 `57.132.162 B`, reducción `43,0%/35,7%`. Son tamaños de archivos y ahorro potencial, no red medida.
+- Portfolio: 101 imágenes, 101 variantes 480 (`3.180.456 B`) y 88 variantes 960 (`7.483.088 B`); reducciones medias `77,6%` y `47,2%`.
+- WEG Seminarios: 129 imágenes, 129 variantes 480 (`3.160.682 B`) y 129 variantes 960 (`8.508.892 B`); reducciones medias `83,5%` y `56,6%`.
+- Cassone: 62 imágenes, 62 variantes 480 (`1.898.006 B`) y 62 variantes 960 (`5.196.454 B`); reducciones medias `76,3%` y `35,6%`.
+- Lightbox y video: `src`/`data-lightbox` conservan originales de máxima resolución. Videos, covers como contenido, sources, autoplay y todos los atributos funcionales tienen firma idéntica a `ef353a3`; no se inició optimización de video.
+- Builds: baseline F3.1 `10,165 s`; preflight responsivo `78,842 s`; finales limpios `80,436 s` y `76,945 s`, ambos PASS. `npm ci` final `3,944 s`; 24 HTML, 734 originales byte a byte intactos, 1.398 derivados reproducibles y 2.164 archivos públicos.
+- QA final mínimo: `npm run qa:media` PASS para 10 galerías y 719 imágenes; `node --check` sobre configuración Eleventy, transform y QA PASS; `git diff --check` PASS. No se repitieron builds ni navegador tras la reanudación; `qa:parity` no ejecutado ni modificado.
+- Runtime previo a la reanudación: en `910 × 714`, selección 480w para elementos normales/cubierta y 960w para elementos grandes; Portfolio 101/101, filtros, lightbox de imagen/original y video, navegación/cierre y tarjetas PASS; WEG normal 480w y destacado 960w. La validación publicada F3.2 corresponde a ChatGPT/Seba tras el push.
+- Externos: cero cambios manuales Cloudflare, Pages, Preview, Production, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads. El push a `origin/develop` es el único disparador autorizado del Preview automático; `main`/Production intacta.
+- Commit y push: un único commit con mensaje exacto `perf: add responsive gallery variants`, exclusivamente a `origin/develop`; SHA y sincronía se verifican fuera del commit. Sin rama, PR, merge, rebase, force push ni deploy manual.
+- Rollback: revertir únicamente el commit F3.2 en `develop`; los derivados se regeneran en build. No revertir F3.1 ni tocar `main` o Cloudflare manualmente.
+- Continuidad: F3.2 queda completado técnicamente para revisión independiente y Preview automático. F3 no se declara completa; no se inició F3.3 ni optimización de video.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
