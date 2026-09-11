@@ -1,13 +1,14 @@
 # Estado de implementación
 
 - Fecha: 2026-09-10
-- Fase/lote: F2.CIERRE — cierre durable de F2 y continuidad hacia F3
-- Estado: **F2 CERRADO**
+- Fase/lote: F3.1 — carga progresiva de Portfolio y galerías
+- Estado: **F3.1 COMPLETADO PARA REVISIÓN DE CHATGPT**
 - Rama: `develop`
-- Commit base: `91eca4b58ad6eb4e3c0bc9fd38f93440f05e3057`
+- Commit base: `262410c82b33c09d35f10abe446906b239417c67`
 - Commit de cierre: documental post-verificación; su SHA se verifica fuera del propio commit
 - Estado F1: **CERRADO**
 - Estado F2: **CERRADO**
+- Estado F3.1: **COMPLETADO PARA REVISIÓN DE CHATGPT**
 - Estado F2.5B: **CERRADO** por revisión de ChatGPT
 - Estado F2.5A: **CERRADO** por revisión de ChatGPT
 - Estado F2.3: **CERRADO** por revisión de ChatGPT
@@ -17,8 +18,8 @@
 - Estado F2.4A: **BLOQUEADO / UNAVAILABLE (histórico)**; no constituye un pendiente activo
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
 - Cloudflare / Notion / recursos funcionales reales: solo recursos Preview/test autorizados; Production y CRM real intactos
-- Resultado: F2.5B cerrado por revisión independiente de ChatGPT; F2 queda cerrado con su evidencia durable preservada
-- Siguiente fase: **F3 — NO INICIADA**
+- Resultado: carga progresiva y estabilidad dimensional implementadas y verificadas en Portfolio y las nueve galerías de proyecto, sin cambios editoriales ni de video
+- Siguiente paso: revisión independiente de ChatGPT; no iniciar F3.2 ni optimización de video
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -31,6 +32,46 @@
 
 - Todo traspaso entre chats debe conservar la situación técnica real, incluidos los hechos verificados, decisiones todavía no tomadas, gaps abiertos, riesgos conocidos, recursos externos afectados o intactos y la razón exacta del siguiente paso. Un PUNTO DE CONTINUIDAD no debe simplificar el estado de forma que convierta hipótesis en decisiones.
 - No se repetirá automáticamente la preparación o confirmación del entorno Codex después de cada traspaso cuando el proyecto y entorno ya estén establecidos y no exista evidencia de cambio. Se volverá a verificar solo cuando haya una razón factual para dudar del entorno.
+
+## F3.1 — Carga progresiva de Portfolio y galerías
+
+### Decisiones, inventario y alcance
+
+- No existe curaduría autorizada de Portfolio. El orden actual de media es editorial y se conserva; todas las imágenes continúan presentes y accesibles mediante scroll. F3.1 optimiza cuándo se descargan, no el contenido.
+- Las listas de media viven directamente en `src/portafolio.njk` y en las nueve plantillas `src/proyectos/*.njk`; no existe un partial ni data file compartido para esas galerías. Portfolio usa `.gallery-item` y los proyectos `.content-item`.
+- El masonry existente calcula posiciones y alturas con la relación de aspecto de cada imagen. Ahora toma primero `naturalWidth`/`naturalHeight` cuando están disponibles y, antes de la descarga, usa `width`/`height` intrínsecos versionados; no cambiaron columnas, gaps, crop, `object-fit`, composición ni CSS editorial.
+- Estrategia: las primeras 10 imágenes de Portfolio y las primeras 4 de cada galería de proyecto permanecen `loading="eager"`; el resto usa `loading="lazy" decoding="async"`. Todas las imágenes de galería incorporan dimensiones leídas de sus WebP reales. No hay botón, paginación, ocultamiento ni truncamiento.
+- Los videos quedaron completamente fuera del cambio: no se modificaron source, cover, autoplay, muted, loop, playsinline, preload, codec, orden, dimensiones visuales ni comportamiento. Autoplay se conserva; su optimización corresponde a un lote posterior.
+- Fuentes permanentes: `01_FUENTE_MAESTRA_WEB_SOLAZ.docx` y `02_PROTOCOLO_Y_ESTADO_WEB_SOLAZ.md` no estaban disponibles localmente. El encargo aprobado aportó las decisiones necesarias y no se inventaron requisitos adicionales.
+
+### Métricas deterministas antes y después
+
+Las cifras de bytes son tamaños de los archivos locales realmente referenciados. “Eager potencial” describe el conjunto que el HTML deja inmediatamente solicitables; “peso diferido” no se presenta como transferencia de red medida. La estrategia HTML es la misma en desktop `1440 × 900` y móvil `390 × 844`.
+
+| Página | Antes: total / eager / lazy | Después: total / eager / lazy | Bytes totales | Peso diferido después | Reducción eager potencial |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Portfolio | 101 / 101 / 0 | 101 / 10 / 91 | 16.486.192 B | 13.951.976 B | 91 imágenes (90,1%); 13.951.976 B (84,6%) |
+| WEG Seminarios | 129 / 129 / 0 | 129 / 4 / 125 | 20.311.080 B | 19.744.766 B | 125 imágenes (96,9%); 19.744.766 B (97,2%) |
+| Cassone | 62 / 62 / 0 | 62 / 4 / 58 | 8.035.224 B | 7.396.756 B | 58 imágenes (93,5%); 7.396.756 B (92,1%) |
+| Diez galerías agregadas | 719 / 292 / 427 | 719 / 46 / 673 | 108.671.664 B | 100.611.194 B | 246 imágenes (84,2%); 36.772.026 B (82,0%) |
+
+- Cantidad y SHA-256 de la secuencia de `src` permanecieron idénticos antes/después en las diez galerías. El QA compara además URLs, alt, categorías, enlaces, lightbox y fuentes de video entre plantilla y build.
+- Las otras siete galerías de proyecto ya estaban completamente lazy; F3.1 hizo prioritarias solo sus primeras cuatro imágenes, añadió dimensiones reales y mantuvo diferido todo lo demás. Esto evita que la regla indiscriminada retrase la primera media necesaria sin reordenar ni retirar fotografías.
+
+### Validación runtime local y funcional
+
+- Navegador local, cold navigation y viewports configurados en `1440 × 900` y `390 × 844`. Portfolio, WEG Seminarios y Cassone conservaron layout sin superposiciones; tras scroll progresivo finalizaron en `101/101`, `129/129` y `62/62` imágenes cargadas, con 0 fallos. Mineduc, como tercera galería, terminó `37/37`, también sin superposiciones.
+- Portfolio mantuvo los nueve filtros; se recorrieron desde Todo hasta Proyectos y se restauró Todo. El lightbox abrió, avanzó de `1 / 92` a `2 / 92` y cerró correctamente. Las nueve tarjetas de proyecto y sus enlaces permanecieron presentes.
+- La ejecución local mostró descarga progresiva real: antes de scroll solo una fracción de los elementos lazy tenía dimensiones naturales; al detenerse en los tramos intermedios y completar el recorrido, todas las imágenes terminaron cargadas.
+- No se obtuvieron bytes de red reproducibles mediante Resource Timing en el navegador integrado. Las métricas de red quedan pendientes de validación Preview; este lote no desplegó Preview y no presenta estimaciones como transferencias medidas.
+
+### QA, archivos e incidencias
+
+- `scripts/verify-media-loading.mjs` valida las diez galerías sin dependencias: build contra fuente, secuencia editorial base como subsecuencia ordenada —permite añadir fotografías legítimas—, links/categorías/lightbox, política eager/lazy, dimensiones contra cada WebP real, `decoding="async"` en lazy y firma de video intacta respecto de `262410c82b33c09d35f10abe446906b239417c67`.
+- Baseline en clon temporal limpio: `npm ci` PASS, 129 paquetes y 0 vulnerabilidades; build PASS, 24 HTML y 742 archivos copiados. Final en el mismo clon limpio con el diff aplicado: `npm ci` PASS, build PASS y `npm run qa:media` PASS para 10 galerías.
+- En el workspace principal, `npm ci` encontró `EBUSY` heredado en `node_modules/.bin` y dejó el binario local de Eleventy no disponible; no se borró ni forzó esa carpeta. La validación limpia reproducible pasó en el clon temporal exacto. No se ejecutó ni modificó `qa:parity`.
+- Archivos del lote: 1 creado (`scripts/verify-media-loading.mjs`), 12 modificados (`package.json`, Portfolio, nueve proyectos y este documento), 0 eliminados. `package-lock.json`, imágenes, videos, CSS visual, copy, metadata, funciones y backend permanecen intactos.
+- Cero acciones o escrituras en Cloudflare, Pages, Preview, Production, D1, Queue, Worker, Notion, CRM real, email, DNS, analítica o Ads. `main` permanece intacta en `880610411ecb4d66f652e8bfaf89e5794231409d`.
 
 ## F2.5B — Ejecución controlada final de fallo y reconciliación
 
@@ -1039,19 +1080,26 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F2.CIERRE — cierre durable de F2 y continuidad hacia F3.
+- Lote: F3.1 — carga progresiva de Portfolio y galerías sin cambios editoriales.
 - Fecha: 2026-09-10.
-- Precheck: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, working tree inicial limpio, HEAD y `origin/develop` en `91eca4b58ad6eb4e3c0bc9fd38f93440f05e3057`, `main` y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`, divergencia develop `0/0`.
-- Fuentes: se leyó íntegramente `docs/IMPLEMENTATION_STATE.md`. `01_FUENTE_MAESTRA_WEB_SOLAZ.docx` y `02_PROTOCOLO_Y_ESTADO_WEB_SOLAZ.md` no estaban disponibles localmente; se registra la limitación sin inventar contenido.
-- Archivos: 0 creados, 1 modificado (`docs/IMPLEMENTATION_STATE.md`), 0 eliminados y 0 untracked. No hubo cambios funcionales.
-- Cierre: F2.5B queda **CERRADO** por revisión independiente de ChatGPT y F2 queda **CERRADO**. F2.4B, F2.4C, F2.4D y F2.5A permanecen cerrados.
-- F2.4A: conserva **BLOQUEADO / UNAVAILABLE** como estado histórico; no es un pendiente activo ni reabre F2.
-- Evidencia preservada: CREATE Notion, fallo final deliberado en D1, marcador durable, retry reciente sin claim, recuperación stale, búsqueda de página existente, reconciliación D1, ningún segundo CREATE e idempotencia terminal. ChatGPT verificó exactamente una página Notion para `f25b0000-0000-4000-8000-000000000002`, con page ID `3d77abcb-cbb1-81b1-86b6-d5bf9486f0ac` coincidente con D1; también se preservan `f25b0000-0000-4000-8000-000000000001` y `3d77abcb-cbb1-811f-a614-dee152e742ae`.
-- Preview heredado: D1, Queue, Worker y Notion test aislados; cron `*/5 * * * *`; sin `EMAIL` ni rutas de Production. Production, CRM real y `main` permanecen intactos.
-- Gap heredado: `qa:parity` para `functions/api/contact.js` frente a `main` permanece documentado y fuera del alcance de este cierre.
-- Validación documental: status inicial/final, paths exactos, `git diff --check`, revisión completa del diff y comprobación textual de estados y evidencia. Por prohibición expresa no se ejecutaron npm, tests, build ni QA funcional.
-- Acciones externas: 0 escrituras funcionales y 0 acciones en Cloudflare, Notion, D1, Queue, Worker, Pages, Preview, Production, CRM real, email, DNS, analítica o Ads.
-- Commit y push: un único commit documental con mensaje exacto `docs: close F2 and record F3 continuity`, exclusivamente a `origin/develop`; su SHA y sincronía se verifican fuera del propio commit. Sin rama nueva, PR, merge, force push ni escritura a `main`.
-- Rollback: revertir únicamente el commit documental `docs: close F2 and record F3 continuity`; no existe rollback de plataforma porque este lote no realizó escrituras externas.
-- Continuidad: F3 es la fase siguiente y permanece **NO INICIADA**. Este lote no la diseñó, propuso ni inició.
+- Precheck: PASS exacto; repositorio `SolazStudio/solazstudio-web`, rama `develop`, working tree inicial limpio, HEAD y `origin/develop` en `262410c82b33c09d35f10abe446906b239417c67`, `main` y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`, divergencia `0/0`.
+- Archivos: 1 creado (`scripts/verify-media-loading.mjs`), 12 modificados (`package.json`, `src/portafolio.njk`, nueve plantillas de proyecto y este documento), 0 eliminados. `package-lock.json`, imágenes, videos, CSS editorial y backend intactos.
+- Cambio simple: primeras 10 imágenes de Portfolio y primeras 4 de cada proyecto eager; las demás lazy con decodificación asíncrona. Todas usan dimensiones intrínsecas exactas, y el mismo masonry puede calcular su layout antes de descargarlas.
+- Alcance: Portfolio y las nueve galerías de proyecto enlazadas, incluidos WEG Seminarios y Cassone. Se preservan exactamente 719 imágenes, sus `src`, orden, alt, categorías, enlaces y lightbox.
+- Desktop `1440 × 900`, métricas deterministas antes/después: Portfolio `101 eager → 10 eager + 91 lazy`; WEG `129 → 4 + 125`; Cassone `62 → 4 + 58`. Los conteos y bytes son iguales para móvil porque provienen del HTML y archivos reales.
+- Móvil `390 × 844`, métricas deterministas antes/después: Portfolio `101 eager → 10 + 91`; WEG `129 → 4 + 125`; Cassone `62 → 4 + 58`.
+- Bytes: Portfolio total `16.486.192 B`, diferidos `13.951.976 B`; WEG total `20.311.080 B`, diferidos `19.744.766 B`; Cassone total `8.035.224 B`, diferidos `7.396.756 B`. Agregado: `108.671.664 B` totales y `100.611.194 B` bajo estrategia lazy final.
+- Reducción del conjunto eager potencial: Portfolio `91` requests/imágenes y `84,6%` del peso; WEG `125` y `97,2%`; Cassone `58` y `92,1%`. Son métricas deterministas de estrategia, no bytes de red observados.
+- Runtime local: en desktop y móvil, scroll progresivo completo dejó Portfolio `101/101`, WEG `129/129` y Cassone `62/62` cargadas, sin fallos ni superposiciones. Mineduc añadió una tercera comprobación `37/37` sin superposiciones.
+- Portfolio funcional: nueve filtros ejercitados y Todo restaurado; lightbox abrió, avanzó `1 / 92 → 2 / 92` y cerró; nueve tarjetas de proyecto presentes. No existen carga manual, paginación ni truncamiento.
+- Estabilidad: `width`/`height` provienen de cada WebP real y el cálculo conserva preferencia por dimensiones naturales cuando ya existen. No cambiaron tamaño visual, crop, proporción, columnas, gaps ni composición.
+- Videos: firma idéntica a la base; autoplay y todos los demás atributos, sources, covers, orden y comportamiento permanecen intactos. Optimización de video no iniciada.
+- Pruebas: baseline limpia `npm ci` PASS (`129` paquetes, `0` vulnerabilidades) y build PASS (`24` HTML, `742` copiados). Final limpio: `npm ci` PASS, build PASS y `npm run qa:media` PASS para 10 galerías. `git diff --check` PASS; `qa:parity` no ejecutado ni modificado.
+- QA reproducible: protege secuencia editorial base sin impedir nuevas fotografías, igualdad plantilla/build, metadata editorial, política eager/lazy, dimensiones reales, decoding lazy y videos intactos.
+- Métricas runtime de red: no se midieron bytes mediante Resource Timing; quedan pendientes de validación Preview. No se inventaron ni mezclaron con tamaños locales.
+- Incidencia: `npm ci` del workspace encontró `EBUSY` en `node_modules/.bin` y dejó Eleventy local no disponible; no se borró ni forzó. Baseline y final pasaron en un clon temporal limpio de la base exacta con el diff autorizado.
+- Externos: cero acciones o escrituras Cloudflare, Pages, Preview, Production, D1, Queue, Worker, Notion, CRM real, email, DNS, analítica o Ads. `main` intacta.
+- Commit y push: un único commit funcional con mensaje `perf: defer below-fold gallery images`, exclusivamente a `origin/develop`; SHA y sincronía se verifican fuera del propio commit. Sin rama, PR, merge ni force push.
+- Rollback: revertir únicamente el commit F3.1; no revertir F2 ni modificar `main` o plataformas externas.
+- Continuidad: F3.1 queda completado técnicamente para revisión de ChatGPT. No se inició F3.2, Preview, video, srcset, derivados ni recompresión.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.

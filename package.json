@@ -6,6 +6,7 @@
     "clean": "node scripts/clean.mjs",
     "build": "npm run clean && eleventy",
     "start": "eleventy --serve",
+    "qa:media": "node scripts/verify-media-loading.mjs",
     "qa:parity": "node scripts/verify-parity.mjs",
     "qa": "npm run build && npm run qa:parity"
   },
