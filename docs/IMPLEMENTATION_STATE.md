@@ -1,11 +1,11 @@
 # Estado de implementación
 
 - Fecha: 2026-09-11
-- Fase/lote: F4.2A — cierre F4.1, guardas técnicas de cumplimiento y QA contractual del contacto
-- Estado: **F4.2A COMPLETADO PARA REVISIÓN DE CHATGPT**
+- Fase/lote: F4.2B — Política de Privacidad, Términos de Uso y avisos de tratamiento
+- Estado: **F4.2B COMPLETADO PARA REVISIÓN DE CHATGPT**
 - Rama: `develop`
-- Commit base: `18cd142ec16711d66a88da1e945d0e1aa0e75aa5`
-- Commit del lote: `test: harden F4 compliance and contact QA`; su SHA se verifica fuera del propio commit
+- Commit base: `816b5a991d1d57611c2ed8eaff98009b13230aef`
+- Commit del lote: `legal: align privacy terms and contact notices`; su SHA se verifica fuera del propio commit
 - Estado F1: **CERRADO**
 - Estado F2: **CERRADO**
 - Estado F3.1: **CERRADO** por revisión independiente de ChatGPT y validación visual de Seba en Preview automático
@@ -13,8 +13,9 @@
 - Estado F3.3: **CERRADO** por revisión independiente de ChatGPT y validación de Seba en Preview automático
 - Estado F3: **CERRADA**
 - Estado F4.1: **CERRADO** por revisión independiente de ChatGPT y validación runtime por teclado de Seba en Preview
-- Estado F4.2A: **COMPLETADO PARA REVISIÓN DE CHATGPT**; no cerrado hasta revisión independiente
-- Estado F4: **EN CURSO**; F4.2B no iniciada
+- Estado F4.2A: **CERRADO** por revisión independiente de ChatGPT
+- Estado F4.2B: **COMPLETADO PARA REVISIÓN DE CHATGPT**; no cerrado hasta revisión independiente
+- Estado F4: **EN CURSO**; F5 no iniciada
 - Estado F2.5B: **CERRADO** por revisión de ChatGPT
 - Estado F2.5A: **CERRADO** por revisión de ChatGPT
 - Estado F2.3: **CERRADO** por revisión de ChatGPT
@@ -23,9 +24,9 @@
 - Estado F2.4B: **CERRADO** por revisión de ChatGPT; su resultado `MISMATCH` descartó “CRM Seba Ogalde”
 - Estado F2.4A: **BLOQUEADO / UNAVAILABLE (histórico)**; no constituye un pendiente activo
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Cloudflare / Notion / recursos funcionales reales: sin acciones ni escrituras en F4.2A; Production, Preview, CRM real y recursos externos intactos
-- Resultado: F4.1 cerrado; contrato vigente de `/api/contact` cubierto por 28 tests locales y guardas automatizadas para páginas legales, Web3Forms, tracking, Ads, cookies, skip link y alcance F4.2A
-- Siguiente paso: revisión independiente de ChatGPT; F4.2B permanece pendiente y no iniciada
+- Cloudflare / Notion / recursos funcionales reales: sin acciones ni escrituras en F4.2B; Production, Preview, D1, Queue, Worker, CRM real y recursos externos intactos
+- Resultado: F4.2A cerrado; contenido legal aprobado publicado en fuente; dos avisos de tratamiento añadidos y contrato de marketing opcional preservado; guardas automatizadas actualizadas para F4.2B
+- Siguiente paso: revisión independiente de ChatGPT; F5 permanece pendiente y no iniciada
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -72,7 +73,7 @@ Estado: **CERRADO**.
 
 ## F4.2A — Guardas técnicas de cumplimiento y QA contractual del contacto
 
-Estado: **COMPLETADO PARA REVISIÓN DE CHATGPT**; no cerrado.
+Estado: **CERRADO** por revisión independiente de ChatGPT.
 
 ### Contrato automatizado y guardas
 
@@ -94,15 +95,30 @@ Estado: **COMPLETADO PARA REVISIÓN DE CHATGPT**; no cerrado.
 - `git diff --check`: PASS. No se añadió tracking, Ads, cookie banner, dependencia o cambio funcional público. No hubo navegador, Lighthouse, POST real, despliegue manual ni escritura en Cloudflare, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads.
 - Rollback: revertir únicamente el commit `test: harden F4 compliance and contact QA` en `develop`; no tocar F4.1, F1/F2/F3 ni `main`.
 
-## F4.2B — hechos que deberán reflejarse en la futura redacción legal
+## F4.2B — Política de Privacidad, Términos de Uso y avisos de tratamiento
 
-- Web3Forms ya no forma parte del flujo ejecutable.
-- El flujo activo es `formulario → /api/contact → D1 → Queue → sincronización operativa/Notion`.
-- Los formularios recopilan contexto del servicio; la solicitud de reunión recopila días y franja horaria; el consentimiento de marketing es opcional.
-- Turnstile realiza verificación anti-bot server-side.
-- No hay analítica ni Ads activos.
-- Desalineaciones actuales que una futura redacción deberá resolver: Privacidad aún menciona Web3Forms; la descripción de datos no cubre completamente días/horario; la explicación de almacenamiento no refleja D1/Queue; y la retención requiere decisión y redacción.
-- F4.2B permanece **PENDIENTE / NO INICIADA**. Este inventario no decide retención, base jurídica, derechos, destinatarios, contratos ni cookies futuras.
+Estado: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+
+### Implementación legal y editorial
+
+- Base exacta `816b5a991d1d57611c2ed8eaff98009b13230aef`; repositorio correcto, rama `develop`, working tree inicial limpio, HEAD igual a `origin/develop`, divergencia `0/0` y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- La Política de Privacidad y los Términos de Uso sustituyen íntegramente la redacción anterior por el contenido aprobado, conservando estructura visual, identidad, navegación, footer, responsive, URL, canonical y `noindex`.
+- Identidad utilizada sin variantes: Solaz Studio SpA, RUT 77.734.441-2; representante legal Sebastián Silva Ogalde; domicilio Eulogio Sánchez 065, Providencia, Santiago, Chile; correo `hola@solazstudio.cl` con enlaces `mailto:` funcionales.
+- La Política cubre alcance y datos, finalidades, gestión de formularios, marketing separado, flujo D1/Queue/Notion, seguimiento y conservación, proveedores, transferencias internacionales, tecnologías opcionales y necesarias, derechos, decisiones automatizadas, seguridad, modificaciones y contacto. Web3Forms queda descrito únicamente como fuera del flujo activo.
+- Los Términos cubren el objeto informativo del sitio, inexistencia de contrato o reserva automática por contacto/reunión, precios y disponibilidad, propiedad intelectual, marcas y contenido de terceros, scraping e inteligencia artificial, imagen y vida privada, niños, contenido por encargo, información de visitantes, seguridad, disponibilidad, enlaces externos, privacidad, responsabilidad y legislación chilena.
+- Cada uno de los dos formularios contiene exactamente una vez el aviso: “Al enviar, autorizas a Solaz Studio SpA a tratar los datos que proporcionas para gestionar tu solicitud, según la Política de Privacidad.” El texto enlaza a `/politica-privacidad`, no añade checkbox obligatorio y no cambia campos, validación, Turnstile, JavaScript de envío ni backend.
+- Se preserva el único checkbox de marketing que ya existía —en contacto general— separado del aviso, desmarcado por defecto, sin `required`, con `name=consent_marketing`, `value=si` y el texto aprobado intacto. No se añadió un campo nuevo al formulario de reunión.
+
+### QA, alcance y estado de F5
+
+- `scripts/verify-compliance-gates.mjs` protege el contenido identificatorio y las materias legales aprobadas, los dos avisos en fuente y output —uno por formulario—, sus enlaces, el contrato opcional de marketing, `noindex`/canonical y la declaración única sobre Web3Forms. Mantiene la detección de Web3Forms, tracking, Ads y banners ejecutables sin confundir menciones editoriales futuras con integraciones activas.
+- La compuerta de alcance usa la base F4.2B exacta y admite solo las tres plantillas públicas, los dos scripts QA y este documento. `package.json`, `package-lock.json`, Function, Worker, migraciones, media, páginas no relacionadas, datos de servicios e infraestructura quedan fuera de alcance.
+- Sintaxis `node --check`: PASS para ambos scripts MJS modificados. Build Eleventy: PASS con 24 HTML y 743 archivos copiados; un primer intento posterior encontró `EBUSY` transitorio de Dropbox sobre `_site`, y el reintento idéntico pasó sin cerrar procesos ni alterar archivos versionados.
+- `qa:contact` y `qa:turnstile`: **28 PASS, 0 FAIL** cada uno. `qa:compliance`: PASS para 2 páginas legales, 2 avisos, marketing opcional y 24 HTML sin tracking, Ads, cookies ni Web3Forms ejecutable. `qa:skip-link`: PASS 24/24; `qa:media`: PASS para 719 imágenes y 1.398 derivados; `qa:video`: PASS para 3 heroes; `qa:scope`: PASS; `qa:parity`: PASS para 24 HTML, 24 templates y 2.165 archivos públicos. `npm run qa`: PASS local completo.
+- `git diff --check`: PASS. Archivos del lote: 0 creados, 6 modificados (`src/politica-privacidad.njk`, `src/terminos-uso.njk`, `src/contacto.njk`, `scripts/verify-compliance-gates.mjs`, `scripts/verify-f4-scope.mjs` y este documento) y 0 eliminados. `package.json`, `package-lock.json` y `functions/api/contact.js` permanecen intactos.
+- La prueba del commit en un worktree temporal limpio ejecutó `npm ci` —148 paquetes, 0 vulnerabilidades— y `npm run qa`: PASS completo usando solo archivos versionados. El worktree temporal fue eliminado después de la verificación.
+- F5 permanece **NO INICIADA**. Su estado objetivo aprobado contempla Preferencias de privacidad con Aceptar/Rechazar, bloqueo previo de medición opcional, GA4 y Google Ads; `ad_personalization` denegado inicialmente; sin Customer Match ni enhanced conversions; y sin enviar PII de los formularios a Google. F4.2B no implementa popup, cookies/preferencias, GTM, Consent Mode, GA4 ni Google Ads.
+- Backend, D1, Queue, Worker, Notion real, Cloudflare real, email, DNS, analítica, Ads y `main`/Production permanecen intactos. Rollback: revertir únicamente `legal: align privacy terms and contact notices` en `develop`, regresando a `816b5a991d1d57611c2ed8eaff98009b13230aef`; no revertir F4.2A/F4.1 ni tocar F1/F2/F3 o `main`.
 
 ## F3.3 — Optimización conservadora de videos hero
 
@@ -1255,17 +1271,17 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F4.2A — cierre F4.1, guardas técnicas de cumplimiento y QA contractual del contacto.
+- Lote: F4.2B — Política de Privacidad, Términos de Uso y avisos de tratamiento en Contacto.
 - Fecha: 2026-09-11.
-- Base exacta: `18cd142ec16711d66a88da1e945d0e1aa0e75aa5`; repositorio correcto, rama `develop`, working tree inicial limpio, HEAD igual a `origin/develop`, divergencia `0/0` y `origin/main` exacta.
-- Cierre: F4.1 **CERRADO** tras revisión independiente del commit y validación real por teclado de Seba en Preview; se registraron los cuatro pasos observados sin modificar el código F4.1.
-- Archivos: 1 creado, 7 modificados y 0 eliminados; exclusivamente `package.json`, scripts QA y `docs/IMPLEMENTATION_STATE.md`. Cero cambios funcionales públicos.
-- Contrato de contacto: 28/28 PASS con mocks locales de Siteverify, D1 y Queue; `functions/api/contact.js` permaneció byte a byte intacto.
-- Cumplimiento: PASS para rutas/canonical/noindex legales, ausencia ejecutable de Web3Forms, tracking, Ads y banner de cookies. Los textos públicos de Privacidad y Términos no cambiaron.
-- QA: sintaxis PASS; skip link 24/24; media 719/719 e imágenes responsivas intactas; 3 heroes intactos; scope PASS; paridad/output 24 HTML, 24 templates y 2.165 archivos públicos; `npm run qa` PASS local y PASS en entorno limpio tras `npm ci`; `git diff --check` PASS.
-- Dependencias: ninguna añadida o modificada; `package-lock.json` intacto.
+- Base exacta: `816b5a991d1d57611c2ed8eaff98009b13230aef`; repositorio correcto, rama `develop`, working tree inicial limpio, HEAD igual a `origin/develop`, divergencia `0/0` y `origin/main` exacta.
+- Continuidad: F4.2A **CERRADO** por revisión independiente de ChatGPT. F4.2B queda **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+- Archivos: 0 creados, 6 modificados y 0 eliminados; únicamente las tres plantillas autorizadas, dos scripts QA y este documento.
+- Legales: Política y Términos sustituidos por el contenido aprobado con Solaz Studio SpA, RUT 77.734.441-2, representante legal Sebastián Silva Ogalde y domicilio Eulogio Sánchez 065, Providencia, Santiago, Chile. URLs, canonical, diseño y `noindex` preservados.
+- Formularios: dos avisos exactos con enlace interno, sin checkbox obligatorio; consentimiento de marketing existente separado, opcional, desmarcado y con su contrato `name/value` intacto. Backend y submit sin cambios.
+- QA: sintaxis PASS; build 24 HTML/743 copiados; Contacto y Turnstile 28/28 cada uno; compliance PASS; skip link 24/24; media 719/719 y 1.398 derivados; video 3/3; scope PASS; paridad 24 HTML/24 templates/2.165 públicos; `npm run qa` PASS local y PASS en worktree limpio tras `npm ci`; `git diff --check` PASS.
+- Integridad: `package-lock.json`, `package.json` y `functions/api/contact.js` intactos; sin tracking, Ads, Web3Forms ni popup ejecutables. No se implementaron Preferencias de privacidad, GA4, Google Ads, GTM ni Consent Mode.
 - Recursos externos: cero escrituras manuales; no hubo navegador, POST real, deploy ni acciones sobre Cloudflare, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads. `main`/Production permanece intacta.
-- Estado: F4.2A **COMPLETADO PARA REVISIÓN DE CHATGPT**. F4.2B permanece pendiente y no iniciada.
-- Commit y push: un único commit `test: harden F4 compliance and contact QA`, exclusivamente a `origin/develop`; SHA y sincronía se verifican fuera del commit.
-- Rollback: revertir únicamente ese commit en `develop`; no tocar F4.1, F1/F2/F3 ni `main`.
+- Commit y push: un único commit `legal: align privacy terms and contact notices`, exclusivamente a `origin/develop`; SHA y sincronía se verifican fuera del propio commit y después de superar el worktree limpio.
+- Rollback: revertir únicamente ese commit en `develop` para volver a `816b5a991d1d57611c2ed8eaff98009b13230aef`; no tocar F4.2A, F4.1, F1/F2/F3 ni `main`.
+- Siguiente pendiente: F5; **NO INICIADA**.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
