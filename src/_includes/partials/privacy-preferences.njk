@@ -95,7 +95,6 @@
     data-solaz-privacy-preferences
     data-measurement-enabled="{{ measurement.enabled }}"
     data-ga-measurement-id="{{ measurement.gaMeasurementId }}"
-    data-google-ads-id="{{ measurement.googleAdsId }}"
     aria-labelledby="privacy-preferences-title"
     hidden
   >
@@ -117,9 +116,20 @@
     const STORAGE_KEY = 'solaz_privacy_preferences';
     const PREFERENCE_VERSION = 1;
     const PRODUCTION_HOSTS = new Set(['solazstudio.cl', 'www.solazstudio.cl']);
+    const ATTRIBUTION_QUERY_KEYS = Object.freeze([
+      'utm_source',
+      'utm_medium',
+      'utm_campaign',
+      'utm_id',
+      'utm_term',
+      'utm_content',
+      'gclid',
+      'gbraid',
+      'wbraid',
+      'dclid'
+    ]);
     const TOKEN_PATTERN = /^[a-z0-9]+(?:[\/_-][a-z0-9]+)*$/i;
     const GA_ID_PATTERN = /^G-[A-Z0-9]+$/;
-    const ADS_ID_PATTERN = /^AW-[0-9]+$/;
     const DENIED = Object.freeze({
       analytics_storage: 'denied',
       ad_storage: 'denied',
@@ -134,13 +144,13 @@
     });
     const config = Object.freeze({
       enabled: root.dataset.measurementEnabled === 'true',
-      gaMeasurementId: String(root.dataset.gaMeasurementId || '').trim(),
-      googleAdsId: String(root.dataset.googleAdsId || '').trim()
+      gaMeasurementId: String(root.dataset.gaMeasurementId || '').trim()
     });
     const debug = {
       consentState: { decision: null, ...DENIED },
       tagLoadAttempted: false,
       tagLoaded: false,
+      pageViewSent: false,
       eventsEmitted: [],
       eventsSent: []
     };
@@ -212,10 +222,8 @@
       document.head.appendChild(script);
 
       gtag('js', new Date());
-      gtag('config', config.gaMeasurementId);
-      if (ADS_ID_PATTERN.test(config.googleAdsId)) {
-        gtag('config', config.googleAdsId);
-      }
+      gtag('config', config.gaMeasurementId, { send_page_view: false });
+      sendPageViewOnce();
       return true;
     }
 
@@ -262,6 +270,33 @@
       const path = typeof value === 'string' ? value : '';
       if (!path || path.length > 300 || !path.startsWith('/') || path.startsWith('//') || /[?#\\]/.test(path)) return '';
       return path;
+    }
+
+    function buildPageViewPayload(location = window.location) {
+      const pagePath = safePagePath(location.pathname);
+      if (!pagePath) return null;
+
+      const pageLocation = new URL(`${location.protocol}//${location.hostname}${pagePath}`);
+      const sourceParams = new URLSearchParams(location.search || '');
+      ATTRIBUTION_QUERY_KEYS.forEach(key => {
+        sourceParams.getAll(key).forEach(value => pageLocation.searchParams.append(key, value));
+      });
+      return {
+        page_location: pageLocation.toString(),
+        page_path: pagePath
+      };
+    }
+
+    function sendPageViewOnce() {
+      if (debug.pageViewSent || !googleIsEligible()) return false;
+      const payload = buildPageViewPayload();
+      if (!payload) return false;
+
+      debug.pageViewSent = true;
+      debug.eventsEmitted.push({ name: 'page_view', parameters: { ...payload } });
+      gtag('event', 'page_view', { ...payload });
+      debug.eventsSent.push({ name: 'page_view', parameters: { ...payload } });
+      return true;
     }
 
     function emitEvent(name, parameters) {

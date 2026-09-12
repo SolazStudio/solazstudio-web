@@ -4,6 +4,5 @@ function cleanEnvironmentValue(value) {
 
 export default {
   enabled: process.env.MEASUREMENT_ENABLED === "true",
-  gaMeasurementId: cleanEnvironmentValue(process.env.GA_MEASUREMENT_ID),
-  googleAdsId: cleanEnvironmentValue(process.env.GOOGLE_ADS_ID)
+  gaMeasurementId: cleanEnvironmentValue(process.env.GA_MEASUREMENT_ID)
 };

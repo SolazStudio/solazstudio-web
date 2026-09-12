@@ -190,6 +190,12 @@ const forbiddenMeasurementPatterns = [
   /googletagmanager\.com\/gtm\.js/i,
   /\bGTM-[A-Z0-9]+\b/i,
   /ad_personalization\s*:\s*["']granted["']/i,
+  /send_page_view\s*:\s*true/i,
+  /\bsend_to\b/i,
+  /conversion[_ -]?label/i,
+  /\bGOOGLE_ADS_ID\b/,
+  /\bgoogleAdsId\b/,
+  /\bADS_ID_PATTERN\b/,
   /\bG-[A-Z0-9]{6,}\b/,
   /\bAW-\d{6,}\b/
 ];
@@ -200,12 +206,83 @@ const cookieBannerPatterns = [
 const measurementSource = await readFile(join(projectRoot, "src/_data/measurement.js"), "utf8");
 const approvedRuntimeSource = await readFile(join(projectRoot, "src/_includes/partials/privacy-preferences.njk"), "utf8");
 const leadTrackingBlock = approvedRuntimeSource.match(/function trackLead\b[\s\S]*?function trackDirectContact\b/)?.[0] ?? "";
+const directContactBlock = approvedRuntimeSource.match(/function trackDirectContact\b[\s\S]*?window\.solazMeasurement\b/)?.[0] ?? "";
+const pageViewBlock = approvedRuntimeSource.match(/function buildPageViewPayload\b[\s\S]*?function emitEvent\b/)?.[0] ?? "";
+const attributionBlock = approvedRuntimeSource.match(/const ATTRIBUTION_QUERY_KEYS\s*=\s*Object\.freeze\(\[([\s\S]*?)\]\);/)?.[1] ?? "";
+const expectedAttributionKeys = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_id",
+  "utm_term",
+  "utm_content",
+  "gclid",
+  "gbraid",
+  "wbraid",
+  "dclid"
+];
 assert.ok(leadTrackingBlock, "privacy-preferences.njk: falta la guarda central de generate_lead");
+assert.ok(directContactBlock, "privacy-preferences.njk: falta la guarda central de contacto directo");
+assert.ok(pageViewBlock, "privacy-preferences.njk: falta el page_view manual controlado");
+assert.ok(attributionBlock, "privacy-preferences.njk: falta la whitelist explícita de atribución");
 assert.doesNotMatch(
   leadTrackingBlock,
   /\b(?:email|phone|telefono|nombre|name|message|submission_id|case_id|consent_marketing)\b/i,
   "privacy-preferences.njk: PII o identificador interno detectado en el bloque generate_lead"
 );
+assert.match(
+  directContactBlock,
+  /emitEvent\(eventName,\s*\{\s*page_path:\s*normalizedPath\s*\}\)/,
+  "privacy-preferences.njk: contacto directo debe conservar únicamente page_path saneado"
+);
+assert.doesNotMatch(
+  directContactBlock,
+  /\b(?:telefono|nombre|message|href|referrer|search)\b/i,
+  "privacy-preferences.njk: contacto directo incorporó datos no permitidos"
+);
+assert.deepEqual(
+  [...attributionBlock.matchAll(/["']([a-z_]+)["']/g)].map((match) => match[1]),
+  expectedAttributionKeys,
+  "privacy-preferences.njk: la whitelist de atribución debe coincidir exactamente con F5.2A"
+);
+assert.match(pageViewBlock, /new URLSearchParams\(location\.search \|\| ["']{2}\)/);
+assert.match(pageViewBlock, /page_location:\s*pageLocation\.toString\(\)/);
+assert.match(pageViewBlock, /page_path:\s*pagePath/);
+assert.match(pageViewBlock, /debug\.pageViewSent\s*\|\|\s*!googleIsEligible\(\)/);
+assert.doesNotMatch(
+  pageViewBlock,
+  /window\.location\.href|document\.referrer|page_title|user_id|FormData|\b(?:email|phone|telefono|nombre|message)\b/i,
+  "privacy-preferences.njk: page_view usa URL cruda, referrer, PII o campos no autorizados"
+);
+assert.deepEqual(
+  [...approvedRuntimeSource.matchAll(/new Set\(\[([^\]]+)\]\)/g)]
+    .flatMap((match) => [...match[1].matchAll(/["']([^"']+)["']/g)].map((item) => item[1]))
+    .filter((value) => value.includes("solazstudio.cl")),
+  ["solazstudio.cl", "www.solazstudio.cl"],
+  "privacy-preferences.njk: la compuerta de hostname debe permitir únicamente los dos hosts de Production"
+);
+assert.equal(
+  countOccurrences(approvedRuntimeSource, "gtag('config', config.gaMeasurementId, { send_page_view: false });"),
+  1,
+  "privacy-preferences.njk: GA4 debe configurarse una vez con send_page_view:false"
+);
+assert.equal(
+  (approvedRuntimeSource.match(/gtag\(["']config["']/g) || []).length,
+  1,
+  "privacy-preferences.njk: solo puede existir una configuración gtag y debe ser GA4"
+);
+assert.equal(
+  countOccurrences(approvedRuntimeSource, "gtag('event', 'page_view', { ...payload });"),
+  1,
+  "privacy-preferences.njk: debe existir exactamente un envío manual de page_view"
+);
+for (const state of ["analytics_storage", "ad_storage", "ad_user_data", "ad_personalization"]) {
+  assert.match(approvedRuntimeSource, new RegExp(`${state}: ['\"]denied['\"]`), `privacy-preferences.njk: falta default/rejected denied para ${state}`);
+}
+for (const state of ["analytics_storage", "ad_storage", "ad_user_data"]) {
+  assert.match(approvedRuntimeSource, new RegExp(`${state}: ['\"]granted['\"]`), `privacy-preferences.njk: falta accepted granted para ${state}`);
+}
+assert.doesNotMatch(measurementSource, /GOOGLE_ADS_ID|googleAdsId|ADS_ID_PATTERN/);
 assert.equal(
   countOccurrences(approvedRuntimeSource, "https://www.googletagmanager.com/gtag/js?id="),
   1,
@@ -245,5 +322,5 @@ for (const file of EXPECTED_HTML_FILES) {
 }
 
 console.log(
-  `qa:compliance PASS (${legalPages.size} páginas legales; 2 avisos; marketing opcional; ${EXPECTED_HTML_FILES.length} HTML con loader consentido y sin tracking estático, IDs, GTM, PII ni Web3Forms ejecutable)`
+  `qa:compliance PASS (${legalPages.size} páginas legales; 2 avisos; marketing opcional; GA4 único con page_view saneado; ${EXPECTED_HTML_FILES.length} HTML con loader consentido y sin Ads directo, tracking estático, IDs, GTM, PII ni Web3Forms ejecutable)`
 );

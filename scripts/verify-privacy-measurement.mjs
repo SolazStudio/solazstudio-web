@@ -62,11 +62,11 @@ function savedPreference(decision, version = 1) {
 function runRuntime({
   hostname = "preview.solazstudio-web.pages.dev",
   pathname = "/contacto",
+  url = null,
   stored = null,
   storageThrows = false,
   enabled = false,
-  gaId = "",
-  adsId = ""
+  gaId = ""
 } = {}) {
   const root = new FakeElement();
   const accept = new FakeElement();
@@ -75,8 +75,7 @@ function runRuntime({
   const opener = new FakeElement();
   root.dataset = {
     measurementEnabled: String(enabled),
-    gaMeasurementId: gaId,
-    googleAdsId: adsId
+    gaMeasurementId: gaId
   };
   root.querySelector = (selector) => ({
     '[data-privacy-action="accept"]': accept,
@@ -122,9 +121,16 @@ function runRuntime({
       documentListeners.set(type, listeners);
     }
   };
-  const href = `https://${hostname}${pathname}`;
+  const resolvedUrl = new URL(url || `https://${hostname}${pathname}`);
   const window = {
-    location: { hostname, pathname, href },
+    location: {
+      protocol: resolvedUrl.protocol,
+      hostname: resolvedUrl.hostname,
+      pathname: resolvedUrl.pathname,
+      search: resolvedUrl.search,
+      hash: resolvedUrl.hash,
+      href: resolvedUrl.href
+    },
     localStorage,
     dataLayer: []
   };
@@ -133,6 +139,7 @@ function runRuntime({
     window,
     document,
     URL,
+    URLSearchParams,
     Date,
     Set,
     Object,
@@ -161,6 +168,18 @@ function dataLayerCalls(result) {
 
 function lastConsent(result, command) {
   return dataLayerCalls(result).filter((entry) => entry[0] === "consent" && entry[1] === command).at(-1)?.[2];
+}
+
+function commandCalls(result, command) {
+  return dataLayerCalls(result).filter((entry) => entry[0] === command);
+}
+
+function eventCalls(result, name) {
+  return commandCalls(result, "event").filter((entry) => entry[1] === name);
+}
+
+function configuredProduction(url = "https://solazstudio.cl/contacto") {
+  return runRuntime({ url, stored: savedPreference("accepted"), enabled: true, gaId: "G-TEST123" });
 }
 
 test("01: las 24 salidas HTML incluyen una sola UI, runtime y apertura de footer", () => {
@@ -241,7 +260,7 @@ test("11: localStorage no disponible no rompe el control", () => {
 });
 
 test("12: Preview jamás intenta cargar Google aunque haya consentimiento e IDs", () => {
-  const result = runRuntime({ stored: savedPreference("accepted"), enabled: true, gaId: "G-TEST123", adsId: "AW-123456" });
+  const result = runRuntime({ stored: savedPreference("accepted"), enabled: true, gaId: "G-TEST123" });
   assert.equal(result.appendedScripts.length, 0);
   assert.equal(result.window.__solazMeasurementDebug.tagLoadAttempted, false);
 });
@@ -390,7 +409,7 @@ test("33: la configuración versionada parte deshabilitada y sin IDs reales", ()
   const source = readFileSync(join(projectRoot, "src/_data/measurement.js"), "utf8");
   assert.match(source, /MEASUREMENT_ENABLED === "true"/);
   assert.match(source, /GA_MEASUREMENT_ID/);
-  assert.match(source, /GOOGLE_ADS_ID/);
+  assert.doesNotMatch(source, /GOOGLE_ADS_ID|googleAdsId|ADS_ID_PATTERN/);
   assert.doesNotMatch(source, /\bG-[A-Z0-9]{6,}\b|\bAW-\d{6,}\b/);
 });
 
@@ -435,4 +454,154 @@ test("39: rejected bloquea tanto loader como eventos externos", () => {
 test("40: Production sin decisión tampoco carga Google", () => {
   const result = runRuntime({ hostname: "solazstudio.cl", enabled: true, gaId: "G-TEST123" });
   assert.equal(result.appendedScripts.length, 0);
+});
+
+test("41: GA4 se configura una sola vez con page_view automático desactivado", () => {
+  const result = configuredProduction();
+  const calls = commandCalls(result, "config");
+  assert.deepEqual(calls, [["config", "G-TEST123", { send_page_view: false }]]);
+});
+
+test("42: Production aceptado emite exactamente un page_view manual", () => {
+  const result = configuredProduction();
+  assert.equal(eventCalls(result, "page_view").length, 1);
+  assert.equal(result.window.__solazMeasurementDebug.pageViewSent, true);
+});
+
+test("43: reabrir y volver a aceptar no duplica page_view", () => {
+  const result = configuredProduction();
+  result.window.solazMeasurement.openPreferences();
+  result.accept.click();
+  assert.equal(eventCalls(result, "page_view").length, 1);
+  assert.equal(result.window.__solazMeasurementDebug.eventsEmitted.filter((event) => event.name === "page_view").length, 1);
+});
+
+test("44: Production rechazado no emite page_view", () => {
+  const result = runRuntime({ hostname: "solazstudio.cl", stored: savedPreference("rejected"), enabled: true, gaId: "G-TEST123" });
+  assert.equal(eventCalls(result, "page_view").length, 0);
+});
+
+test("45: Production sin decisión no emite page_view", () => {
+  const result = runRuntime({ hostname: "solazstudio.cl", enabled: true, gaId: "G-TEST123" });
+  assert.equal(eventCalls(result, "page_view").length, 0);
+});
+
+test("46: Preview aceptado no carga ni emite page_view externo", () => {
+  const result = runRuntime({ stored: savedPreference("accepted"), enabled: true, gaId: "G-TEST123" });
+  assert.equal(result.appendedScripts.length, 0);
+  assert.equal(eventCalls(result, "page_view").length, 0);
+});
+
+test("47: page_view simple usa location sin hash y path relativo", () => {
+  const call = eventCalls(configuredProduction("https://solazstudio.cl/contacto#formMensaje"), "page_view")[0];
+  assert.deepEqual(call, ["event", "page_view", {
+    page_location: "https://solazstudio.cl/contacto",
+    page_path: "/contacto"
+  }]);
+});
+
+const attributionCases = [
+  ["utm_source", "google"],
+  ["utm_medium", "cpc"],
+  ["utm_campaign", "primavera"],
+  ["utm_id", "camp-01"],
+  ["utm_term", "estudio"],
+  ["utm_content", "hero"],
+  ["gclid", "gclid-01"],
+  ["gbraid", "gbraid-01"],
+  ["wbraid", "wbraid-01"],
+  ["dclid", "dclid-01"]
+];
+
+attributionCases.forEach(([key, value], index) => {
+  test(`${String(48 + index).padStart(2, "0")}: page_location conserva ${key}`, () => {
+    const call = eventCalls(configuredProduction(`https://solazstudio.cl/portfolio?${key}=${value}`), "page_view")[0];
+    assert.equal(call[2].page_location, `https://solazstudio.cl/portfolio?${key}=${value}`);
+    assert.equal(call[2].page_path, "/portfolio");
+  });
+});
+
+test("58: page_location elimina parámetros arbitrarios", () => {
+  const call = eventCalls(configuredProduction("https://solazstudio.cl/contacto?foo=bar"), "page_view")[0];
+  assert.equal(call[2].page_location, "https://solazstudio.cl/contacto");
+});
+
+test("59: page_location elimina email", () => {
+  const call = eventCalls(configuredProduction("https://solazstudio.cl/contacto?email=persona%40example.com"), "page_view")[0];
+  assert.equal(call[2].page_location, "https://solazstudio.cl/contacto");
+});
+
+test("60: page_location elimina teléfono", () => {
+  const call = eventCalls(configuredProduction("https://solazstudio.cl/contacto?telefono=%2B56900000000"), "page_view")[0];
+  assert.equal(call[2].page_location, "https://solazstudio.cl/contacto");
+});
+
+test("61: page_location elimina nombre", () => {
+  const call = eventCalls(configuredProduction("https://solazstudio.cl/contacto?nombre=Persona"), "page_view")[0];
+  assert.equal(call[2].page_location, "https://solazstudio.cl/contacto");
+});
+
+test("62: page_location conserva solo la whitelist ante parámetros combinados", () => {
+  const call = eventCalls(configuredProduction("https://solazstudio.cl/contacto?utm_source=google&foo=bar&email=persona%40example.com&gclid=abc"), "page_view")[0];
+  assert.equal(call[2].page_location, "https://solazstudio.cl/contacto?utm_source=google&gclid=abc");
+});
+
+test("63: page_location nunca conserva fragmentos", () => {
+  const call = eventCalls(configuredProduction("https://solazstudio.cl/contacto?utm_medium=cpc#privado"), "page_view")[0];
+  assert.equal(call[2].page_location, "https://solazstudio.cl/contacto?utm_medium=cpc");
+});
+
+test("64: UTM válida sobrevive mientras PII contigua se elimina", () => {
+  const call = eventCalls(configuredProduction("https://solazstudio.cl/contacto?utm_campaign=lanzamiento&name=Persona&phone=123"), "page_view")[0];
+  assert.equal(call[2].page_location, "https://solazstudio.cl/contacto?utm_campaign=lanzamiento");
+});
+
+test("65: page_path contiene únicamente pathname", () => {
+  const call = eventCalls(configuredProduction("https://solazstudio.cl/servicios/branding?utm_source=google#detalle"), "page_view")[0];
+  assert.equal(call[2].page_path, "/servicios/branding");
+  assert.doesNotMatch(call[2].page_path, /[?#]|^https?:/);
+});
+
+test("66: el payload page_view contiene solo page_location y page_path", () => {
+  const payload = eventCalls(configuredProduction("https://solazstudio.cl/?utm_source=google"), "page_view")[0][2];
+  assert.deepEqual(Object.keys(payload).sort(), ["page_location", "page_path"]);
+});
+
+test("67: el runtime no contiene configuración directa de Google Ads", () => {
+  assert.doesNotMatch(runtime, /GOOGLE_ADS_ID|googleAdsId|ADS_ID_PATTERN|\bAW-\d+/);
+});
+
+test("68: no existe config AW ni destino send_to", () => {
+  const result = configuredProduction();
+  assert.equal(commandCalls(result, "config").some((entry) => String(entry[1]).startsWith("AW-")), false);
+  assert.doesNotMatch(runtime, /\bsend_to\b|conversion[_ -]?label/i);
+});
+
+test("69: 127.0.0.1 queda aislado de loader y page_view", () => {
+  const result = runRuntime({ hostname: "127.0.0.1", stored: savedPreference("accepted"), enabled: true, gaId: "G-TEST123" });
+  assert.equal(result.appendedScripts.length, 0);
+  assert.equal(eventCalls(result, "page_view").length, 0);
+});
+
+test("70: configuración deshabilitada bloquea loader y page_view", () => {
+  const result = runRuntime({ hostname: "solazstudio.cl", stored: savedPreference("accepted"), gaId: "G-TEST123" });
+  assert.equal(result.appendedScripts.length, 0);
+  assert.equal(eventCalls(result, "page_view").length, 0);
+});
+
+test("71: GA ID ausente bloquea loader y page_view", () => {
+  const result = runRuntime({ hostname: "solazstudio.cl", stored: savedPreference("accepted"), enabled: true });
+  assert.equal(result.appendedScripts.length, 0);
+  assert.equal(eventCalls(result, "page_view").length, 0);
+});
+
+test("72: GA ID inválido bloquea loader y page_view", () => {
+  const result = runRuntime({ hostname: "solazstudio.cl", stored: savedPreference("accepted"), enabled: true, gaId: "AW-123456" });
+  assert.equal(result.appendedScripts.length, 0);
+  assert.equal(eventCalls(result, "page_view").length, 0);
+});
+
+test("73: page_location preserva valores repetidos solo para claves permitidas", () => {
+  const call = eventCalls(configuredProduction("https://solazstudio.cl/?utm_source=uno&utm_source=dos&email=x%40example.com"), "page_view")[0];
+  assert.equal(call[2].page_location, "https://solazstudio.cl/?utm_source=uno&utm_source=dos");
 });
