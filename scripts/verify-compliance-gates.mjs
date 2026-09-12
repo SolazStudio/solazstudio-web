@@ -207,7 +207,11 @@ const measurementSource = await readFile(join(projectRoot, "src/_data/measuremen
 const approvedRuntimeSource = await readFile(join(projectRoot, "src/_includes/partials/privacy-preferences.njk"), "utf8");
 const leadTrackingBlock = approvedRuntimeSource.match(/function trackLead\b[\s\S]*?function trackDirectContact\b/)?.[0] ?? "";
 const directContactBlock = approvedRuntimeSource.match(/function trackDirectContact\b[\s\S]*?window\.solazMeasurement\b/)?.[0] ?? "";
+const referrerSanitizerBlock = approvedRuntimeSource.match(/function sanitizePageReferrer\b[\s\S]*?function buildMeasurementContext\b/)?.[0] ?? "";
+const measurementContextBlock = approvedRuntimeSource.match(/function buildMeasurementContext\b[\s\S]*?function buildPageViewPayload\b/)?.[0] ?? "";
 const pageViewBlock = approvedRuntimeSource.match(/function buildPageViewPayload\b[\s\S]*?function emitEvent\b/)?.[0] ?? "";
+const googleConfigMatches = [...approvedRuntimeSource.matchAll(/gtag\(["']config["'],\s*config\.gaMeasurementId,\s*\{([\s\S]*?)\}\);/g)];
+const googleConfigBlock = googleConfigMatches[0]?.[1] ?? "";
 const attributionBlock = approvedRuntimeSource.match(/const ATTRIBUTION_QUERY_KEYS\s*=\s*Object\.freeze\(\[([\s\S]*?)\]\);/)?.[1] ?? "";
 const expectedAttributionKeys = [
   "utm_source",
@@ -223,7 +227,10 @@ const expectedAttributionKeys = [
 ];
 assert.ok(leadTrackingBlock, "privacy-preferences.njk: falta la guarda central de generate_lead");
 assert.ok(directContactBlock, "privacy-preferences.njk: falta la guarda central de contacto directo");
+assert.ok(referrerSanitizerBlock, "privacy-preferences.njk: falta la sanitización explícita de page_referrer");
+assert.ok(measurementContextBlock, "privacy-preferences.njk: falta el contexto seguro transversal de GA4");
 assert.ok(pageViewBlock, "privacy-preferences.njk: falta el page_view manual controlado");
+assert.ok(googleConfigBlock, "privacy-preferences.njk: falta la configuración GA4 con contexto seguro");
 assert.ok(attributionBlock, "privacy-preferences.njk: falta la whitelist explícita de atribución");
 assert.doesNotMatch(
   leadTrackingBlock,
@@ -245,26 +252,50 @@ assert.deepEqual(
   expectedAttributionKeys,
   "privacy-preferences.njk: la whitelist de atribución debe coincidir exactamente con F5.2A"
 );
-assert.match(pageViewBlock, /new URLSearchParams\(location\.search \|\| ["']{2}\)/);
-assert.match(pageViewBlock, /page_location:\s*pageLocation\.toString\(\)/);
-assert.match(pageViewBlock, /page_path:\s*pagePath/);
+assert.match(referrerSanitizerBlock, /const referrer\s*=\s*new URL\(rawReferrer\)/);
+assert.match(referrerSanitizerBlock, /\[\s*["']http:["']\s*,\s*["']https:["']\s*\]\.includes\(referrer\.protocol\)/);
+assert.match(referrerSanitizerBlock, /return `\$\{referrer\.protocol\}\/\/\$\{referrer\.host\}\$\{referrer\.pathname\}`/);
+assert.doesNotMatch(referrerSanitizerBlock, /referrer\.(?:search|hash|username|password|href)/);
+assert.match(measurementContextBlock, /new URLSearchParams\(location\.search \|\| ["']{2}\)/);
+assert.match(measurementContextBlock, /safePageLocation:\s*pageLocation\.toString\(\)/);
+assert.match(measurementContextBlock, /safePagePath:\s*pagePath/);
+assert.match(measurementContextBlock, /safePageReferrer:\s*sanitizePageReferrer\(referrer\)/);
+assert.doesNotMatch(
+  measurementContextBlock,
+  /window\.location\.href|page_title|user_id|FormData|\b(?:email|phone|telefono|nombre|name|empresa|mensaje|message|presupuesto|dias|horario|consent_marketing|submission_id|case_id|cf-turnstile-response)\b/i,
+  "privacy-preferences.njk: el contexto GA4 contiene una fuente cruda o un campo prohibido"
+);
+assert.equal(
+  countOccurrences(approvedRuntimeSource, "document.referrer"),
+  1,
+  "privacy-preferences.njk: document.referrer solo puede entrar por la función de sanitización"
+);
+assert.match(measurementContextBlock, /referrer\s*=\s*document\.referrer/);
+assert.match(pageViewBlock, /page_location:\s*safeMeasurementContext\.safePageLocation/);
+assert.match(pageViewBlock, /page_path:\s*safeMeasurementContext\.safePagePath/);
 assert.match(pageViewBlock, /debug\.pageViewSent\s*\|\|\s*!googleIsEligible\(\)/);
 assert.doesNotMatch(
   pageViewBlock,
   /window\.location\.href|document\.referrer|page_title|user_id|FormData|\b(?:email|phone|telefono|nombre|message)\b/i,
   "privacy-preferences.njk: page_view usa URL cruda, referrer, PII o campos no autorizados"
 );
+assert.equal(googleConfigMatches.length, 1, "privacy-preferences.njk: debe existir exactamente una configuración GA4");
+assert.match(googleConfigBlock, /send_page_view:\s*false/);
+assert.match(googleConfigBlock, /page_location:\s*safeMeasurementContext\.safePageLocation/);
+assert.match(googleConfigBlock, /page_referrer:\s*safeMeasurementContext\.safePageReferrer/);
+assert.doesNotMatch(
+  googleConfigBlock,
+  /window\.location\.href|page_location\s*:\s*document\.referrer|page_referrer\s*:\s*document\.referrer/,
+  "privacy-preferences.njk: config GA4 recibe location/referrer crudo"
+);
+assert.match(approvedRuntimeSource, /const safeMeasurementContext\s*=\s*buildMeasurementContext\(\)/);
+assert.match(approvedRuntimeSource, /sendPageViewOnce\(safeMeasurementContext\)/);
 assert.deepEqual(
   [...approvedRuntimeSource.matchAll(/new Set\(\[([^\]]+)\]\)/g)]
     .flatMap((match) => [...match[1].matchAll(/["']([^"']+)["']/g)].map((item) => item[1]))
     .filter((value) => value.includes("solazstudio.cl")),
   ["solazstudio.cl", "www.solazstudio.cl"],
   "privacy-preferences.njk: la compuerta de hostname debe permitir únicamente los dos hosts de Production"
-);
-assert.equal(
-  countOccurrences(approvedRuntimeSource, "gtag('config', config.gaMeasurementId, { send_page_view: false });"),
-  1,
-  "privacy-preferences.njk: GA4 debe configurarse una vez con send_page_view:false"
 );
 assert.equal(
   (approvedRuntimeSource.match(/gtag\(["']config["']/g) || []).length,
@@ -322,5 +353,5 @@ for (const file of EXPECTED_HTML_FILES) {
 }
 
 console.log(
-  `qa:compliance PASS (${legalPages.size} páginas legales; 2 avisos; marketing opcional; GA4 único con page_view saneado; ${EXPECTED_HTML_FILES.length} HTML con loader consentido y sin Ads directo, tracking estático, IDs, GTM, PII ni Web3Forms ejecutable)`
+  `qa:compliance PASS (${legalPages.size} páginas legales; 2 avisos; marketing opcional; GA4 único con page_location/page_referrer transversales saneados y page_view manual; ${EXPECTED_HTML_FILES.length} HTML con loader consentido y sin Ads directo, tracking estático, IDs, GTM, PII ni Web3Forms ejecutable)`
 );

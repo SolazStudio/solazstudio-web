@@ -3,10 +3,9 @@ import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const BASE_COMMIT = "61939ffb1e423b20a330c0ef4eda0673bb951dba";
+const BASE_COMMIT = "453ed3c313d0c60df5dfb6313e4ab454b12b9b6e";
 const projectRoot = resolve(fileURLToPath(new URL("../", import.meta.url)));
 const allowedPaths = new Set([
-  "src/_data/measurement.js",
   "src/_includes/partials/privacy-preferences.njk",
   "scripts/verify-privacy-measurement.mjs",
   "scripts/verify-compliance-gates.mjs",
@@ -37,7 +36,7 @@ const touched = [...new Set([...changed, ...untracked])];
 const unexpected = touched.filter((path) => !allowedPaths.has(path));
 
 assert.deepEqual(unexpected, [], `Archivos fuera de alcance: ${unexpected.join(", ")}`);
-assert.ok(touched.length > 0, "La compuerta F5.2A esperaba cambios locales o comprometidos");
+assert.ok(touched.length > 0, "La compuerta F5.2A-CORR esperaba cambios locales o comprometidos");
 assert.equal(
   touched.some((path) => path === "package-lock.json"),
   false,
@@ -45,5 +44,5 @@ assert.equal(
 );
 
 console.log(
-  `qa:scope PASS (base ${BASE_COMMIT}; ${touched.length} paths F5.2A autorizados)`
+  `qa:scope PASS (base ${BASE_COMMIT}; ${touched.length} paths F5.2A-CORR autorizados)`
 );

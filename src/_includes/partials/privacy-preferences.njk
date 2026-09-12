@@ -213,6 +213,9 @@
       if (!googleIsEligible()) return false;
       if (debug.tagLoadAttempted) return true;
 
+      const safeMeasurementContext = buildMeasurementContext();
+      if (!safeMeasurementContext) return false;
+
       debug.tagLoadAttempted = true;
       const script = document.createElement('script');
       script.id = 'solaz-google-tag';
@@ -222,8 +225,12 @@
       document.head.appendChild(script);
 
       gtag('js', new Date());
-      gtag('config', config.gaMeasurementId, { send_page_view: false });
-      sendPageViewOnce();
+      gtag('config', config.gaMeasurementId, {
+        send_page_view: false,
+        page_location: safeMeasurementContext.safePageLocation,
+        page_referrer: safeMeasurementContext.safePageReferrer
+      });
+      sendPageViewOnce(safeMeasurementContext);
       return true;
     }
 
@@ -272,24 +279,46 @@
       return path;
     }
 
-    function buildPageViewPayload(location = window.location) {
+    function sanitizePageReferrer(value) {
+      const rawReferrer = typeof value === 'string' ? value.trim() : '';
+      if (!rawReferrer) return '';
+
+      try {
+        const referrer = new URL(rawReferrer);
+        if (!['http:', 'https:'].includes(referrer.protocol)) return '';
+        return `${referrer.protocol}//${referrer.host}${referrer.pathname}`;
+      } catch {
+        return '';
+      }
+    }
+
+    function buildMeasurementContext(location = window.location, referrer = document.referrer) {
       const pagePath = safePagePath(location.pathname);
-      if (!pagePath) return null;
+      if (!pagePath || !['http:', 'https:'].includes(location.protocol)) return null;
 
       const pageLocation = new URL(`${location.protocol}//${location.hostname}${pagePath}`);
       const sourceParams = new URLSearchParams(location.search || '');
       ATTRIBUTION_QUERY_KEYS.forEach(key => {
         sourceParams.getAll(key).forEach(value => pageLocation.searchParams.append(key, value));
       });
+      return Object.freeze({
+        safePageLocation: pageLocation.toString(),
+        safePagePath: pagePath,
+        safePageReferrer: sanitizePageReferrer(referrer)
+      });
+    }
+
+    function buildPageViewPayload(safeMeasurementContext) {
+      if (!safeMeasurementContext) return null;
       return {
-        page_location: pageLocation.toString(),
-        page_path: pagePath
+        page_location: safeMeasurementContext.safePageLocation,
+        page_path: safeMeasurementContext.safePagePath
       };
     }
 
-    function sendPageViewOnce() {
+    function sendPageViewOnce(safeMeasurementContext) {
       if (debug.pageViewSent || !googleIsEligible()) return false;
-      const payload = buildPageViewPayload();
+      const payload = buildPageViewPayload(safeMeasurementContext);
       if (!payload) return false;
 
       debug.pageViewSent = true;

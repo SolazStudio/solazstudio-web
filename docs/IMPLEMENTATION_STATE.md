@@ -1,11 +1,11 @@
 # Estado de implementación
 
 - Fecha: 2026-09-11
-- Fase/lote: F5.2A — Hardening final de medición para conexión GA4 → Google Ads
+- Fase/lote: F5.2A-CORR — Contexto GA4 saneado para todos los eventos
 - Estado: **F5.2A COMPLETADO PARA REVISIÓN DE CHATGPT**
 - Rama: `develop`
-- Commit base: `61939ffb1e423b20a330c0ef4eda0673bb951dba`
-- Commit del lote: `feat: harden GA4 measurement for production`; su SHA se verifica fuera del propio commit
+- Commit base: `453ed3c313d0c60df5dfb6313e4ab454b12b9b6e`
+- Commit del lote: `fix: sanitize GA4 context for all events`; su SHA se verifica fuera del propio commit
 - Estado F1: **CERRADO**
 - Estado F2: **CERRADO**
 - Estado F3.1: **CERRADO** por revisión independiente de ChatGPT y validación visual de Seba en Preview automático
@@ -27,8 +27,8 @@
 - Estado F2.4B: **CERRADO** por revisión de ChatGPT; su resultado `MISMATCH` descartó “CRM Seba Ogalde”
 - Estado F2.4A: **BLOQUEADO / UNAVAILABLE (histórico)**; no constituye un pendiente activo
 - Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Cloudflare / Google / Notion / recursos funcionales reales: sin acciones ni escrituras en F5.2A; no se instalaron IDs ni se configuraron cuentas reales; Production, D1, Queue, Worker, CRM real y recursos externos intactos
-- Resultado: GA4 queda como fuente primaria única del frontend, sin tag directo de Google Ads; `page_view` manual único con URL saneada y atribución en whitelist; preferencias, Consent Mode v2 básico, eventos y host gate preservados
+- Cloudflare / Google / Notion / recursos funcionales reales: sin acciones ni escrituras en F5.2A-CORR; no se instalaron IDs ni se configuraron cuentas reales; Production, D1, Queue, Worker, CRM real y recursos externos intactos
+- Resultado: GA4 conserva una única fuente frontend y ahora recibe `page_location` y `page_referrer` saneados a nivel config para todos sus eventos; `page_view` manual, atribución aprobada, preferencias, Consent Mode v2 básico, eventos y host gate preservados
 - Siguiente paso: revisión independiente de ChatGPT; F5.2B y F5.2C permanecen pendientes y no iniciados
 
 ## Cierre de F1 por revisión de ChatGPT
@@ -181,6 +181,23 @@ Estado: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
 - La prueba reproducible previa al push usa un worktree temporal limpio del commit, ejecuta `npm ci` y `npm run qa`, y se elimina después sin afectar el repositorio principal. No hubo navegador, POST real, deploy manual ni escrituras sobre Google, Cloudflare, Pages, Production, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads.
 - Rollback: revertir únicamente `feat: harden GA4 measurement for production` en `develop` para volver a `61939ffb1e423b20a330c0ef4eda0673bb951dba`; no tocar F5.1, F4, F1/F2/F3 ni `main`.
 - Pendientes separados: **F5.2B** — instalación/configuración externa autorizada de GA4 y conexión de Google Ads por importación— y **F5.2C** —validación real controlada—. Ninguno fue iniciado ni autorizado por F5.2A.
+
+### Corrección F5.2A-CORR — contexto transversal seguro
+
+- ChatGPT revisó independientemente el commit F5.2A `453ed3c313d0c60df5dfb6313e4ab454b12b9b6e` (`feat: harden GA4 measurement for production`) y declaró **REQUIERE CORRECCIÓN**: `page_location` estaba saneada solo en el payload del `page_view`, pero GA4 podía asociar `page_location` y `page_referrer` automáticos no saneados a eventos personalizados y automáticos.
+- Base correctiva exacta `453ed3c313d0c60df5dfb6313e4ab454b12b9b6e`; repositorio correcto, rama `develop`, working tree inicial limpio, HEAD igual a `origin/develop`, divergencia `0/0` y `origin/main` en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- El runtime construye una sola vez, antes de `gtag('config')`, un contexto seguro compartido con `safePageLocation`, `safePagePath` y `safePageReferrer`. La ubicación conserva protocolo, hostname, pathname y solo las diez claves de atribución aprobadas; elimina hash, PII y cualquier query arbitraria.
+- `sanitizePageReferrer` acepta únicamente URL HTTP/HTTPS válida y devuelve solo protocolo, host y pathname. Query, hash, usuario y contraseña se eliminan siempre; un valor vacío o inválido produce `""`. `document.referrer` entra únicamente por esta función y nunca se entrega crudo a Google.
+- La única configuración GA4 conserva `send_page_view: false` y añade `page_location: safeMeasurementContext.safePageLocation` y `page_referrer: safeMeasurementContext.safePageReferrer`. Ese contexto de destino protege los eventos automáticos y personalizados posteriores sin ampliar sus payloads.
+- El `page_view` manual usa el mismo objeto de contexto que `gtag('config')`, contiene únicamente `page_location` y `page_path`, y continúa emitiéndose exactamente una vez por documento elegible incluso después de reabrir y volver a aceptar preferencias.
+- `generate_lead` conserva la compuerta `response.ok === true && response.deduplicated === false` y sus cuatro campos permitidos. `contact_whatsapp`, `contact_phone` y `contact_email` conservan únicamente `page_path`; ninguno recibe manualmente location/referrer ni PII.
+- Consent Mode v2 básico, `ad_personalization` siempre `denied`, hosts Production exactos, bloqueo de Preview/localhost/`127.0.0.1`, GA4-only, ausencia de `AW-*`/`send_to` y configuración vacía por defecto permanecen intactos.
+- `qa:privacy`: **90 PASS, 0 FAIL**. Mantiene los 73 casos anteriores y añade 17 casos para config-level `page_location`, atribución+PII, hash, referrer externo/interno/vacío/inválido, ausencia de valores crudos, contexto seguro de `generate_lead` y los tres contactos, igualdad config/page view, no duplicación, eliminación de query/hash/credenciales y `send_page_view:false` universal.
+- `qa:contact` y `qa:turnstile`: **28 PASS, 0 FAIL** cada uno. Compliance exige el contexto transversal seguro y evita falsos positivos por el uso legítimo de `window.location.href` al resolver enlaces WhatsApp. Build, skip link 24/24, media 719/719 con 1.398 derivados, video 3/3, scope, paridad 24 HTML/24 templates/2.165 públicos y `npm run qa`: PASS.
+- Archivos del correctivo: 0 creados, 5 modificados (`src/_includes/partials/privacy-preferences.njk`, tres scripts QA y este documento) y 0 eliminados. La compuerta de alcance usa la base correctiva exacta y solo permite esos cinco paths.
+- `functions/api/contact.js`, `src/contacto.njk`, páginas legales, `src/_data/measurement.js`, `package.json`, `package-lock.json`, media, videos, migraciones y Worker permanecen intactos. `git diff --check`: PASS. El commit fue validado con `npm ci` y `npm run qa` en un worktree temporal limpio, eliminado antes del push.
+- Cero navegador, red Google, POST real, deploy manual o acciones sobre Cloudflare, Production, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads. F5 permanece **EN CURSO**; F5.2A vuelve a **COMPLETADO PARA REVISIÓN DE CHATGPT**; F5.2B y F5.2C siguen **NO INICIADOS**.
+- Rollback correctivo: revertir únicamente `fix: sanitize GA4 context for all events` en `develop` para regresar exactamente a `453ed3c313d0c60df5dfb6313e4ab454b12b9b6e`; no revertir F5.2A original, F5.1 ni tocar `main`.
 
 ## F3.3 — Optimización conservadora de videos hero
 
@@ -1333,19 +1350,19 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F5.2A — Hardening final de medición para conexión GA4 → Google Ads.
+- Lote: F5.2A-CORR — Corrección de privacidad: contexto GA4 saneado para todos los eventos.
 - Fecha: 2026-09-11.
-- Base exacta: `61939ffb1e423b20a330c0ef4eda0673bb951dba`; repositorio correcto, rama `develop`, working tree inicial limpio, HEAD igual a `origin/develop`, divergencia `0/0` y `origin/main` exacta.
-- Continuidad: F5.1 **CERRADO** por revisión independiente de ChatGPT; F5 **EN CURSO**; F5.2A **COMPLETADO PARA REVISIÓN DE CHATGPT**.
-- Arquitectura: GA4 es la única fuente primaria del frontend. Se eliminó el destino Google Ads directo —env, dataset, patrón y config `AW-*`—; Ads deberá importar conversiones desde GA4 en un lote posterior. No existen IDs reales ni configuración externa.
-- Consentimiento y aislamiento: Consent Mode v2 básico se conserva; `ad_personalization` nunca se concede. Loader y eventos externos exigen aceptación, GA ID válido, medición habilitada y hostname Production exacto; Preview, localhost, `127.0.0.1` y terceros permanecen bloqueados.
-- Page view: GA4 usa `send_page_view:false` y un único evento manual por documento. Payload exacto `page_location`/`page_path`; la URL se reconstruye sin hash y conserva solo diez claves de atribución autorizadas, eliminando parámetros arbitrarios y PII.
-- Eventos F5.1: `generate_lead` y contactos directos conservan sus contratos estrictos, sin PII ni cambios en `src/contacto.njk` o backend.
-- Archivos: 0 creados, 6 modificados y 0 eliminados; exactamente los seis paths F5.2A autorizados. Código ajeno, package/lockfile, contacto, backend, legales, media y recursos externos intactos.
-- QA: sintaxis PASS; build 24 HTML/743 copiados; privacidad 73/73; Contacto y Turnstile 28/28 cada uno; compliance GA4-only, skip link 24/24, media 719/719 y 1.398 derivados, video 3/3, scope y paridad 24 HTML/24 templates/2.165 públicos PASS; `npm run qa` local PASS.
-- Reproducibilidad: worktree temporal limpio PASS tras `npm ci` y `npm run qa`; eliminado sin alterar paths versionados. `git diff --check`: PASS.
-- Recursos externos: cero escrituras; no hubo navegador, POST real, deploy ni acciones sobre Google, Cloudflare, Pages, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads. `main`/Production permanece intacta.
-- Commit y push: un único commit `feat: harden GA4 measurement for production`, exclusivamente a `origin/develop`, después de superar el worktree limpio.
-- Rollback: revertir únicamente ese commit en `develop` para volver a `61939ffb1e423b20a330c0ef4eda0673bb951dba`; no tocar F5.1, F4, F1/F2/F3 ni `main`.
-- Pendientes: F5.2B y F5.2C permanecen **NO INICIADOS**.
+- Base exacta: `453ed3c313d0c60df5dfb6313e4ab454b12b9b6e`; repositorio correcto, rama `develop`, working tree inicial limpio, HEAD igual a `origin/develop`, divergencia `0/0` y `origin/main` exacta.
+- Motivo: ChatGPT revisó el commit base y detectó que `page_location` estaba saneada solo para el `page_view`; faltaba sanear `page_location`/`page_referrer` a nivel config GA4 para cubrir todos los eventos del destino.
+- Config GA4 final: una sola configuración, `send_page_view:false`, `page_location` saneada con atribución en whitelist y `page_referrer` reducido a protocolo+host+pathname o `""`. Ningún valor crudo de `window.location.href` o `document.referrer` llega a config.
+- Page view y eventos: el `page_view` manual comparte exactamente el mismo contexto seguro y sigue siendo único. `generate_lead` y los tres contactos conservan sus payloads mínimos y quedan cubiertos transversalmente por config, sin PII.
+- Consentimiento y aislamiento: Consent Mode v2 básico y `ad_personalization:denied` intactos; Google exige aceptación, GA ID válido, medición habilitada y hostname Production exacto. Preview, localhost, `127.0.0.1` y terceros siguen bloqueados.
+- Archivos: 0 creados, 5 modificados y 0 eliminados; exactamente los cinco paths F5.2A-CORR autorizados.
+- QA: sintaxis PASS; build 24 HTML/743 copiados; privacidad **90/90**; Contacto y Turnstile **28/28** cada uno; compliance transversal, skip link 24/24, media 719/719 y 1.398 derivados, video 3/3, scope y paridad 24 HTML/24 templates/2.165 públicos PASS; `npm run qa` local PASS.
+- Reproducibilidad: worktree temporal limpio PASS tras `npm ci` y `npm run qa`; eliminado antes del push. `git diff --check`: PASS.
+- Integridad: backend, Contacto, legales, datos de medición, package/lockfile, media, videos, migraciones y Worker intactos.
+- Recursos externos: cero escrituras; no hubo navegador, POST real, deploy ni acciones sobre Google, Cloudflare, Pages, Production, D1, Queue, Worker, Notion, CRM, email, DNS, analítica o Ads. `main`/Production permanece intacta.
+- Commit y push: un único commit `fix: sanitize GA4 context for all events`, exclusivamente a `origin/develop`, después de superar el worktree limpio.
+- Rollback: revertir únicamente el commit correctivo para regresar a `453ed3c313d0c60df5dfb6313e4ab454b12b9b6e`; conservar F5.2A original, F5.1 y `main`.
+- Estado: F5.1 **CERRADO**; F5 **EN CURSO**; F5.2A **COMPLETADO PARA REVISIÓN DE CHATGPT**; F5.2B y F5.2C **NO INICIADOS**.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.

@@ -63,6 +63,7 @@ function runRuntime({
   hostname = "preview.solazstudio-web.pages.dev",
   pathname = "/contacto",
   url = null,
+  referrer = "",
   stored = null,
   storageThrows = false,
   enabled = false,
@@ -99,6 +100,7 @@ function runRuntime({
   const documentListeners = new Map();
   const appendedScripts = [];
   const document = {
+    referrer,
     head: {
       appendChild(element) {
         appendedScripts.push(element);
@@ -178,8 +180,8 @@ function eventCalls(result, name) {
   return commandCalls(result, "event").filter((entry) => entry[1] === name);
 }
 
-function configuredProduction(url = "https://solazstudio.cl/contacto") {
-  return runRuntime({ url, stored: savedPreference("accepted"), enabled: true, gaId: "G-TEST123" });
+function configuredProduction(url = "https://solazstudio.cl/contacto", referrer = "") {
+  return runRuntime({ url, referrer, stored: savedPreference("accepted"), enabled: true, gaId: "G-TEST123" });
 }
 
 test("01: las 24 salidas HTML incluyen una sola UI, runtime y apertura de footer", () => {
@@ -459,7 +461,11 @@ test("40: Production sin decisión tampoco carga Google", () => {
 test("41: GA4 se configura una sola vez con page_view automático desactivado", () => {
   const result = configuredProduction();
   const calls = commandCalls(result, "config");
-  assert.deepEqual(calls, [["config", "G-TEST123", { send_page_view: false }]]);
+  assert.deepEqual(calls, [["config", "G-TEST123", {
+    send_page_view: false,
+    page_location: "https://solazstudio.cl/contacto",
+    page_referrer: ""
+  }]]);
 });
 
 test("42: Production aceptado emite exactamente un page_view manual", () => {
@@ -604,4 +610,127 @@ test("72: GA ID inválido bloquea loader y page_view", () => {
 test("73: page_location preserva valores repetidos solo para claves permitidas", () => {
   const call = eventCalls(configuredProduction("https://solazstudio.cl/?utm_source=uno&utm_source=dos&email=x%40example.com"), "page_view")[0];
   assert.equal(call[2].page_location, "https://solazstudio.cl/?utm_source=uno&utm_source=dos");
+});
+
+test("74: config GA4 contiene page_location saneada", () => {
+  const result = configuredProduction("https://solazstudio.cl/contacto?email=persona%40example.com");
+  assert.equal(commandCalls(result, "config")[0][2].page_location, "https://solazstudio.cl/contacto");
+});
+
+test("75: config GA4 conserva UTM aprobada y elimina PII", () => {
+  const result = configuredProduction("https://solazstudio.cl/contacto?utm_source=google&email=persona%40example.com");
+  assert.equal(commandCalls(result, "config")[0][2].page_location, "https://solazstudio.cl/contacto?utm_source=google");
+});
+
+test("76: config GA4 elimina hash de page_location", () => {
+  const result = configuredProduction("https://solazstudio.cl/contacto?utm_medium=cpc#form");
+  assert.equal(commandCalls(result, "config")[0][2].page_location, "https://solazstudio.cl/contacto?utm_medium=cpc");
+});
+
+test("77: config GA4 incluye page_referrer externo saneado", () => {
+  const result = configuredProduction(
+    "https://solazstudio.cl/contacto",
+    "https://google.com/search?q=persona%40example.com#x"
+  );
+  assert.equal(commandCalls(result, "config")[0][2].page_referrer, "https://google.com/search");
+});
+
+test("78: referrer interno con query y hash queda saneado", () => {
+  const result = configuredProduction(
+    "https://solazstudio.cl/contacto",
+    "https://solazstudio.cl/servicios?email=persona%40example.com#detalle"
+  );
+  assert.equal(commandCalls(result, "config")[0][2].page_referrer, "https://solazstudio.cl/servicios");
+});
+
+test("79: referrer vacío produce cadena vacía segura", () => {
+  assert.equal(commandCalls(configuredProduction(), "config")[0][2].page_referrer, "");
+});
+
+test("80: referrer inválido produce cadena vacía segura", () => {
+  const result = configuredProduction("https://solazstudio.cl/contacto", "valor inválido");
+  assert.equal(commandCalls(result, "config")[0][2].page_referrer, "");
+});
+
+test("81: config GA4 no recibe document.referrer crudo", () => {
+  const rawReferrer = "https://user:password@otro-sitio.cl/pagina?email=persona%40example.com#seccion";
+  const result = configuredProduction("https://solazstudio.cl/contacto", rawReferrer);
+  const configPayload = commandCalls(result, "config")[0][2];
+  assert.equal(configPayload.page_referrer, "https://otro-sitio.cl/pagina");
+  assert.equal(JSON.stringify(configPayload).includes(rawReferrer), false);
+  assert.doesNotMatch(runtime, /page_referrer\s*:\s*document\.referrer/);
+});
+
+test("82: config GA4 no recibe window.location.href crudo", () => {
+  const rawLocation = "https://solazstudio.cl/contacto?email=persona%40example.com#form";
+  const result = configuredProduction(rawLocation);
+  const configPayload = commandCalls(result, "config")[0][2];
+  assert.equal(configPayload.page_location, "https://solazstudio.cl/contacto");
+  assert.equal(JSON.stringify(configPayload).includes(rawLocation), false);
+  assert.doesNotMatch(runtime, /page_location\s*:\s*window\.location\.href/);
+});
+
+test("83: generate_lead hereda config saneada y conserva payload mínimo", () => {
+  const result = configuredProduction("https://solazstudio.cl/contacto?email=persona%40example.com#form");
+  result.window.solazMeasurement.trackLead({ ok: true, deduplicated: false }, {
+    lead_type: "mensaje",
+    service_code: "branding",
+    source_page: "/contacto",
+    cta_id: "contact-form",
+    email: "persona@example.com"
+  });
+  assert.equal(commandCalls(result, "config")[0][2].page_location, "https://solazstudio.cl/contacto");
+  assert.deepEqual(eventCalls(result, "generate_lead")[0], ["event", "generate_lead", {
+    lead_type: "mensaje",
+    service_code: "branding",
+    source_page: "/contacto",
+    cta_id: "contact-form"
+  }]);
+});
+
+const directContactCases = [
+  ["contact_email", "mailto:persona@example.com"],
+  ["contact_phone", "tel:+56912345678"],
+  ["contact_whatsapp", "https://wa.me/56912345678"]
+];
+
+directContactCases.forEach(([eventName, href], index) => {
+  test(`${84 + index}: ${eventName} hereda config saneada y conserva solo page_path`, () => {
+    const result = configuredProduction("https://solazstudio.cl/contacto?email=persona%40example.com#form");
+    result.clickLink(href);
+    assert.equal(commandCalls(result, "config")[0][2].page_location, "https://solazstudio.cl/contacto");
+    assert.deepEqual(eventCalls(result, eventName)[0], ["event", eventName, { page_path: "/contacto" }]);
+  });
+});
+
+test("87: page_view usa exactamente la misma page_location saneada que config GA4", () => {
+  const result = configuredProduction("https://solazstudio.cl/contacto?utm_source=google&email=persona%40example.com#form");
+  assert.equal(
+    eventCalls(result, "page_view")[0][2].page_location,
+    commandCalls(result, "config")[0][2].page_location
+  );
+});
+
+test("88: page_view transversal no se duplica después de reaceptar", () => {
+  const result = configuredProduction("https://solazstudio.cl/contacto?email=persona%40example.com");
+  result.window.solazMeasurement.openPreferences();
+  result.accept.click();
+  assert.equal(eventCalls(result, "page_view").length, 1);
+});
+
+test("89: page_referrer configurado nunca contiene query, hash ni credenciales", () => {
+  const result = configuredProduction(
+    "https://solazstudio.cl/contacto",
+    "https://usuario:clave@otro-sitio.cl/pagina?utm_source=privado#seccion"
+  );
+  const pageReferrer = commandCalls(result, "config")[0][2].page_referrer;
+  assert.equal(pageReferrer, "https://otro-sitio.cl/pagina");
+  assert.doesNotMatch(pageReferrer, /[?#@]/);
+});
+
+test("90: todas las llamadas config GA4 mantienen send_page_view false", () => {
+  const result = configuredProduction("https://solazstudio.cl/contacto?utm_source=google");
+  const calls = commandCalls(result, "config");
+  assert.equal(calls.length, 1);
+  assert.equal(calls.every((entry) => entry[2]?.send_page_view === false), true);
 });
