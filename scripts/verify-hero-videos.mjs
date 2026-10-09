@@ -92,6 +92,34 @@ function scriptBlocks(html) {
     .map((block) => block.replace(/\r\n?/g, "\n"));
 }
 
+// F5 approved the four mobile-menu aria updates. Require each one exactly
+// once, then retain an exact comparison of every other script byte.
+function withoutApprovedMenuAccessibility(blocks, label) {
+  const statements = label === "Home"
+    ? [
+        "        navToggle.setAttribute('aria-expanded', String(isOpen));\n",
+        "        navToggle.setAttribute('aria-label', isOpen ? 'Cerrar menú' : 'Abrir menú');\n",
+        "          navToggle.setAttribute('aria-expanded', 'false');\n",
+        "          navToggle.setAttribute('aria-label', 'Abrir menú');\n"
+      ]
+    : [
+        "t.setAttribute('aria-expanded',String(o));",
+        "t.setAttribute('aria-label',o?'Cerrar menú':'Abrir menú');",
+        "t.setAttribute('aria-expanded','false');",
+        "t.setAttribute('aria-label','Abrir menú');"
+      ];
+
+  if (blocks.length !== 1) fail(label + ": se esperaba exactamente un bloque script");
+  let normalized = blocks[0];
+  for (const statement of statements) {
+    if (normalized.split(statement).length !== 2) {
+      fail(label + ": declaración de accesibilidad aprobada ausente o duplicada");
+    }
+    normalized = normalized.replace(statement, "");
+  }
+  return [normalized];
+}
+
 function sameJson(left, right, message) {
   if (JSON.stringify(left) !== JSON.stringify(right)) fail(message);
 }
@@ -167,7 +195,7 @@ for (const hero of heroes) {
   if (baselineSources.length !== currentSources.length) fail(`${hero.label}: cambió la cantidad de sources`);
 
   sameJson(normalizedTags(current.body, "img"), normalizedTags(baseline.body, "img"), `${hero.label}: fallback img interno alterado`);
-  sameJson(scriptBlocks(currentHtml), scriptBlocks(baselineHtml), `${hero.label}: JavaScript de la plantilla alterado`);
+  sameJson(withoutApprovedMenuAccessibility(scriptBlocks(currentHtml), hero.label), scriptBlocks(baselineHtml), `${hero.label}: JavaScript de la plantilla alterado`);
 }
 
 for (const existingPoster of ["img/produccion-audiovisual.webp", "img/fotografia-corporativa.webp"]) {

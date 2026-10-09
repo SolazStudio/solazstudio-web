@@ -1585,3 +1585,12 @@ Este anexo es una precisión posterior y no altera ni elimina el texto históric
 - Codex no creó commit ni hizo push. ChatGPT recuperó los siete archivos desde Dropbox mediante autorización expresa para integración directa en `develop`, sin usar Codex.
 - La validación general queda transferida al workflow de GitHub Actions para ejecución aislada de Dropbox. Estado de CI pendiente al preparar este commit; no declarar cierre F6 sin revisar ese resultado.
 - F5.2C continúa BLOQUEADO para validación real y F8 PENDIENTE; sin cambios en recursos externos de producción.
+
+## F6 — Corrección puntual del control histórico de videos (2026-10-09)
+
+- La primera ejecución de `QA develop` del commit `f01f30c2c1631490f43f5dc980a6517b2160c8e4` completó `npm ci`, build de 24 HTML y `qa:media` (719 imágenes, 1.398 variantes) con PASS; se detuvo en `qa:video`: `Home: JavaScript de la plantilla alterado`. Los controles posteriores no se ejecutaron.
+- Causa verificada: `scripts/verify-hero-videos.mjs` comparaba la totalidad del script histórico de cada hero con un baseline anterior a las instrucciones `aria-expanded` y `aria-label` aprobadas para el menú móvil en F5.
+- Corrección: normalizar exclusivamente esas cuatro instrucciones aprobadas, exigiendo una aparición exacta de cada una por página, y comparar byte por byte el JavaScript restante con la versión histórica. Se preservan las verificaciones de fuente, etiquetas, atributos, pósters y videos.
+- El commit correctivo emplea el prefijo `[CF-Pages-Skip]` para omitir un nuevo build/deployment automático de Cloudflare Pages, conservando la ejecución de GitHub Actions.
+- En el momento de registrar este cambio, la nueva ejecución general de GitHub Actions está **PENDIENTE**; F6 sigue **EN REVISIÓN / NO CERRADO**. No afirmar QA PASS sin el resultado remoto.
+- F5.2C continúa bloqueado para validación real; F8 permanece pendiente. Ningún cambio a `main`, Production o recursos reales está autorizado en esta corrección.
