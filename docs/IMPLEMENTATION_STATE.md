@@ -1513,12 +1513,14 @@ Estado: **CERRADO por revisión independiente de ChatGPT (2026-10-09)**.
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F6 consolidado — QA, automatización y observabilidad.
-- Precheck Codex: PASS exacto en `develop`, base `950ef42e3baaf2ea972fc3114bd783f46c078d9c`, árbol de trabajo limpio.
-- Archivos preparados localmente: 4 creados y 3 modificados, exclusivamente los autorizados.
-- QA local: **BLOQUEADO**, no PASS. Única ejecución `npm run qa` detenida por `EBUSY` en `_site/img/_responsive` durante `clean`, antes del build y las pruebas.
-- Commit/push por Codex: **NO REALIZADOS**. Workflow remoto: **NO EJECUTADO** en ese momento.
-- Estado de salida de Codex: **BLOQUEADO**. Ningún recurso externo o Production modificado.
+- Lote: F5.2C.2 — migraciones D1 real.
+- Fecha: 2026-10-09.
+- Operación: aplicación autorizada y secuencial de `0002_add_sync_started_at.sql`, `0003_add_retry_reconciliation_state.sql` y `0004_add_contact_attribution.sql` sobre `solaz-contactos` (`cc1a1efa-7e4a-4e12-a9d9-d65b5cd56380`).
+- Resultado: los tres comandos Wrangler terminaron correctamente; 0002 procesó 1 consulta, 0003 procesó 2 consultas y 0004 procesó 1 consulta. Se añadieron `sync_started_at`, `next_attempt_at`, `notion_reconcile_started_at` y `attribution_context`; estructura inicial confirmada de 23 columnas y estructura resultante prevista de 27.
+- Archivos modificados: `docs/IMPLEMENTATION_STATE.md` y `docs/PRE_F8_AUDIT_REGISTER.md`.
+- Errores: ninguno.
+- Commit/push: `[CF-Pages-Skip] [skip ci] docs: registrar migraciones D1 F5.2C.2`, exclusivamente a `origin/develop`; SHA verificable externamente tras el push.
+- Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
 
 ## RECUPERACIÓN F6 — INTEGRACIÓN DIRECTA AUTORIZADA
 
@@ -1563,3 +1565,19 @@ Estado: **CERRADO por revisión independiente de ChatGPT (2026-10-09)**.
 - **Riesgo y recuperación:** no borrar el campo automáticamente. Si hay incidente, detener uso e investigar antes de cualquier eliminación, especialmente si pudiera contener valores. Reversión documental mediante revert del commit correspondiente; cambios Notion requieren autorización separada.
 - **Pendiente:** D1 Production necesita migraciones 0002, 0003 y 0004; Worker endurecido no desplegado; Function/Pages, Queue, Notion y GA4 E2E Production todavía no validados. F5 global EN CURSO; F5.2C BLOQUEADO PARA VALIDACIÓN REAL; F8 PENDIENTE.
 - **No ejecutado:** cambios en main, Preview, Production web, D1, Queue, Worker, contactos Notion, email, analítica, DNS o Ads. El stash local histórico de siete cambios debe conservarse intacto.
+
+## F5.2C.2 — Migraciones D1 real (2026-10-09)
+
+- Lote autorizado y ejecutado sobre `solaz-contactos`.
+- Identificador D1: `cc1a1efa-7e4a-4e12-a9d9-d65b5cd56380`.
+- Migraciones aplicadas: `0002_add_sync_started_at.sql`, `0003_add_retry_reconciliation_state.sql` y `0004_add_contact_attribution.sql`.
+- Columnas iniciales confirmadas antes del lote: 23.
+- Columnas agregadas: `sync_started_at`, `next_attempt_at`, `notion_reconcile_started_at` y `attribution_context`.
+- Estructura resultante prevista: 27 columnas.
+- Contactos anteriores: 9.
+- Bookmark anterior: `00002d4e-00000000-000050ff-abca01e79f56ce8aaddca246e536bf94`.
+- Resultado 0002: correcto; 1 consulta ejecutada, bookmark final informado `00002d4f-00000006-000050ff-d0453404ab5caa995e2d6bf95f407aca`.
+- Resultado 0003: correcto; 2 consultas ejecutadas, bookmark final informado `00002d4f-0000000c-000050ff-709de9d31feaa18eba67ba55b6ef7da0`.
+- Resultado 0004: correcto; 1 consulta ejecutada, bookmark final informado `00002d4f-00000014-000050ff-a5e6888bcea4f48d1c6da8dd58711d53`.
+- No se realizó despliegue web ni del Worker.
+- F5.2C sigue pendiente de validación real y F8 permanece pendiente.

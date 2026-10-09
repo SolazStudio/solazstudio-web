@@ -1610,3 +1610,10 @@ Este anexo es una precisión posterior y no altera ni elimina el texto históric
 - **Estado del hallazgo:** precondición de esquema Notion real **RESUELTA/VALIDADA** para F5.2C. La prevención efectiva de duplicados con el Worker endurecido sigue **BLOQUEADA POR PRODUCTION** hasta migraciones y despliegue con pruebas reales. No equiparar crear un campo con probar el circuito D1 → Queue → Notion.
 - **Sin cambios en:** contactos existentes, D1, Queue, Worker, Pages, código funcional, Preview, GA4, Ads, DNS ni `main`. QA general F6 no se repitió por tratarse de propiedad y documentación.
 - **Siguiente dependencia:** preparar migraciones D1 reales 0002/0003/0004 en lote separado y autorizado, verificar compatibilidad y orden de despliegue; F5 global continúa abierta y F8 pendiente.
+
+## Seguimiento F5.2C.2 — D1 real (2026-10-09)
+
+- Aplicadas correctamente a `solaz-contactos` las migraciones `0002_add_sync_started_at.sql`, `0003_add_retry_reconciliation_state.sql` y `0004_add_contact_attribution.sql`.
+- Añadidas las columnas `sync_started_at`, `next_attempt_at`, `notion_reconcile_started_at` y `attribution_context`; la estructura previa confirmada tenía 23 columnas y la resultante prevista tiene 27.
+- El circuito completo D1 → Queue → Notion todavía requiere despliegue del Worker endurecido y validación operativa autorizada.
+- F5.2C continúa pendiente de validación real y F8 permanece pendiente. No se realizó despliegue web ni del Worker en este lote.
