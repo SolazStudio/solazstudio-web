@@ -800,6 +800,29 @@ test("93: visita direct conserva first_touch y last_non_direct de la pestaña", 
   assert.deepEqual(Object.keys(directSnapshot.current_touch), ["captured_at"]);
 });
 
+test("93b: primera visita directa cede first_touch a la primera fuente identificable", () => {
+  const sessionValues = new Map();
+  runRuntime({
+    url: "https://preview.solazstudio-web.pages.dev/contacto",
+    stored: savedPreference("accepted"),
+    sessionValues
+  });
+  runRuntime({
+    url: "https://preview.solazstudio-web.pages.dev/contacto?utm_source=google",
+    stored: savedPreference("accepted"),
+    sessionValues
+  });
+  const direct = runRuntime({
+    url: "https://preview.solazstudio-web.pages.dev/servicios",
+    stored: savedPreference("accepted"),
+    sessionValues
+  });
+  const snapshot = plain(direct.window.solazMeasurement.getAttributionSnapshot());
+  assert.equal(snapshot.first_touch.utm_source, "google");
+  assert.equal(snapshot.last_non_direct.utm_source, "google");
+  assert.equal("utm_source" in snapshot.current_touch, false);
+});
+
 test("94: revocar limpia atribución de sesión y memoria", () => {
   const result = runRuntime({
     url: "https://preview.solazstudio-web.pages.dev/contacto?utm_source=google",

@@ -1468,7 +1468,7 @@ Configuración final:
 - Commit PRE-F8: `bf70c17b75c95158957a2adcbc95cf4d52b1e3e5`.
 - Cierre: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
 
-## INFORME CODEX — ÚLTIMO LOTE
+## INFORME CODEX — F5 CONSOLIDADO PRE-F5.2C
 
 - Lote: F5 consolidado pre-F5.2C — atribución de leads, ID opaco y accesibilidad de menú/filtros.
 - Base exacta: `a867434e1f6804dc58821f0968b28f246ad7acdb`; rama `develop` y working tree inicial limpio.
@@ -1481,4 +1481,15 @@ Configuración final:
 - Limitaciones: continuidad de atribución solo en la pestaña/sesión; política definitiva de retención pendiente; F5.2C **NO INICIADO**, F6 y F8 abiertos.
 - Commit y push: un único commit `fix: consolidate F5 attribution and accessibility`, exclusivamente a `origin/develop`; SHA verificado fuera del commit.
 - Rollback: revertir únicamente el commit de este lote; no aplicar rollback externo porque no hubo escrituras de plataforma.
+- Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+
+## INFORME CODEX — ÚLTIMO LOTE
+
+- Lote: corrección de `first_touch` para preservar la primera fuente identificable.
+- Base exacta: `2f79afd2b02dc7bee92ca3918b7ad6dab2a879aa`; rama `develop` y working tree inicial limpio.
+- Cambio: si la primera visita consentida es directa y una visita posterior contiene fuente válida, esa fuente pasa a `first_touch`; una nueva visita directa conserva `first_touch` y `last_non_direct`, mientras `current_touch` representa la visita directa actual.
+- Alcance: cuatro archivos; runtime de privacidad, prueba de medición y los dos documentos de estado. La lógica restante de atribución, consentimiento y almacenamiento permanece intacta.
+- QA autorizado: únicamente `npm run qa:privacy`, PASS 103/103. No se ejecutaron build, QA general ni otras pruebas.
+- Estado: F5.2C **NO INICIADO**; F6 y F8 continúan abiertos. Sin acciones sobre Preview, Production ni servicios externos.
+- Commit y push: `fix: preserve first identifiable attribution touch`, exclusivamente a `origin/develop`; SHA verificado fuera del commit.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.

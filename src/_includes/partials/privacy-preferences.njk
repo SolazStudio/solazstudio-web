@@ -337,7 +337,9 @@
       const previous = readAttributionSnapshot() || attributionSnapshot;
       const currentTouch = buildCurrentAttributionTouch();
       const candidate = {
-        first_touch: previous?.first_touch || currentTouch,
+        first_touch: touchHasSource(previous?.first_touch) || !touchHasSource(currentTouch)
+          ? (previous?.first_touch || currentTouch)
+          : currentTouch,
         last_non_direct: touchHasSource(currentTouch)
           ? currentTouch
           : previous?.last_non_direct || null,

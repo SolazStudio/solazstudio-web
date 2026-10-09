@@ -1527,7 +1527,7 @@ Este anexo es una precisión posterior y no altera ni elimina el texto históric
 
 ## RESUELTO — REAUDITAR EN F8
 
-- **Atribución del lead:** el runtime captura exclusivamente las diez claves aprobadas en `first_touch`, `last_non_direct` y `current_touch`, con `captured_at` ISO, consentimiento analítico `accepted`, continuidad limitada a `sessionStorage`, fallback en memoria, revocación efectiva y límite total de 4096 bytes. Direct no borra `last_non_direct`; no se crean cookies, identificadores de visitante ni continuidad entre sesiones.
+- **Atribución del lead:** el runtime captura exclusivamente las diez claves aprobadas en `first_touch`, `last_non_direct` y `current_touch`, con `captured_at` ISO, consentimiento analítico `accepted`, continuidad limitada a `sessionStorage`, fallback en memoria, revocación efectiva y límite total de 4096 bytes. Una visita directa inicial cede `first_touch` a la primera fuente identificable posterior; las visitas directas siguientes no borran `first_touch` ni `last_non_direct` y sí actualizan `current_touch`. No se crean cookies, identificadores de visitante ni continuidad entre sesiones.
 - **Saneamiento:** cliente y servidor aplican la misma whitelist. UTMs admiten hasta 128 caracteres Unicode con espacios internos y `- _ . /`; click IDs admiten hasta 160 caracteres `[A-Za-z0-9_-]`. Valores con PII aparente, URLs, controles, saltos, email/teléfono o forma inválida se descartan sin truncarlos.
 - **Persistencia:** ambos formularios envían `attribution_context` solo con consentimiento aceptado. La Function normaliza independientemente y persiste JSON seguro o `NULL`; una atribución malformada no bloquea un contacto válido. Migración versionada `0004_add_contact_attribution.sql` añade una sola columna nullable `attribution_context TEXT`.
 - **Lead ID opaco:** `generate_lead` incorpora únicamente `lead_id=response.id` cuando la respuesta es nueva, exitosa, no deduplicada y el ID cumple el patrón UUID existente. No se agregan parámetros de atribución ni PII a eventos GA4.
@@ -1538,7 +1538,7 @@ Este anexo es una precisión posterior y no altera ni elimina el texto históric
 
 - `npm run build`: PASS; 24 páginas generadas y 743 archivos copiados.
 - `npm run qa:contact`: PASS, 33/33.
-- `npm run qa:privacy`: PASS, 102/102; incluye atribución, consentimiento, visitas directas, revocación, saneamiento, D1 `NULL`/JSON, deduplicación, Queue, `lead_id`, menú y filtros.
+- `npm run qa:privacy`: PASS, 103/103; incluye primera visita directa seguida por fuente identificable y nueva visita directa, además de atribución, consentimiento, revocación, saneamiento, D1 `NULL`/JSON, deduplicación, Queue, `lead_id`, menú y filtros.
 - No se ejecutó QA general, `npm ci`, navegador, Preview remoto ni pruebas de servicios externos.
 
 ## Pendientes preservados
