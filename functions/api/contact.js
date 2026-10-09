@@ -16,9 +16,20 @@ const SERVICE_CODES = new Set(services.map(({ code }) => code));
 const CAMPOS_PERMITIDOS = [
   'form_type', 'nombre', 'empresa', 'email', 'telefono', 'mensaje',
   'presupuesto', 'consent_marketing', 'dias', 'horario', 'service_code',
-  'source_page', 'case_id', 'cta_id', 'submission_id',
+  'source_page', 'case_id', 'cta_id', 'submission_id', 'attribution_context',
   'cf-turnstile-response', 'botcheck',
 ];
+
+const ATTRIBUTION_KEYS = [
+  'utm_source', 'utm_medium', 'utm_campaign', 'utm_id', 'utm_term',
+  'utm_content', 'gclid', 'gbraid', 'wbraid', 'dclid',
+];
+const UTM_ATTRIBUTION_KEYS = new Set(ATTRIBUTION_KEYS.filter((key) => key.startsWith('utm_')));
+const CLICK_ID_ATTRIBUTION_KEYS = new Set(ATTRIBUTION_KEYS.filter((key) => !key.startsWith('utm_')));
+const ATTRIBUTION_TOP_LEVEL_KEYS = new Set(['first_touch', 'last_non_direct', 'current_touch']);
+const UTM_VALUE_PATTERN = /^[\p{L}\p{N} _.\/-]+$/u;
+const CLICK_ID_VALUE_PATTERN = /^[A-Za-z0-9_-]+$/;
+const ATTRIBUTION_MAX_BYTES = 4096;
 
 const MAX_LARGO = {
   nombre: 200,
@@ -78,6 +89,95 @@ function validarPathInterno(valor) {
 function validarToken(valor, maxLargo) {
   const token = textoLimpio(valor, maxLargo);
   return token && TOKEN_PATTERN.test(token) ? token : null;
+}
+
+function jsonByteLength(value) {
+  try {
+    return new TextEncoder().encode(JSON.stringify(value)).length;
+  } catch {
+    return Number.POSITIVE_INFINITY;
+  }
+}
+
+function contieneSecuenciaSensibleAtribucion(value) {
+  return (
+    /[\u0000-\u001f\u007f-\u009f]/u.test(value) ||
+    value.includes('@') ||
+    /(?:https?:\/\/|www\.|[a-z][a-z0-9+.-]*:\/\/)/i.test(value) ||
+    /[\p{L}\p{N}._%+-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}/u.test(value) ||
+    /(?:^|[^\p{L}\p{N}])\+?\d(?:[\d .()\/-]{6,}\d)(?:$|[^\p{L}\p{N}])/u.test(value)
+  );
+}
+
+function sanearValorAtribucion(key, value) {
+  if (typeof value !== 'string' || !ATTRIBUTION_KEYS.includes(key)) return null;
+  const normalized = value.trim();
+  if (!normalized || normalized !== value || contieneSecuenciaSensibleAtribucion(normalized)) return null;
+  const length = Array.from(normalized).length;
+  if (UTM_ATTRIBUTION_KEYS.has(key)) {
+    return length <= 128 && UTM_VALUE_PATTERN.test(normalized) ? normalized : null;
+  }
+  if (CLICK_ID_ATTRIBUTION_KEYS.has(key)) {
+    return length <= 160 && CLICK_ID_VALUE_PATTERN.test(normalized) ? normalized : null;
+  }
+  return null;
+}
+
+function esTimestampIso(value) {
+  if (typeof value !== 'string') return false;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString() === value;
+}
+
+function normalizarTouchAtribucion(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const allowedKeys = new Set(['captured_at', ...ATTRIBUTION_KEYS]);
+  if (Object.keys(value).some((key) => !allowedKeys.has(key)) || !esTimestampIso(value.captured_at)) return null;
+
+  const normalized = { captured_at: value.captured_at };
+  for (const key of ATTRIBUTION_KEYS) {
+    if (!(key in value)) continue;
+    const safeValue = sanearValorAtribucion(key, value[key]);
+    if (!safeValue) return null;
+    normalized[key] = safeValue;
+  }
+  return normalized;
+}
+
+function touchTieneFuente(touch) {
+  return ATTRIBUTION_KEYS.some((key) => Boolean(touch?.[key]));
+}
+
+function normalizarContextoAtribucion(rawValue) {
+  if (typeof rawValue !== 'string' || !rawValue || new TextEncoder().encode(rawValue).length > ATTRIBUTION_MAX_BYTES) {
+    return null;
+  }
+
+  try {
+    const value = JSON.parse(rawValue);
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    if (Object.keys(value).some((key) => !ATTRIBUTION_TOP_LEVEL_KEYS.has(key))) return null;
+
+    const firstTouch = normalizarTouchAtribucion(value.first_touch);
+    const currentTouch = normalizarTouchAtribucion(value.current_touch);
+    const lastNonDirect = value.last_non_direct == null
+      ? null
+      : normalizarTouchAtribucion(value.last_non_direct);
+    if (!firstTouch || !currentTouch || (value.last_non_direct != null && (!lastNonDirect || !touchTieneFuente(lastNonDirect)))) {
+      return null;
+    }
+
+    const normalized = {
+      first_touch: firstTouch,
+      last_non_direct: lastNonDirect,
+      current_touch: currentTouch,
+    };
+    return jsonByteLength(normalized) <= ATTRIBUTION_MAX_BYTES
+      ? JSON.stringify(normalized)
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 function esOrigenPermitido(origin, requestUrl) {
@@ -305,6 +405,7 @@ export async function onRequestPost(context) {
   }
 
   const consentMarketing = datos.consent_marketing === 'si' ? 1 : 0;
+  const attributionContext = normalizarContextoAtribucion(datos.attribution_context);
   const contextoOrigen = obtenerContextoOrigen(
     sourcePage,
     request.headers.get('Referer'),
@@ -318,8 +419,8 @@ export async function onRequestPost(context) {
       `INSERT INTO contacts
         (id, form_type, nombre, empresa, email, telefono, mensaje, presupuesto,
          consent_marketing, dias, horario, origen_url, service_code, source_page,
-         case_id, cta_id, sync_status)
-       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending'
+         case_id, cta_id, attribution_context, sync_status)
+       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending'
        WHERE NOT EXISTS (SELECT 1 FROM contacts WHERE id = ?)`
     ).bind(
       submissionId,
@@ -338,6 +439,7 @@ export async function onRequestPost(context) {
       contextoOrigen.sourcePage,
       caseId,
       ctaId,
+      attributionContext,
       submissionId
     ).run();
     inserted = Number(result?.meta?.changes ?? result?.changes ?? 0) > 0;

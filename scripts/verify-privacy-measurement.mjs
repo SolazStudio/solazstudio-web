@@ -14,6 +14,8 @@ const runtimeMatch = partial.match(/<script\b[^>]*data-solaz-privacy-runtime[^>]
 assert.ok(runtimeMatch, "Falta el runtime controlado de preferencias");
 const runtime = runtimeMatch[1];
 const STORAGE_KEY = "solaz_privacy_preferences";
+const ATTRIBUTION_STORAGE_KEY = "solaz_campaign_attribution";
+const DEFAULT_ID = "11111111-1111-4111-8111-111111111111";
 
 function plain(value) {
   return JSON.parse(JSON.stringify(value));
@@ -66,6 +68,8 @@ function runRuntime({
   referrer = "",
   stored = null,
   storageThrows = false,
+  sessionValues = new Map(),
+  sessionStorageThrows = false,
   enabled = false,
   gaId = ""
 } = {}) {
@@ -94,6 +98,20 @@ function runRuntime({
     setItem(key, value) {
       if (storageThrows) throw new Error("storage unavailable");
       values.set(key, value);
+    }
+  };
+  const sessionStorage = {
+    getItem(key) {
+      if (sessionStorageThrows) throw new Error("session storage unavailable");
+      return sessionValues.get(key) ?? null;
+    },
+    setItem(key, value) {
+      if (sessionStorageThrows) throw new Error("session storage unavailable");
+      sessionValues.set(key, value);
+    },
+    removeItem(key) {
+      if (sessionStorageThrows) throw new Error("session storage unavailable");
+      sessionValues.delete(key);
     }
   };
 
@@ -134,6 +152,7 @@ function runRuntime({
       href: resolvedUrl.href
     },
     localStorage,
+    sessionStorage,
     dataLayer: []
   };
 
@@ -148,6 +167,7 @@ function runRuntime({
     JSON,
     String,
     Boolean,
+    TextEncoder,
     encodeURIComponent
   }, { filename: partialPath });
 
@@ -161,7 +181,7 @@ function runRuntime({
     for (const listener of documentListeners.get("click") || []) listener(event);
   }
 
-  return { root, accept, reject, title, opener, values, window, appendedScripts, clickLink };
+  return { root, accept, reject, title, opener, values, sessionValues, window, appendedScripts, clickLink };
 }
 
 function dataLayerCalls(result) {
@@ -304,13 +324,13 @@ test("18: ningún comando concede ad_personalization", () => {
 
 test("19: generate_lead exige respuesta ok y deduplicated estrictamente false", () => {
   const result = runRuntime();
-  result.window.solazMeasurement.trackLead({ ok: true, deduplicated: false }, { lead_type: "mensaje" });
+  result.window.solazMeasurement.trackLead({ ok: true, deduplicated: false, id: DEFAULT_ID }, { lead_type: "mensaje" });
   assert.equal(result.window.__solazMeasurementDebug.eventsEmitted.at(-1).name, "generate_lead");
 });
 
 test("20: un lead duplicado no genera evento", () => {
   const result = runRuntime();
-  result.window.solazMeasurement.trackLead({ ok: true, deduplicated: true }, { lead_type: "mensaje" });
+  result.window.solazMeasurement.trackLead({ ok: true, deduplicated: true, id: DEFAULT_ID }, { lead_type: "mensaje" });
   assert.equal(result.window.__solazMeasurementDebug.eventsEmitted.length, 0);
 });
 
@@ -326,26 +346,26 @@ test("22: una respuesta fallida no genera evento", () => {
   assert.equal(result.window.__solazMeasurementDebug.eventsEmitted.length, 0);
 });
 
-test("23: mensaje usa generate_lead con los cuatro campos permitidos", () => {
+test("23: mensaje usa generate_lead con lead_id y los campos permitidos", () => {
   const result = runRuntime();
-  result.window.solazMeasurement.trackLead({ ok: true, deduplicated: false }, {
+  result.window.solazMeasurement.trackLead({ ok: true, deduplicated: false, id: DEFAULT_ID }, {
     lead_type: "mensaje", service_code: "branding", source_page: "/contacto", cta_id: "contact-form"
   });
   assert.deepEqual(plain(result.window.__solazMeasurementDebug.eventsEmitted[0]), {
     name: "generate_lead",
-    parameters: { lead_type: "mensaje", service_code: "branding", source_page: "/contacto", cta_id: "contact-form" }
+    parameters: { lead_type: "mensaje", lead_id: DEFAULT_ID, service_code: "branding", source_page: "/contacto", cta_id: "contact-form" }
   });
 });
 
 test("24: reunión usa generate_lead con lead_type reunion", () => {
   const result = runRuntime();
-  result.window.solazMeasurement.trackLead({ ok: true, deduplicated: false }, { lead_type: "reunion" });
+  result.window.solazMeasurement.trackLead({ ok: true, deduplicated: false, id: DEFAULT_ID }, { lead_type: "reunion" });
   assert.equal(result.window.__solazMeasurementDebug.eventsEmitted[0].parameters.lead_type, "reunion");
 });
 
 test("25: datos personales y campos internos adicionales nunca entran al payload", () => {
   const result = runRuntime();
-  result.window.solazMeasurement.trackLead({ ok: true, deduplicated: false }, {
+  result.window.solazMeasurement.trackLead({ ok: true, deduplicated: false, id: DEFAULT_ID }, {
     lead_type: "mensaje", email: "persona@example.com", name: "Persona", message: "privado",
     phone: "+56900000000", submission_id: "secret", case_id: "internal", service_code: "branding"
   });
@@ -672,7 +692,7 @@ test("82: config GA4 no recibe window.location.href crudo", () => {
 
 test("83: generate_lead hereda config saneada y conserva payload mínimo", () => {
   const result = configuredProduction("https://solazstudio.cl/contacto?email=persona%40example.com#form");
-  result.window.solazMeasurement.trackLead({ ok: true, deduplicated: false }, {
+  result.window.solazMeasurement.trackLead({ ok: true, deduplicated: false, id: DEFAULT_ID }, {
     lead_type: "mensaje",
     service_code: "branding",
     source_page: "/contacto",
@@ -682,6 +702,7 @@ test("83: generate_lead hereda config saneada y conserva payload mínimo", () =>
   assert.equal(commandCalls(result, "config")[0][2].page_location, "https://solazstudio.cl/contacto");
   assert.deepEqual(eventCalls(result, "generate_lead")[0], ["event", "generate_lead", {
     lead_type: "mensaje",
+    lead_id: DEFAULT_ID,
     service_code: "branding",
     source_page: "/contacto",
     cta_id: "contact-form"
@@ -733,4 +754,149 @@ test("90: todas las llamadas config GA4 mantienen send_page_view false", () => {
   const calls = commandCalls(result, "config");
   assert.equal(calls.length, 1);
   assert.equal(calls.every((entry) => entry[2]?.send_page_view === false), true);
+});
+
+test("91: sin decisión no guarda ni expone atribución y limpia estado previo", () => {
+  const sessionValues = new Map([[ATTRIBUTION_STORAGE_KEY, JSON.stringify({ stale: true })]]);
+  const result = runRuntime({
+    url: "https://preview.solazstudio-web.pages.dev/contacto?utm_source=google",
+    sessionValues
+  });
+  assert.equal(result.window.solazMeasurement.getAttributionSnapshot(), null);
+  assert.equal(sessionValues.has(ATTRIBUTION_STORAGE_KEY), false);
+});
+
+test("92: aceptar captura first, last non-direct y current con whitelist segura", () => {
+  const result = runRuntime({
+    url: "https://preview.solazstudio-web.pages.dev/contacto?utm_source=Google%20Ads&utm_campaign=Campa%C3%B1a_Oto%C3%B1o-2026.%2Fcl&gclid=AbC_123-xy"
+  });
+  result.accept.click();
+  const snapshot = plain(result.window.solazMeasurement.getAttributionSnapshot());
+  assert.match(snapshot.first_touch.captured_at, /^\d{4}-\d{2}-\d{2}T/);
+  assert.equal(snapshot.first_touch.utm_source, "Google Ads");
+  assert.equal(snapshot.first_touch.utm_campaign, "Campaña_Otoño-2026./cl");
+  assert.equal(snapshot.first_touch.gclid, "AbC_123-xy");
+  assert.deepEqual(snapshot.last_non_direct, snapshot.first_touch);
+  assert.deepEqual(snapshot.current_touch, snapshot.first_touch);
+  assert.deepEqual(JSON.parse(result.sessionValues.get(ATTRIBUTION_STORAGE_KEY)), snapshot);
+});
+
+test("93: visita direct conserva first_touch y last_non_direct de la pestaña", () => {
+  const sessionValues = new Map();
+  const campaign = runRuntime({
+    url: "https://preview.solazstudio-web.pages.dev/contacto?utm_source=google&utm_medium=cpc",
+    stored: savedPreference("accepted"),
+    sessionValues
+  });
+  const firstSnapshot = plain(campaign.window.solazMeasurement.getAttributionSnapshot());
+  const direct = runRuntime({
+    url: "https://preview.solazstudio-web.pages.dev/servicios",
+    stored: savedPreference("accepted"),
+    sessionValues
+  });
+  const directSnapshot = plain(direct.window.solazMeasurement.getAttributionSnapshot());
+  assert.deepEqual(directSnapshot.first_touch, firstSnapshot.first_touch);
+  assert.deepEqual(directSnapshot.last_non_direct, firstSnapshot.last_non_direct);
+  assert.deepEqual(Object.keys(directSnapshot.current_touch), ["captured_at"]);
+});
+
+test("94: revocar limpia atribución de sesión y memoria", () => {
+  const result = runRuntime({
+    url: "https://preview.solazstudio-web.pages.dev/contacto?utm_source=google",
+    stored: savedPreference("accepted")
+  });
+  assert.equal(result.sessionValues.has(ATTRIBUTION_STORAGE_KEY), true);
+  result.reject.click();
+  assert.equal(result.sessionValues.has(ATTRIBUTION_STORAGE_KEY), false);
+  assert.equal(result.window.solazMeasurement.getAttributionSnapshot(), null);
+});
+
+test("95: sessionStorage no disponible conserva snapshot seguro en memoria", () => {
+  const result = runRuntime({
+    url: "https://preview.solazstudio-web.pages.dev/contacto?utm_source=google",
+    stored: savedPreference("accepted"),
+    sessionStorageThrows: true
+  });
+  const snapshot = plain(result.window.solazMeasurement.getAttributionSnapshot());
+  assert.equal(snapshot.current_touch.utm_source, "google");
+});
+
+test("96: saneamiento descarta PII, URLs, controles, teléfonos y valores inválidos", () => {
+  const result = runRuntime({
+    url: "https://preview.solazstudio-web.pages.dev/contacto?utm_source=persona%40example.com&utm_medium=https%3A%2F%2Fejemplo.cl&utm_campaign=Contacto%2056912345678&utm_term=linea%0Anueva&utm_content=%20bordes%20&gclid=abc.def&gbraid=Valid_123",
+    stored: savedPreference("accepted")
+  });
+  const touch = plain(result.window.solazMeasurement.getAttributionSnapshot()).current_touch;
+  assert.deepEqual(touch, { captured_at: touch.captured_at, gbraid: "Valid_123" });
+});
+
+test("97: snapshot superior a 4096 bytes se descarta completo", () => {
+  const params = new URLSearchParams();
+  for (const key of ["utm_source", "utm_medium", "utm_campaign", "utm_id", "utm_term", "utm_content"]) {
+    params.set(key, "a".repeat(128));
+  }
+  for (const key of ["gclid", "gbraid", "wbraid", "dclid"]) params.set(key, "A".repeat(160));
+  const result = runRuntime({
+    url: `https://preview.solazstudio-web.pages.dev/contacto?${params}`,
+    stored: savedPreference("accepted")
+  });
+  assert.equal(result.window.solazMeasurement.getAttributionSnapshot(), null);
+  assert.equal(result.sessionValues.has(ATTRIBUTION_STORAGE_KEY), false);
+});
+
+test("98: lead_id UUID se emite solo para una conversión nueva válida", () => {
+  const valid = runRuntime();
+  valid.window.solazMeasurement.trackLead(
+    { ok: true, deduplicated: false, id: DEFAULT_ID },
+    { lead_type: "mensaje" }
+  );
+  assert.equal(valid.window.__solazMeasurementDebug.eventsEmitted[0].parameters.lead_id, DEFAULT_ID);
+
+  const invalid = runRuntime();
+  invalid.window.solazMeasurement.trackLead(
+    { ok: true, deduplicated: false, id: "not-a-uuid" },
+    { lead_type: "mensaje" }
+  );
+  assert.equal(invalid.window.__solazMeasurementDebug.eventsEmitted.length, 0);
+});
+
+test("99: rechazo impide enviar lead_id o atribución a Google", () => {
+  const result = runRuntime({
+    hostname: "solazstudio.cl",
+    stored: savedPreference("rejected"),
+    enabled: true,
+    gaId: "G-TEST123"
+  });
+  result.window.solazMeasurement.trackLead(
+    { ok: true, deduplicated: false, id: DEFAULT_ID },
+    { lead_type: "mensaje", utm_source: "google", email: "persona@example.com" }
+  );
+  assert.equal(result.window.__solazMeasurementDebug.eventsSent.length, 0);
+  assert.equal(eventCalls(result, "generate_lead").length, 0);
+});
+
+test("100: Contacto prepara attribution_context justo antes de FormData", () => {
+  const source = readFileSync(join(projectRoot, "src/contacto.njk"), "utf8");
+  assert.equal((source.match(/name="attribution_context"/g) || []).length, 2);
+  assert.match(source, /getAttributionSnapshot\?\.\(\)[\s\S]*?form\.elements\.attribution_context\.value[\s\S]*?const formData = new FormData\(form\);/);
+});
+
+test("101: las 24 salidas sincronizan estado y etiqueta del menú móvil", () => {
+  assert.equal(EXPECTED_HTML_FILES.length, 24);
+  for (const file of EXPECTED_HTML_FILES) {
+    const html = readFileSync(join(projectRoot, "_site", file), "utf8");
+    assert.match(html, /id="navToggle"[^>]*aria-label="Abrir menú"[^>]*aria-expanded="false"/, file);
+    assert.match(html, /setAttribute\('aria-expanded',[\s\S]*?setAttribute\('aria-label',[\s\S]*?Cerrar menú/, file);
+    assert.match(html, /setAttribute\('aria-expanded',\s*'false'\)[\s\S]*?setAttribute\('aria-label',\s*'Abrir menú'\)/, file);
+  }
+});
+
+test("102: Portfolio usa botones aria-pressed y conserva sincronía con active", () => {
+  const html = readFileSync(join(projectRoot, "_site", "portafolio.html"), "utf8");
+  const filters = html.match(/<div class="filters"[^>]*>[\s\S]*?<\/div>/)?.[0] || "";
+  assert.doesNotMatch(filters, /role="tab(?:list)?"/);
+  assert.equal((filters.match(/class="filter-btn/g) || []).length, 9);
+  assert.equal((filters.match(/aria-pressed="true"/g) || []).length, 1);
+  assert.equal((filters.match(/aria-pressed="false"/g) || []).length, 8);
+  assert.match(html, /classList\.toggle\('active', selected\)[\s\S]*?setAttribute\('aria-pressed', String\(selected\)\)/);
 });

@@ -217,6 +217,8 @@ permalink: "404.html"
         navToggle.classList.toggle('open');
         mobileMenu.setAttribute('aria-hidden', String(!isOpen));
         mobileMenu.toggleAttribute('inert', !isOpen);
+        navToggle.setAttribute('aria-expanded', String(isOpen));
+        navToggle.setAttribute('aria-label', isOpen ? 'Cerrar menú' : 'Abrir menú');
         document.body.style.overflow = isOpen ? 'hidden' : '';
       });
       mobileMenu.querySelectorAll('a').forEach(a => {
@@ -225,6 +227,8 @@ permalink: "404.html"
           navToggle.classList.remove('open');
           mobileMenu.setAttribute('aria-hidden', 'true');
           mobileMenu.toggleAttribute('inert', true);
+          navToggle.setAttribute('aria-expanded', 'false');
+          navToggle.setAttribute('aria-label', 'Abrir menú');
           document.body.style.overflow = '';
         });
       });

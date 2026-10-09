@@ -508,6 +508,7 @@ permalink: "contacto.html"
           <input type="hidden" name="case_id" value="">
           <input type="hidden" name="cta_id" value="">
           <input type="hidden" name="submission_id" value="">
+          <input type="hidden" name="attribution_context" value="">
           <input type="checkbox" name="botcheck" style="display:none">
 
           <div class="form-row">
@@ -587,6 +588,7 @@ permalink: "contacto.html"
           <input type="hidden" name="case_id" value="">
           <input type="hidden" name="cta_id" value="">
           <input type="hidden" name="submission_id" value="">
+          <input type="hidden" name="attribution_context" value="">
           <input type="checkbox" name="botcheck" style="display:none">
 
           <div class="form-row">
@@ -865,6 +867,14 @@ permalink: "contacto.html"
         clearFormError(form);
         if (!validateForm(form)) return;
 
+        try {
+          const attributionSnapshot = window.solazMeasurement?.getAttributionSnapshot?.();
+          form.elements.attribution_context.value = attributionSnapshot
+            ? JSON.stringify(attributionSnapshot)
+            : '';
+        } catch {
+          form.elements.attribution_context.value = '';
+        }
         const formData = new FormData(form);
         if (!String(formData.get('cf-turnstile-response') || '').trim()) {
           setTurnstileMessage(form, 'Completa la verificación antispam antes de enviar.');
@@ -938,6 +948,8 @@ permalink: "contacto.html"
         navToggle.classList.toggle('open');
         mobileMenu.setAttribute('aria-hidden', String(!isOpen));
         mobileMenu.toggleAttribute('inert', !isOpen);
+        navToggle.setAttribute('aria-expanded', String(isOpen));
+        navToggle.setAttribute('aria-label', isOpen ? 'Cerrar menú' : 'Abrir menú');
         document.body.style.overflow = isOpen ? 'hidden' : '';
       });
       mobileMenu.querySelectorAll('a').forEach(a => {
@@ -946,6 +958,8 @@ permalink: "contacto.html"
           navToggle.classList.remove('open');
           mobileMenu.setAttribute('aria-hidden', 'true');
           mobileMenu.toggleAttribute('inert', true);
+          navToggle.setAttribute('aria-expanded', 'false');
+          navToggle.setAttribute('aria-label', 'Abrir menú');
           document.body.style.overflow = '';
         });
       });

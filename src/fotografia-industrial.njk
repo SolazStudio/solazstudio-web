@@ -215,7 +215,7 @@ permalink: "fotografia-industrial.html"
     
     
     const t=document.getElementById('navToggle'),m=document.getElementById('mobileMenu');
-    if(t&&m){t.addEventListener('click',()=>{const o=m.classList.toggle('open');t.classList.toggle('open');m.setAttribute('aria-hidden',String(!o));m.toggleAttribute('inert',!o);document.body.style.overflow=o?'hidden':'';});m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{m.classList.remove('open');t.classList.remove('open');m.setAttribute('aria-hidden','true');m.toggleAttribute('inert',true);document.body.style.overflow='';}));}
+    if(t&&m){t.addEventListener('click',()=>{const o=m.classList.toggle('open');t.classList.toggle('open');m.setAttribute('aria-hidden',String(!o));m.toggleAttribute('inert',!o);t.setAttribute('aria-expanded',String(o));t.setAttribute('aria-label',o?'Cerrar menú':'Abrir menú');document.body.style.overflow=o?'hidden':'';});m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{m.classList.remove('open');t.classList.remove('open');m.setAttribute('aria-hidden','true');m.toggleAttribute('inert',true);t.setAttribute('aria-expanded','false');t.setAttribute('aria-label','Abrir menú');document.body.style.overflow='';}));}
     const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:.08});
     document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
   </script>

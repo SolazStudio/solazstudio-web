@@ -10,7 +10,7 @@
     <a href="{{ site.instagramUrl }}" class="nav-instagram" target="_blank" rel="noopener"{% if page.navigation.instagramAriaLabel %} aria-label="{{ page.navigation.instagramAriaLabel | safe }}"{% endif %}><span class="ig-full">Instagram</span><span class="ig-short">IG</span></a>
 {% endif %}
     <a href="/contacto" class="nav-cta{% if page.navigation.contactActive %} active{% endif %}">Contacto</a>
-    <button type="button" class="nav-hamburger" id="navToggle" aria-label="Abrir menú"{% if page.navigation.expanded %} aria-expanded="false"{% endif %}>
+    <button type="button" class="nav-hamburger" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
   </nav>

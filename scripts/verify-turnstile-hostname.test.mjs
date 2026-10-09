@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { onRequestPost } from "../functions/api/contact.js";
@@ -6,6 +7,25 @@ import { onRequestPost } from "../functions/api/contact.js";
 const originalFetch = globalThis.fetch;
 const DEFAULT_ID = "11111111-1111-4111-8111-111111111111";
 const DEFAULT_REQUEST_URL = "https://solazstudio.cl/api/contact";
+const ATTRIBUTION_TIMESTAMP = "2026-10-09T12:00:00.000Z";
+
+function validAttribution() {
+  return {
+    first_touch: {
+      captured_at: ATTRIBUTION_TIMESTAMP,
+      utm_source: "Google Ads",
+      utm_campaign: "Campaña Otoño_2026./cl"
+    },
+    last_non_direct: {
+      captured_at: ATTRIBUTION_TIMESTAMP,
+      gclid: "AbC_123-xy"
+    },
+    current_touch: {
+      captured_at: ATTRIBUTION_TIMESTAMP,
+      utm_medium: "cpc"
+    }
+  };
+}
 
 function createForm(overrides = {}) {
   const values = {
@@ -238,6 +258,7 @@ test("22 valid new message persists once and enqueues once", async () => {
   assert.equal(result.db.bindings[13], "/fotografia-comercial");
   assert.equal(result.db.bindings[14], "caso/qa-1");
   assert.equal(result.db.bindings[15], "service_primary");
+  assert.equal(result.db.bindings[16], null);
 });
 
 test("23 valid new meeting persists days and time and enqueues once", async () => {
@@ -276,7 +297,7 @@ test("26 unknown field is ignored without changing persistence contract", async 
   assert.equal(result.queue.sends, 1);
   assert.doesNotMatch(result.db.sql, /shadow_column/);
   assert.equal(result.db.bindings.includes(marker), false);
-  assert.equal(result.db.bindings.length, 17);
+  assert.equal(result.db.bindings.length, 18);
 });
 
 test("27 absent marketing consent keeps current zero representation", async () => {
@@ -289,6 +310,68 @@ test("28 consent_marketing si keeps current one representation", async () => {
   const result = await invoke({ form: { consent_marketing: "si" } });
   assert.equal(result.status, 200);
   assert.equal(result.db.bindings[8], 1);
+});
+
+test("29 valid attribution is normalized and persisted as JSON", async () => {
+  const attribution = validAttribution();
+  const result = await invoke({ form: { attribution_context: JSON.stringify(attribution) } });
+  assert.equal(result.status, 200);
+  assert.deepEqual(JSON.parse(result.db.bindings[16]), attribution);
+  assert.equal(result.queue.sends, 1);
+});
+
+test("30 absent attribution persists NULL", async () => {
+  const result = await invoke();
+  assert.equal(result.status, 200);
+  assert.equal(result.db.bindings[16], null);
+});
+
+test("31 malformed attribution is discarded without rejecting a valid contact", async () => {
+  const invalidCases = [
+    "{invalid-json",
+    JSON.stringify({ ...validAttribution(), visitor_id: "forbidden" }),
+    JSON.stringify({ ...validAttribution(), first_touch: { ...validAttribution().first_touch, email: "persona@example.com" } }),
+    JSON.stringify({ ...validAttribution(), first_touch: { captured_at: "not-an-iso", utm_source: "google" } }),
+    JSON.stringify({ ...validAttribution(), first_touch: { captured_at: ATTRIBUTION_TIMESTAMP, utm_source: "persona@example.com" } }),
+    JSON.stringify({ ...validAttribution(), first_touch: { captured_at: ATTRIBUTION_TIMESTAMP, utm_source: "https://example.com" } }),
+    JSON.stringify({ ...validAttribution(), first_touch: { captured_at: ATTRIBUTION_TIMESTAMP, utm_source: "línea\nnueva" } }),
+    JSON.stringify({ ...validAttribution(), first_touch: { captured_at: ATTRIBUTION_TIMESTAMP, utm_source: "Contacto 56912345678" } }),
+    JSON.stringify({ ...validAttribution(), first_touch: { captured_at: ATTRIBUTION_TIMESTAMP, utm_source: "a".repeat(129) } }),
+    JSON.stringify({ ...validAttribution(), last_non_direct: { captured_at: ATTRIBUTION_TIMESTAMP, gclid: "abc.def" } }),
+    JSON.stringify({ ...validAttribution(), current_touch: { ...validAttribution().current_touch, arbitrary: "value" } }),
+    JSON.stringify({ ...validAttribution(), first_touch: { captured_at: ATTRIBUTION_TIMESTAMP, utm_source: "a".repeat(4200) } })
+  ];
+
+  for (const attribution_context of invalidCases) {
+    const result = await invoke({ form: { attribution_context } });
+    assert.equal(result.status, 200);
+    assert.equal(result.body.ok, true);
+    assert.equal(result.db.bindings[16], null);
+    assert.equal(result.queue.sends, 1);
+  }
+});
+
+test("32 valid attribution keeps duplicate and Queue contracts intact", async () => {
+  const attribution_context = JSON.stringify(validAttribution());
+  const duplicate = await invoke({ form: { attribution_context }, d1Changes: 0 });
+  assert.deepEqual(duplicate.body, { ok: true, id: DEFAULT_ID, deduplicated: true });
+  assert.deepEqual(JSON.parse(duplicate.db.bindings[16]), validAttribution());
+  assert.equal(duplicate.queue.sends, 0);
+
+  const queueFailure = await invoke({
+    form: { attribution_context },
+    queueError: new Error("synthetic queue failure")
+  });
+  assert.deepEqual(queueFailure.body, { ok: true, id: DEFAULT_ID, deduplicated: false });
+  assert.equal(queueFailure.db.runs, 1);
+  assert.equal(queueFailure.queue.sends, 1);
+});
+
+test("33 migration 0004 adds only the nullable attribution_context column", () => {
+  const migration = readFileSync(new URL("../migrations/0004_add_contact_attribution.sql", import.meta.url), "utf8");
+  assert.match(migration, /ALTER TABLE contacts ADD COLUMN attribution_context TEXT;/);
+  assert.equal((migration.match(/ALTER TABLE/gi) || []).length, 1);
+  assert.doesNotMatch(migration, /CREATE\s+TABLE|NOT\s+NULL/i);
 });
 
 test.after(() => {

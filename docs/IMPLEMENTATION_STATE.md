@@ -1,11 +1,11 @@
 # Estado de implementación
 
 - Fecha: 2026-10-09
-- Fase/lote: PRE-F8 — registro documental de auditoría previa al cierre
-- Estado: **PRE-F8 COMPLETADO PARA REVISIÓN DE CHATGPT**
+- Fase/lote: F5 consolidado pre-F5.2C — atribución, lead_id y accesibilidad
+- Estado: **F5 CONSOLIDADO COMPLETADO PARA REVISIÓN DE CHATGPT**
 - Rama: `develop`
-- Commit base: `74f2b9abe542925b15f7fab2215c33dcc72dd7b0`
-- Commit del lote PRE-F8: `bf70c17b75c95158957a2adcbc95cf4d52b1e3e5`
+- Commit base: `a867434e1f6804dc58821f0968b28f246ad7acdb`
+- Commit del lote: `fix: consolidate F5 attribution and accessibility`; su SHA se verifica fuera del propio commit
 - Estado F1: **CERRADO**
 - Estado F2: **CERRADO**
 - Estado F3: **CERRADA**
@@ -17,8 +17,8 @@
 - Estado F5.2C: **NO INICIADO**
 - Main / Production: el código de Production permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`; no hubo merge ni nuevo deployment de Production en F5.2B
 - Cloudflare Production: variables de medición preparadas manualmente, sin deployment posterior: `MEASUREMENT_ENABLED=true` y `GA_MEASUREMENT_ID=G-T0Q3S2NR2R`, ambas como texto plano y solo para Production; Preview no recibió estas variables reales
-- Resultado: GA4 y Google Ads de Solaz quedaron vinculados y las conversiones comerciales quedaron jerarquizadas; Production aún no ejecuta esta configuración porque no se ha publicado `develop`
-- Siguiente paso: revisión independiente de ChatGPT del registro PRE-F8; después continuar F5.2, resolver atribución y secuencia F5.2C/F6/F8. No hay autorización de release a main ni Production
+- Resultado: atribución de leads consentida y saneada con persistencia D1 nullable; `lead_id` opaco en conversiones nuevas; menú móvil y filtros Portfolio con semántica accesible corregida, todo validado localmente
+- Siguiente paso: revisión independiente de ChatGPT; F5.2C permanece no iniciado y F6/F8 abiertos. La migración `0004_add_contact_attribution.sql` es precondición obligatoria antes de cualquier futuro despliegue Production de la Function; no hay autorización de release a `main` ni Production
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -1459,7 +1459,7 @@ Configuración final:
 - Siguiente paso: revisión independiente de ChatGPT antes de cualquier release.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
 
-## INFORME CODEX — ÚLTIMO LOTE
+## INFORME CODEX — PRE-F8
 
 - Lote: PRE-F8 — registro documental íntegro.
 - Archivos: `docs/PRE_F8_AUDIT_REGISTER.md` creado; `docs/IMPLEMENTATION_STATE.md` actualizado.
@@ -1467,3 +1467,18 @@ Configuración final:
 - Control: exclusivamente dos archivos documentales; `git diff --cached --check` falló por espacios finales Markdown preservados literalmente. El control fue omitido expresamente en el desbloqueo autorizado; después se ejecutaron commit y push.
 - Commit PRE-F8: `bf70c17b75c95158957a2adcbc95cf4d52b1e3e5`.
 - Cierre: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+
+## INFORME CODEX — ÚLTIMO LOTE
+
+- Lote: F5 consolidado pre-F5.2C — atribución de leads, ID opaco y accesibilidad de menú/filtros.
+- Base exacta: `a867434e1f6804dc58821f0968b28f246ad7acdb`; rama `develop` y working tree inicial limpio.
+- Atribución: diez claves aprobadas, `first_touch`/`last_non_direct`/`current_touch`, `captured_at` ISO, solo tras consentimiento `accepted`, continuidad `sessionStorage`, fallback en memoria, revocación y máximo 4096 bytes; sin PII, URLs completas, cookies nuevas, visitor ID, `localStorage` ni retención de 90 días.
+- Backend/D1: `attribution_context` validado independientemente, JSON normalizado o `NULL`, inserción idempotente y Queue best-effort preservadas. `0004_add_contact_attribution.sql` añade exclusivamente una columna nullable y no fue aplicada externamente.
+- Medición: `generate_lead` añade `lead_id` únicamente desde `response.id` UUID en contacto nuevo no deduplicado; jerarquía, `lead_type`, aislamiento Preview, consentimiento y ausencia de PII/parámetros de atribución adicionales en GA4 preservados.
+- Accesibilidad: `aria-expanded`/`aria-label` sincronizados en las 24 plantillas con bloque de menú existente; Portfolio usa botones `aria-pressed` y conserva filtrado, orden y layout. URL-state de filtros queda pendiente para F8.
+- QA autorizado: `npm run build` PASS (24 páginas, 743 copiados); `npm run qa:contact` PASS 33/33; `npm run qa:privacy` PASS 102/102. No se ejecutaron suite general, `npm ci`, navegador ni pruebas remotas.
+- Precondición Production: aplicar y verificar `migrations/0004_add_contact_attribution.sql` antes de cualquier futuro deploy de `functions/api/contact.js`; este lote no tocó Cloudflare/D1 reales, Preview remoto, Production, Notion, DNS ni GA4/Ads externos.
+- Limitaciones: continuidad de atribución solo en la pestaña/sesión; política definitiva de retención pendiente; F5.2C **NO INICIADO**, F6 y F8 abiertos.
+- Commit y push: un único commit `fix: consolidate F5 attribution and accessibility`, exclusivamente a `origin/develop`; SHA verificado fuera del commit.
+- Rollback: revertir únicamente el commit de este lote; no aplicar rollback externo porque no hubo escrituras de plataforma.
+- Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.

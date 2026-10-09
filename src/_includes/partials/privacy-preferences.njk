@@ -114,6 +114,7 @@
     if (!root || window.solazMeasurement) return;
 
     const STORAGE_KEY = 'solaz_privacy_preferences';
+    const ATTRIBUTION_STORAGE_KEY = 'solaz_campaign_attribution';
     const PREFERENCE_VERSION = 1;
     const PRODUCTION_HOSTS = new Set(['solazstudio.cl', 'www.solazstudio.cl']);
     const ATTRIBUTION_QUERY_KEYS = Object.freeze([
@@ -128,6 +129,13 @@
       'wbraid',
       'dclid'
     ]);
+    const UTM_ATTRIBUTION_KEYS = new Set(ATTRIBUTION_QUERY_KEYS.filter(key => key.startsWith('utm_')));
+    const CLICK_ID_ATTRIBUTION_KEYS = new Set(ATTRIBUTION_QUERY_KEYS.filter(key => !key.startsWith('utm_')));
+    const ATTRIBUTION_TOP_LEVEL_KEYS = new Set(['first_touch', 'last_non_direct', 'current_touch']);
+    const UTM_VALUE_PATTERN = /^[\p{L}\p{N} _.\/-]+$/u;
+    const CLICK_ID_VALUE_PATTERN = /^[A-Za-z0-9_-]+$/;
+    const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const ATTRIBUTION_MAX_BYTES = 4096;
     const TOKEN_PATTERN = /^[a-z0-9]+(?:[\/_-][a-z0-9]+)*$/i;
     const GA_ID_PATTERN = /^G-[A-Z0-9]+$/;
     const DENIED = Object.freeze({
@@ -157,6 +165,7 @@
 
     let consentState = { decision: null, ...DENIED };
     let preferencesOpener = null;
+    let attributionSnapshot = null;
 
     window.dataLayer = window.dataLayer || [];
     function gtag() { window.dataLayer.push(arguments); }
@@ -198,6 +207,157 @@
       } catch {
         // El estado en memoria mantiene la decisión para esta sesión.
       }
+    }
+
+    function jsonByteLength(value) {
+      try {
+        return new TextEncoder().encode(JSON.stringify(value)).length;
+      } catch {
+        return Number.POSITIVE_INFINITY;
+      }
+    }
+
+    function containsSensitiveAttributionSequence(value) {
+      return (
+        /[\u0000-\u001f\u007f-\u009f]/u.test(value) ||
+        value.includes('@') ||
+        /(?:https?:\/\/|www\.|[a-z][a-z0-9+.-]*:\/\/)/i.test(value) ||
+        /[\p{L}\p{N}._%+-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}/u.test(value) ||
+        /(?:^|[^\p{L}\p{N}])\+?\d(?:[\d .()\/-]{6,}\d)(?:$|[^\p{L}\p{N}])/u.test(value)
+      );
+    }
+
+    function sanitizeAttributionValue(key, value) {
+      if (typeof value !== 'string' || !ATTRIBUTION_QUERY_KEYS.includes(key)) return '';
+      const normalized = value.trim();
+      if (!normalized || normalized !== value || containsSensitiveAttributionSequence(normalized)) return '';
+      const length = Array.from(normalized).length;
+      if (UTM_ATTRIBUTION_KEYS.has(key)) {
+        return length <= 128 && UTM_VALUE_PATTERN.test(normalized) ? normalized : '';
+      }
+      if (CLICK_ID_ATTRIBUTION_KEYS.has(key)) {
+        return length <= 160 && CLICK_ID_VALUE_PATTERN.test(normalized) ? normalized : '';
+      }
+      return '';
+    }
+
+    function isIsoTimestamp(value) {
+      if (typeof value !== 'string') return false;
+      const parsed = new Date(value);
+      return Number.isFinite(parsed.getTime()) && parsed.toISOString() === value;
+    }
+
+    function normalizeAttributionTouch(value) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+      const allowedKeys = new Set(['captured_at', ...ATTRIBUTION_QUERY_KEYS]);
+      if (Object.keys(value).some(key => !allowedKeys.has(key)) || !isIsoTimestamp(value.captured_at)) return null;
+
+      const normalized = { captured_at: value.captured_at };
+      for (const key of ATTRIBUTION_QUERY_KEYS) {
+        if (!(key in value)) continue;
+        const safeValue = sanitizeAttributionValue(key, value[key]);
+        if (!safeValue) return null;
+        normalized[key] = safeValue;
+      }
+      return normalized;
+    }
+
+    function touchHasSource(touch) {
+      return ATTRIBUTION_QUERY_KEYS.some(key => Boolean(touch?.[key]));
+    }
+
+    function normalizeAttributionSnapshot(value) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+      if (Object.keys(value).some(key => !ATTRIBUTION_TOP_LEVEL_KEYS.has(key))) return null;
+
+      const firstTouch = normalizeAttributionTouch(value.first_touch);
+      const currentTouch = normalizeAttributionTouch(value.current_touch);
+      const lastNonDirect = value.last_non_direct == null
+        ? null
+        : normalizeAttributionTouch(value.last_non_direct);
+      if (!firstTouch || !currentTouch || (value.last_non_direct != null && (!lastNonDirect || !touchHasSource(lastNonDirect)))) {
+        return null;
+      }
+
+      const normalized = {
+        first_touch: firstTouch,
+        last_non_direct: lastNonDirect,
+        current_touch: currentTouch
+      };
+      return jsonByteLength(normalized) <= ATTRIBUTION_MAX_BYTES ? normalized : null;
+    }
+
+    function readAttributionSnapshot() {
+      try {
+        const raw = window.sessionStorage.getItem(ATTRIBUTION_STORAGE_KEY);
+        return raw ? normalizeAttributionSnapshot(JSON.parse(raw)) : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function persistAttributionSnapshot(snapshot) {
+      try {
+        window.sessionStorage.setItem(ATTRIBUTION_STORAGE_KEY, JSON.stringify(snapshot));
+      } catch {
+        // La copia en memoria mantiene la atribución mientras esta página siga activa.
+      }
+    }
+
+    function clearAttributionSnapshot() {
+      attributionSnapshot = null;
+      try {
+        window.sessionStorage.removeItem(ATTRIBUTION_STORAGE_KEY);
+      } catch {
+        // La ausencia de storage no altera la revocación en memoria.
+      }
+    }
+
+    function buildCurrentAttributionTouch(search = window.location.search) {
+      const touch = { captured_at: new Date().toISOString() };
+      const params = new URLSearchParams(search || '');
+      for (const key of ATTRIBUTION_QUERY_KEYS) {
+        for (const rawValue of params.getAll(key)) {
+          const safeValue = sanitizeAttributionValue(key, rawValue);
+          if (safeValue) {
+            touch[key] = safeValue;
+            break;
+          }
+        }
+      }
+      return touch;
+    }
+
+    function updateAttributionSnapshot() {
+      if (consentState.decision !== 'accepted') {
+        clearAttributionSnapshot();
+        return null;
+      }
+
+      const previous = readAttributionSnapshot() || attributionSnapshot;
+      const currentTouch = buildCurrentAttributionTouch();
+      const candidate = {
+        first_touch: previous?.first_touch || currentTouch,
+        last_non_direct: touchHasSource(currentTouch)
+          ? currentTouch
+          : previous?.last_non_direct || null,
+        current_touch: currentTouch
+      };
+      const normalized = normalizeAttributionSnapshot(candidate);
+      if (!normalized) {
+        clearAttributionSnapshot();
+        return null;
+      }
+
+      attributionSnapshot = normalized;
+      persistAttributionSnapshot(normalized);
+      return normalized;
+    }
+
+    function getAttributionSnapshot() {
+      if (consentState.decision !== 'accepted') return null;
+      const normalized = normalizeAttributionSnapshot(attributionSnapshot || readAttributionSnapshot());
+      return normalized ? JSON.parse(JSON.stringify(normalized)) : null;
     }
 
     function googleIsEligible() {
@@ -256,7 +416,12 @@
       setConsentState(normalizedDecision);
       if (persist) savePreference(normalizedDecision);
       updateActionState();
-      if (normalizedDecision === 'accepted') loadGoogleTag();
+      if (normalizedDecision === 'accepted') {
+        updateAttributionSnapshot();
+        loadGoogleTag();
+      } else {
+        clearAttributionSnapshot();
+      }
       closePreferences();
       return { ...consentState };
     }
@@ -299,7 +464,10 @@
       const pageLocation = new URL(`${location.protocol}//${location.hostname}${pagePath}`);
       const sourceParams = new URLSearchParams(location.search || '');
       ATTRIBUTION_QUERY_KEYS.forEach(key => {
-        sourceParams.getAll(key).forEach(value => pageLocation.searchParams.append(key, value));
+        sourceParams.getAll(key).forEach(value => {
+          const safeValue = sanitizeAttributionValue(key, value);
+          if (safeValue) pageLocation.searchParams.append(key, safeValue);
+        });
       });
       return Object.freeze({
         safePageLocation: pageLocation.toString(),
@@ -339,10 +507,12 @@
 
     function trackLead(response, parameters = {}) {
       if (response?.ok !== true || response?.deduplicated !== false) return false;
+      const leadId = typeof response.id === 'string' && UUID_PATTERN.test(response.id) ? response.id : '';
+      if (!leadId) return false;
       const leadType = parameters.lead_type === 'reunion' ? 'reunion' : parameters.lead_type === 'mensaje' ? 'mensaje' : '';
       if (!leadType) return false;
 
-      const payload = { lead_type: leadType };
+      const payload = { lead_type: leadType, lead_id: leadId };
       const serviceCode = safeToken(parameters.service_code, 100);
       const sourcePage = safePagePath(parameters.source_page);
       const ctaId = safeToken(parameters.cta_id, 100);
@@ -367,6 +537,7 @@
     window.solazMeasurement = Object.freeze({
       trackLead,
       trackDirectContact,
+      getAttributionSnapshot,
       getConsentState: () => ({ ...consentState }),
       openPreferences
     });
@@ -403,6 +574,7 @@
     if (savedPreference) {
       applyDecision(savedPreference.decision, { persist: false });
     } else {
+      clearAttributionSnapshot();
       root.hidden = false;
       updateActionState();
     }

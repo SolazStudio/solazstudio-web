@@ -1518,3 +1518,33 @@ Este anexo es una precisión posterior y no altera ni elimina el texto históric
 3. **`qa:parity`:** el apartado 26 preserva un antecedente histórico de fricción por comparación con `main`, pero la lectura de `scripts/verify-parity.mjs` en `develop` al commit base `74f2b9a` no muestra una comparación directa de `functions/api/contact.js` con `main`. La verificación actual exige integridad de originales/archivos públicos y de salida generada. Por tanto, no etiquetar el supuesto conflicto directo de Function como bug vigente sin nueva evidencia. Conservar el antecedente y considerar su utilidad en F6.
 4. **F2:** permanece cerrado sobre su evidencia E2E aislada. Ese cierre no equivale a validación de la infraestructura real de Production ni permite declarar F8 cerrado; no se reabre automáticamente F2 por esa diferencia.
 5. **Regla de precedencia:** ante cualquier aparente contradicción, usar la Fuente Maestra y el Protocolo como fuentes permanentes, el estado durable actual de `develop` para hechos de implementación, las decisiones posteriores expresas para los puntos que las matizan y este registro como historial de auditoría. No presentar hipótesis o hallazgos que aún requieren verificación como hechos recién comprobados.
+
+---
+
+# SEGUIMIENTO F5 — CONSOLIDADO PRE-F5.2C (2026-10-09)
+
+**Estado:** `COMPLETADO PARA REVISIÓN DE CHATGPT`.
+
+## RESUELTO — REAUDITAR EN F8
+
+- **Atribución del lead:** el runtime captura exclusivamente las diez claves aprobadas en `first_touch`, `last_non_direct` y `current_touch`, con `captured_at` ISO, consentimiento analítico `accepted`, continuidad limitada a `sessionStorage`, fallback en memoria, revocación efectiva y límite total de 4096 bytes. Direct no borra `last_non_direct`; no se crean cookies, identificadores de visitante ni continuidad entre sesiones.
+- **Saneamiento:** cliente y servidor aplican la misma whitelist. UTMs admiten hasta 128 caracteres Unicode con espacios internos y `- _ . /`; click IDs admiten hasta 160 caracteres `[A-Za-z0-9_-]`. Valores con PII aparente, URLs, controles, saltos, email/teléfono o forma inválida se descartan sin truncarlos.
+- **Persistencia:** ambos formularios envían `attribution_context` solo con consentimiento aceptado. La Function normaliza independientemente y persiste JSON seguro o `NULL`; una atribución malformada no bloquea un contacto válido. Migración versionada `0004_add_contact_attribution.sql` añade una sola columna nullable `attribution_context TEXT`.
+- **Lead ID opaco:** `generate_lead` incorpora únicamente `lead_id=response.id` cuando la respuesta es nueva, exitosa, no deduplicada y el ID cumple el patrón UUID existente. No se agregan parámetros de atribución ni PII a eventos GA4.
+- **Menú móvil:** las 24 plantillas conservan su listener existente y sincronizan `aria-expanded`, `aria-label`, `aria-hidden`, `inert`, clases y scroll al abrir, cerrar o activar un enlace.
+- **Filtros Portfolio:** dejan de exponerse como tabs sin tabpanels y usan botones con `aria-pressed` sincronizado con `active`, sin alterar orden, etiquetas, filtrado ni layout.
+
+## Evidencia local
+
+- `npm run build`: PASS; 24 páginas generadas y 743 archivos copiados.
+- `npm run qa:contact`: PASS, 33/33.
+- `npm run qa:privacy`: PASS, 102/102; incluye atribución, consentimiento, visitas directas, revocación, saneamiento, D1 `NULL`/JSON, deduplicación, Queue, `lead_id`, menú y filtros.
+- No se ejecutó QA general, `npm ci`, navegador, Preview remoto ni pruebas de servicios externos.
+
+## Pendientes preservados
+
+- `0004_add_contact_attribution.sql` no fue aplicada a D1 real y es precondición obligatoria antes de cualquier futuro despliegue Production de `functions/api/contact.js`.
+- F5.2C permanece **NO INICIADO**; F6 y F8 permanecen abiertos.
+- El estado de filtros en URL/routing continúa como hallazgo separado para F8.
+- La política definitiva de retención/atribución más allá de la sesión no fue aprobada; este lote implementa solo continuidad de pestaña, sin 90 días ni `localStorage`.
+- Production, Worker, D1 real, Queue, Notion, DNS, GA4/Ads externos y campañas permanecen sin acciones en este lote.

@@ -643,16 +643,16 @@ permalink: "portafolio.html"
   </header>
 
   <!-- FILTERS -->
-  <div class="filters" role="tablist" aria-label="Filtrar portafolio">
-    <button type="button" class="filter-btn active" data-filter="all" role="tab">Todo</button>
-    <button type="button" class="filter-btn" data-filter="arquitectura" role="tab">Arquitectura</button>
-    <button type="button" class="filter-btn" data-filter="eventos" role="tab">Eventos</button>
-    <button type="button" class="filter-btn" data-filter="gastronomia" role="tab">Gastronómica</button>
-    <button type="button" class="filter-btn" data-filter="industrial" role="tab">Industrial</button>
-    <button type="button" class="filter-btn" data-filter="publicitaria" role="tab">Publicitaria</button>
-    <button type="button" class="filter-btn" data-filter="retratos" role="tab">Retratos</button>
-    <button type="button" class="filter-btn" data-filter="video" role="tab">Video</button>
-    <button type="button" class="filter-btn" data-filter="proyecto" role="tab">Proyectos</button>
+  <div class="filters" aria-label="Filtrar portafolio">
+    <button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">Todo</button>
+    <button type="button" class="filter-btn" data-filter="arquitectura" aria-pressed="false">Arquitectura</button>
+    <button type="button" class="filter-btn" data-filter="eventos" aria-pressed="false">Eventos</button>
+    <button type="button" class="filter-btn" data-filter="gastronomia" aria-pressed="false">Gastronómica</button>
+    <button type="button" class="filter-btn" data-filter="industrial" aria-pressed="false">Industrial</button>
+    <button type="button" class="filter-btn" data-filter="publicitaria" aria-pressed="false">Publicitaria</button>
+    <button type="button" class="filter-btn" data-filter="retratos" aria-pressed="false">Retratos</button>
+    <button type="button" class="filter-btn" data-filter="video" aria-pressed="false">Video</button>
+    <button type="button" class="filter-btn" data-filter="proyecto" aria-pressed="false">Proyectos</button>
   </div>
 
   <!-- GALLERY -->
@@ -1574,8 +1574,11 @@ permalink: "portafolio.html"
 
     filterBtns.forEach(btn => {
       btn.addEventListener('click', () => {
-        filterBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        filterBtns.forEach(b => {
+          const selected = b === btn;
+          b.classList.toggle('active', selected);
+          b.setAttribute('aria-pressed', String(selected));
+        });
         const f = btn.dataset.filter;
         galleryItems.forEach(item => {
           const match = f === 'all' || item.dataset.cat === f;
@@ -1680,6 +1683,8 @@ permalink: "portafolio.html"
         navToggle.classList.toggle('open');
         mobileMenu.setAttribute('aria-hidden', String(!isOpen));
         mobileMenu.toggleAttribute('inert', !isOpen);
+        navToggle.setAttribute('aria-expanded', String(isOpen));
+        navToggle.setAttribute('aria-label', isOpen ? 'Cerrar menú' : 'Abrir menú');
         document.body.style.overflow = isOpen ? 'hidden' : '';
       });
       mobileMenu.querySelectorAll('a').forEach(a => {
@@ -1688,6 +1693,8 @@ permalink: "portafolio.html"
           navToggle.classList.remove('open');
           mobileMenu.setAttribute('aria-hidden', 'true');
           mobileMenu.toggleAttribute('inert', true);
+          navToggle.setAttribute('aria-expanded', 'false');
+          navToggle.setAttribute('aria-label', 'Abrir menú');
           document.body.style.overflow = '';
         });
       });
