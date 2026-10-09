@@ -1602,3 +1602,11 @@ Este anexo es una precisión posterior y no altera ni elimina el texto históric
 - Riesgo para evaluar en F8: `npm ci` informó **11 vulnerabilidades de dependencias (4 moderadas y 7 altas)**. Requiere análisis de exposición/impacto; F6 no aplicó actualizaciones de paquetes ni alteró la web pública.
 - Mantener íntegros los hallazgos previos. F5.2C continúa **BLOQUEADO PARA VALIDACIÓN REAL**, F8 **PENDIENTE** y `main`/Production sin publicación autorizada.
 - Esta anotación documental refleja la revisión posterior; las menciones históricas de QA pendiente anteriores a la ejecución aprobada se conservan como evidencia de su estado en ese momento.
+
+
+## Seguimiento F5.2C.1 — Contrato Notion real preparado (2026-10-09)
+
+- **Corrección posterior vigente:** con autorización expresa del director se agregó al CRM real `CRM Solaz Studio` (database `37b7abcb-cbb1-8050-a745-d5edcab17eb8`, data source `37b7abcb-cbb1-805c-93ce-000b6ea904b6`) la propiedad exacta `ID envío web`, tipo `rich_text` (`text` en esquema de lectura). Precheck: 10 propiedades previas sin la clave; poscheck: 11 propiedades, clave presente y las 10 originales conservadas. Inspección limitada al schema, sin filas ni PII.
+- **Estado del hallazgo:** precondición de esquema Notion real **RESUELTA/VALIDADA** para F5.2C. La prevención efectiva de duplicados con el Worker endurecido sigue **BLOQUEADA POR PRODUCTION** hasta migraciones y despliegue con pruebas reales. No equiparar crear un campo con probar el circuito D1 → Queue → Notion.
+- **Sin cambios en:** contactos existentes, D1, Queue, Worker, Pages, código funcional, Preview, GA4, Ads, DNS ni `main`. QA general F6 no se repitió por tratarse de propiedad y documentación.
+- **Siguiente dependencia:** preparar migraciones D1 reales 0002/0003/0004 en lote separado y autorizado, verificar compatibilidad y orden de despliegue; F5 global continúa abierta y F8 pendiente.
