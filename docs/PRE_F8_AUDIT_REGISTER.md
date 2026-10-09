@@ -1548,3 +1548,40 @@ Este anexo es una precisión posterior y no altera ni elimina el texto históric
 - El estado de filtros en URL/routing continúa como hallazgo separado para F8.
 - La política definitiva de retención/atribución más allá de la sesión no fue aprobada; este lote implementa solo continuidad de pestaña, sin 90 días ni `localStorage`.
 - Production, Worker, D1 real, Queue, Notion, DNS, GA4/Ads externos y campañas permanecen sin acciones en este lote.
+
+---
+
+# SEGUIMIENTO F6 + DEPENDENCIAS F5.2C (2026-10-09)
+
+**Estado F6:** `IMPLEMENTADO — VALIDACIÓN CI PENDIENTE`.
+
+## Implementado en F6
+
+- CI read-only para push y pull request hacia `develop`: Node desde `.node-version`, `npm ci` y compuerta consolidada `npm run qa`, sin secretos ni deploy.
+- QA consolidada con sintaxis de Function/Worker/smoke, estructura de los 24 HTML, enlaces y fragmentos internos, sitemap/canonical/noindex/URLs limpias, tests Worker y guardas históricas vigentes.
+- Smoke remoto GET-only con URL base explícita, fuera de CI y fuera de `npm run qa`.
+- Runbook de solo lectura para QA, D1 por schema/conteos agrupados sin PII, Queue/consumer/Worker, señales de fallo, detención, escalamiento, posverificación y rollback no ejecutado.
+- `qa:scope` se conserva como comando histórico pero deja de integrar la compuerta general porque su baseline F4 no corresponde al alcance acumulado actual.
+
+## F5.2C — bloqueo real preservado
+
+- Estado: `DIAGNÓSTICO COMPLETADO / VALIDACIÓN REAL BLOQUEADA`.
+- Worker real `solaz-contact-worker`: versión activa `c1224de0-a9be-4aac-8143-aa2a5bd12ab7`, anterior al Worker hardened de `develop`.
+- D1 real `solaz-contactos`: schema `0001` presente; faltan las columnas de `0002`, `0003` y `0004`.
+- Queue `solaz-contactos-sync`: productor y consumidor activos vinculados al Worker real.
+- CRM real Notion: falta la propiedad `ID envío web`.
+- El contacto completo y la medición GA4 real no están validados. No se aplicaron migraciones, no se desplegó código y no se modificó ningún recurso externo.
+
+## Continuidad hacia F8
+
+- F6 no queda cerrado hasta revisión independiente de ChatGPT.
+- F5.2C permanece bloqueado para validación real y requiere un lote posterior con autorizaciones específicas antes de cualquier escritura.
+- F8 continúa pendiente. Este seguimiento no borra hallazgos anteriores ni habilita release, Production, Ads o campañas.
+
+
+## Recuperación de F6 — evidencia del intento QA
+
+- El único intento local de `npm run qa` de F6 fue **BLOQUEADO** durante `clean` por `EBUSY` en `_site/img/_responsive`, antes de ejecutar build y controles; no hubo QA PASS local.
+- Codex no creó commit ni hizo push. ChatGPT recuperó los siete archivos desde Dropbox mediante autorización expresa para integración directa en `develop`, sin usar Codex.
+- La validación general queda transferida al workflow de GitHub Actions para ejecución aislada de Dropbox. Estado de CI pendiente al preparar este commit; no declarar cierre F6 sin revisar ese resultado.
+- F5.2C continúa BLOQUEADO para validación real y F8 PENDIENTE; sin cambios en recursos externos de producción.

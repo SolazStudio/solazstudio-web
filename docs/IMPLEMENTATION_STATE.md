@@ -1,11 +1,11 @@
 # Estado de implementación
 
 - Fecha: 2026-10-09
-- Fase/lote: F5 consolidado pre-F5.2C — atribución, lead_id y accesibilidad
-- Estado: **F5 CONSOLIDADO COMPLETADO PARA REVISIÓN DE CHATGPT**
+- Fase/lote: F6 consolidado — QA, automatización y observabilidad
+- Estado: **F6 IMPLEMENTADO — QA REMOTA PENDIENTE DE REVISIÓN**
 - Rama: `develop`
-- Commit base: `a867434e1f6804dc58821f0968b28f246ad7acdb`
-- Commit del lote: `fix: consolidate F5 attribution and accessibility`; su SHA se verifica fuera del propio commit
+- Commit base: `950ef42e3baaf2ea972fc3114bd783f46c078d9c`
+- Commit F6: `ci: consolidate F6 quality gates and operations runbook`; integración directa autorizada desde Dropbox a GitHub. SHA verificable en GitHub después del push.
 - Estado F1: **CERRADO**
 - Estado F2: **CERRADO**
 - Estado F3: **CERRADA**
@@ -14,11 +14,13 @@
 - Estado F5.1: **CERRADO**
 - Estado F5.2A: **CERRADO** por revisión independiente de ChatGPT
 - Estado F5.2B: **CERRADO** por revisión independiente de ChatGPT
-- Estado F5.2C: **NO INICIADO**
+- Estado F5.2C: **BLOQUEADO PARA VALIDACIÓN REAL**
+- Estado F6: **IMPLEMENTADO — VALIDACIÓN CI PENDIENTE**
+- Estado F8: **PENDIENTE**
 - Main / Production: el código de Production permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`; no hubo merge ni nuevo deployment de Production en F5.2B
 - Cloudflare Production: variables de medición preparadas manualmente, sin deployment posterior: `MEASUREMENT_ENABLED=true` y `GA_MEASUREMENT_ID=G-T0Q3S2NR2R`, ambas como texto plano y solo para Production; Preview no recibió estas variables reales
-- Resultado: atribución de leads consentida y saneada con persistencia D1 nullable; `lead_id` opaco en conversiones nuevas; menú móvil y filtros Portfolio con semántica accesible corregida, todo validado localmente
-- Siguiente paso: revisión independiente de ChatGPT; F5.2C permanece no iniciado y F6/F8 abiertos. La migración `0004_add_contact_attribution.sql` es precondición obligatoria antes de cualquier futuro despliegue Production de la Function; no hay autorización de release a `main` ni Production
+- Resultado: compuerta QA local/CI consolidada, validación estructural de sitio, smoke remoto GET-only y runbook operacional de solo lectura; F5.2C conserva sus bloqueos reales sin cambios de infraestructura
+- Siguiente paso: ejecutar QA en GitHub Actions tras el push y revisar independientemente su resultado. F5.2C sigue bloqueado para validación real y F8 pendiente; sin autorización de release a `main`, Production ni servicios externos.
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -1483,13 +1485,46 @@ Configuración final:
 - Rollback: revertir únicamente el commit de este lote; no aplicar rollback externo porque no hubo escrituras de plataforma.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
 
+## F5.2C — DIAGNÓSTICO COMPLETADO / VALIDACIÓN REAL BLOQUEADA
+
+- El Worker real es `solaz-contact-worker`; su versión activa verificada es `c1224de0-a9be-4aac-8143-aa2a5bd12ab7`, anterior al código hardened versionado en `develop`.
+- La D1 real `solaz-contactos` tiene aplicado el schema de `0001`, pero no las columnas de `0002`, `0003` y `0004`: `sync_started_at`, `next_attempt_at`, `notion_reconcile_started_at` y `attribution_context`.
+- Queue `solaz-contactos-sync` conserva productor y consumidor activos conectados al Worker real.
+- El CRM real de Notion no contiene la propiedad `ID envío web` requerida por el contrato hardened.
+- El recorrido completo de contacto y la medición GA4 real no están validados. F5.2C permanece **BLOQUEADO PARA VALIDACIÓN REAL**.
+- Este diagnóstico no aplicó migraciones, no desplegó Worker o Function y no modificó Cloudflare, D1, Queue, Notion, GA4, Ads, DNS, Preview ni Production.
+
+## F6 — QA, automatización y observabilidad
+
+Estado: **IMPLEMENTADO — VALIDACIÓN CI PENDIENTE**.
+
+- Base exacta `950ef42e3baaf2ea972fc3114bd783f46c078d9c`; repositorio correcto, rama `develop` y working tree inicial limpio.
+- `.github/workflows/qa-develop.yml` ejecuta `npm ci` y `npm run qa` en `ubuntu-latest`, con Node desde `.node-version`, checkout con historial completo y permisos `contents: read`, para push y pull request hacia `develop`. No usa secretos ni despliega.
+- `package.json` conserva las compuertas existentes, mantiene `qa:scope` disponible pero lo retira de la composición consolidada, y añade `qa:syntax`, `qa:site` y `qa:worker`.
+- `scripts/verify-site-structure.mjs` verifica localmente los 24 HTML de `config/public-surface.js`, destinos y fragmentos internos, 21 rutas indexables exactas, sitemap sin duplicados ni hosts ajenos, canonical coherentes, exclusión/noindex de 404 y legales, y ausencia de regresión a URLs `.html`.
+- `scripts/smoke-readonly.mjs` exige una URL base explícita y realiza únicamente GET sobre Home, Contacto, robots y sitemap; no tiene Production por defecto, no envía formularios, no crea leads y no se incorpora a `npm run qa` ni al workflow.
+- `docs/F6_RUNBOOK.md` documenta fallos por bloque, uso autorizado del smoke, consultas D1 estructural/agregada sin PII, inspección Queue/Worker/consumer, límites de evidencia, detención, escalamiento, posverificación y rollback sujeto a autorización separada.
+- `npm run qa`: intento local BLOQUEADO durante `clean` por `EBUSY` sobre `_site/img/_responsive`, antes de reconstruir y ejecutar la batería; NO existe PASS local de F6. La validación se traslada a GitHub Actions tras el push. Smoke remoto no ejecutado.
+- Alcance: 4 archivos creados y 3 modificados, exactamente los autorizados; `package-lock.json`, código público, templates, media, migraciones, Function, Worker y configuraciones Cloudflare permanecen intactos.
+- F5.2C queda **BLOQUEADO PARA VALIDACIÓN REAL** con dependencias Production documentadas; F8 permanece **PENDIENTE**. No se declara F6 cerrado hasta revisión independiente.
+- Commit planificado: `ci: consolidate F6 quality gates and operations runbook`, por integración directa autorizada desde Dropbox a `develop`; SHA verificable externamente tras el push. Workflow: `.github/workflows/qa-develop.yml`; resultado remoto pendiente de verificación.
+- Riesgos: la compuerta CI todavía requiere su primera ejecución remota; una Queue vacía no prueba sincronización Notion; las precondiciones reales de F5.2C siguen sin resolver.
+- Rollback: revertir únicamente el commit F6 en `develop`; no tocar commits previos, `main`, Production ni recursos externos.
+
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: corrección de `first_touch` para preservar la primera fuente identificable.
-- Base exacta: `2f79afd2b02dc7bee92ca3918b7ad6dab2a879aa`; rama `develop` y working tree inicial limpio.
-- Cambio: si la primera visita consentida es directa y una visita posterior contiene fuente válida, esa fuente pasa a `first_touch`; una nueva visita directa conserva `first_touch` y `last_non_direct`, mientras `current_touch` representa la visita directa actual.
-- Alcance: cuatro archivos; runtime de privacidad, prueba de medición y los dos documentos de estado. La lógica restante de atribución, consentimiento y almacenamiento permanece intacta.
-- QA autorizado: únicamente `npm run qa:privacy`, PASS 103/103. No se ejecutaron build, QA general ni otras pruebas.
-- Estado: F5.2C **NO INICIADO**; F6 y F8 continúan abiertos. Sin acciones sobre Preview, Production ni servicios externos.
-- Commit y push: `fix: preserve first identifiable attribution touch`, exclusivamente a `origin/develop`; SHA verificado fuera del commit.
-- Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+- Lote: F6 consolidado — QA, automatización y observabilidad.
+- Precheck Codex: PASS exacto en `develop`, base `950ef42e3baaf2ea972fc3114bd783f46c078d9c`, árbol de trabajo limpio.
+- Archivos preparados localmente: 4 creados y 3 modificados, exclusivamente los autorizados.
+- QA local: **BLOQUEADO**, no PASS. Única ejecución `npm run qa` detenida por `EBUSY` en `_site/img/_responsive` durante `clean`, antes del build y las pruebas.
+- Commit/push por Codex: **NO REALIZADOS**. Workflow remoto: **NO EJECUTADO** en ese momento.
+- Estado de salida de Codex: **BLOQUEADO**. Ningún recurso externo o Production modificado.
+
+## RECUPERACIÓN F6 — INTEGRACIÓN DIRECTA AUTORIZADA
+
+- El usuario autorizó expresamente la recuperación de los siete archivos desde Dropbox y su integración directa en `develop`, sin Codex.
+- Se preservan los 4 archivos nuevos y los 3 modificados; la única corrección documental elimina las falsas afirmaciones de QA PASS y commit/push ejecutados por Codex.
+- La batería general se ejecutará mediante GitHub Actions, fuera de Dropbox, al publicarse este commit; resultado **pendiente de comprobación en el momento de escribir este estado**.
+- Sin ejecución local adicional de QA, sin Preview, Production, D1, Queue, Worker, Notion, GA4, Ads, DNS ni `main`.
+- F6 queda implementado para validación CI y revisión independiente de ChatGPT. F5.2C conserva su bloqueo y F8 permanece pendiente.
+- Commit y resultado final de CI: verificar directamente en GitHub después del push.
