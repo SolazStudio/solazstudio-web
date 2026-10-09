@@ -2,7 +2,7 @@
 
 - Fecha: 2026-10-09
 - Fase/lote: F6 consolidado — QA, automatización y observabilidad
-- Estado: **F6 IMPLEMENTADO — QA REMOTA PENDIENTE DE REVISIÓN**
+- Estado: **F6 CERRADO POR REVISIÓN INDEPENDIENTE DE CHATGPT**
 - Rama: `develop`
 - Commit base: `950ef42e3baaf2ea972fc3114bd783f46c078d9c`
 - Commit F6: `ci: consolidate F6 quality gates and operations runbook`; integración directa autorizada desde Dropbox a GitHub. SHA verificable en GitHub después del push.
@@ -15,12 +15,12 @@
 - Estado F5.2A: **CERRADO** por revisión independiente de ChatGPT
 - Estado F5.2B: **CERRADO** por revisión independiente de ChatGPT
 - Estado F5.2C: **BLOQUEADO PARA VALIDACIÓN REAL**
-- Estado F6: **IMPLEMENTADO — VALIDACIÓN CI PENDIENTE**
+- Estado F6: **CERRADO**
 - Estado F8: **PENDIENTE**
 - Main / Production: el código de Production permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`; no hubo merge ni nuevo deployment de Production en F5.2B
 - Cloudflare Production: variables de medición preparadas manualmente, sin deployment posterior: `MEASUREMENT_ENABLED=true` y `GA_MEASUREMENT_ID=G-T0Q3S2NR2R`, ambas como texto plano y solo para Production; Preview no recibió estas variables reales
 - Resultado: compuerta QA local/CI consolidada, validación estructural de sitio, smoke remoto GET-only y runbook operacional de solo lectura; F5.2C conserva sus bloqueos reales sin cambios de infraestructura
-- Siguiente paso: ejecutar QA en GitHub Actions tras el push y revisar independientemente su resultado. F5.2C sigue bloqueado para validación real y F8 pendiente; sin autorización de release a `main`, Production ni servicios externos.
+- Siguiente paso: preparar PUNTO DE CONTINUIDAD y alcance F8 desde el registro de auditoría existente. F5.2C permanece bloqueado para validación real; sin autorización de release a `main`, Production ni servicios externos.
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -1496,7 +1496,7 @@ Configuración final:
 
 ## F6 — QA, automatización y observabilidad
 
-Estado: **IMPLEMENTADO — VALIDACIÓN CI PENDIENTE**.
+Estado: **CERRADO por revisión independiente de ChatGPT (2026-10-09)**.
 
 - Base exacta `950ef42e3baaf2ea972fc3114bd783f46c078d9c`; repositorio correcto, rama `develop` y working tree inicial limpio.
 - `.github/workflows/qa-develop.yml` ejecuta `npm ci` y `npm run qa` en `ubuntu-latest`, con Node desde `.node-version`, checkout con historial completo y permisos `contents: read`, para push y pull request hacia `develop`. No usa secretos ni despliega.
@@ -1537,3 +1537,15 @@ Estado: **IMPLEMENTADO — VALIDACIÓN CI PENDIENTE**.
 - El commit correctivo emplea el prefijo `[CF-Pages-Skip]` para omitir un nuevo build/deployment automático de Cloudflare Pages, conservando la ejecución de GitHub Actions.
 - En el momento de registrar este cambio, la nueva ejecución general de GitHub Actions está **PENDIENTE**; F6 sigue **EN REVISIÓN / NO CERRADO**. No afirmar QA PASS sin el resultado remoto.
 - F5.2C continúa bloqueado para validación real; F8 permanece pendiente. Ningún cambio a `main`, Production o recursos reales está autorizado en esta corrección.
+## F6 — CIERRE POR REVISIÓN INDEPENDIENTE DE CHATGPT (2026-10-09)
+
+- Dictamen: **CERRADO**. Alcance implementado sin cambios visuales, editoriales ni funcionales en la web pública.
+- GitHub `develop`: commit de F6 `f01f30c2c1631490f43f5dc980a6517b2160c8e4` (7 archivos) y corrección acotada del control de videos `0323bba2b61af1fd84a5a87eea8f701ded645c9c` (3 archivos). No hubo modificación de `main`.
+- Verificación independiente: GitHub Actions `QA develop`, ejecución `37982002647`, commit `0323bba2b61af1fd84a5a87eea8f701ded645c9c`, estado `completed`, conclusión `success`: https://github.com/SolazStudio/solazstudio-web/actions/runs/37982002647.
+- `npm ci`: PASS. `npm run qa`: PASS, incluyendo Eleventy (24 páginas), medios (719 imágenes y 1.398 derivados), tres videos hero, F4, privacidad, sintaxis, enlaces/SEO (24 HTML y 21 rutas indexables), pruebas locales del Worker y paridad (2.165 archivos públicos).
+- Incidencia previa preservada: la primera ejecución F6 falló en un control histórico de videos al comparar JavaScript de accesibilidad aprobado en F5; la corrección acotó estrictamente la excepción a cuatro instrucciones del menú móvil. El QA remoto posterior pasó completo.
+- El smoke remoto se documentó, pero no se ejecutó; no equivale a validación real de leads, Notion ni GA4.
+- Observación pendiente para F8: `npm ci` informó **11 vulnerabilidades en dependencias (4 moderadas, 7 altas)**. Investigar versiones, exposición e impacto antes de cualquier actualización; no se alteraron dependencias ni `package-lock.json` en F6.
+- F5.2C conserva el estado **BLOQUEADO PARA VALIDACIÓN REAL** con dependencias de Worker, D1, Notion y GA4 documentadas. F8 permanece **PENDIENTE**.
+- El cierre documental se registra mediante archivos locales sincronizados con Dropbox y GitHub Desktop; el SHA del eventual commit documental se comprobará externamente, no se anticipa en este texto.
+- Sin aprobación de merge a `main`, deploy, Preview, Production, migraciones, DNS, Ads ni operaciones sobre servicios reales.

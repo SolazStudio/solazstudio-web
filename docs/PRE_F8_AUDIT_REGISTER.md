@@ -1553,7 +1553,7 @@ Este anexo es una precisión posterior y no altera ni elimina el texto históric
 
 # SEGUIMIENTO F6 + DEPENDENCIAS F5.2C (2026-10-09)
 
-**Estado F6:** `IMPLEMENTADO — VALIDACIÓN CI PENDIENTE`.
+**Estado F6:** `CERRADO POR REVISIÓN INDEPENDIENTE DE CHATGPT`.
 
 ## Implementado en F6
 
@@ -1594,3 +1594,11 @@ Este anexo es una precisión posterior y no altera ni elimina el texto históric
 - El commit correctivo emplea el prefijo `[CF-Pages-Skip]` para omitir un nuevo build/deployment automático de Cloudflare Pages, conservando la ejecución de GitHub Actions.
 - En el momento de registrar este cambio, la nueva ejecución general de GitHub Actions está **PENDIENTE**; F6 sigue **EN REVISIÓN / NO CERRADO**. No afirmar QA PASS sin el resultado remoto.
 - F5.2C continúa bloqueado para validación real; F8 permanece pendiente. Ningún cambio a `main`, Production o recursos reales está autorizado en esta corrección.
+## Cierre independiente de F6 y seguimiento hacia F8 (2026-10-09)
+
+- **F6 CERRADO** por revisión independiente de ChatGPT de los commits `f01f30c2c1631490f43f5dc980a6517b2160c8e4` y `0323bba2b61af1fd84a5a87eea8f701ded645c9c`.
+- Evidencia definitiva: GitHub Actions `QA develop`, run `37982002647`, `completed/success`, `npm ci` y `npm run qa` PASS, sobre commit `0323bba2b61af1fd84a5a87eea8f701ded645c9c`: https://github.com/SolazStudio/solazstudio-web/actions/runs/37982002647.
+- Alcance validado: build de 24 páginas, medios (719 imágenes y 1.398 variantes), tres videos, accesibilidad, formularios, privacidad, sintaxis, Worker local, enlaces/canonical/sitemap/noindex y paridad de 2.165 archivos públicos. Smoke remoto no ejecutado.
+- Riesgo para evaluar en F8: `npm ci` informó **11 vulnerabilidades de dependencias (4 moderadas y 7 altas)**. Requiere análisis de exposición/impacto; F6 no aplicó actualizaciones de paquetes ni alteró la web pública.
+- Mantener íntegros los hallazgos previos. F5.2C continúa **BLOQUEADO PARA VALIDACIÓN REAL**, F8 **PENDIENTE** y `main`/Production sin publicación autorizada.
+- Esta anotación documental refleja la revisión posterior; las menciones históricas de QA pendiente anteriores a la ejecución aprobada se conservan como evidencia de su estado en ese momento.
