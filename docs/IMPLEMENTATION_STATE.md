@@ -4,8 +4,8 @@
 - Fase/lote: PRE-F8 — registro documental de auditoría previa al cierre
 - Estado: **PRE-F8 COMPLETADO PARA REVISIÓN DE CHATGPT**
 - Rama: `develop`
-- Commit base: `99b3b22d751b2ca75fb79685b740102b95612440`
-- Commit del lote: `docs: close F5.2B measurement setup`; su SHA se verifica fuera del propio commit
+- Commit base: `74f2b9abe542925b15f7fab2215c33dcc72dd7b0`
+- Commit del lote PRE-F8: `bf70c17b75c95158957a2adcbc95cf4d52b1e3e5`
 - Estado F1: **CERRADO**
 - Estado F2: **CERRADO**
 - Estado F3: **CERRADA**
@@ -1464,6 +1464,6 @@ Configuración final:
 - Lote: PRE-F8 — registro documental íntegro.
 - Archivos: `docs/PRE_F8_AUDIT_REGISTER.md` creado; `docs/IMPLEMENTATION_STATE.md` actualizado.
 - Alcance: documentación solamente; ninguna operación funcional ni sobre Production.
-- Control: solo dos archivos; `git diff --check` PASS (o registrar fallo y detenerse).
-- Commit: `docs: preserve complete pre-F8 audit register`.
+- Control: exclusivamente dos archivos documentales; `git diff --cached --check` falló por espacios finales Markdown preservados literalmente. El control fue omitido expresamente en el desbloqueo autorizado; después se ejecutaron commit y push.
+- Commit PRE-F8: `bf70c17b75c95158957a2adcbc95cf4d52b1e3e5`.
 - Cierre: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
