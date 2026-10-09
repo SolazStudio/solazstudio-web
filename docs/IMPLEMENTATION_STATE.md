@@ -1,35 +1,24 @@
 # Estado de implementación
 
-- Fecha: 2026-09-11
-- Fase/lote: F5.2A-CORR — Contexto GA4 saneado para todos los eventos
-- Estado: **F5.2A COMPLETADO PARA REVISIÓN DE CHATGPT**
+- Fecha: 2026-10-08
+- Fase/lote: F5.2B — Configuración real GA4 + Google Ads + variables Production
+- Estado: **F5.2B COMPLETADO PARA REVISIÓN DE CHATGPT**
 - Rama: `develop`
-- Commit base: `453ed3c313d0c60df5dfb6313e4ab454b12b9b6e`
-- Commit del lote: `fix: sanitize GA4 context for all events`; su SHA se verifica fuera del propio commit
+- Commit base: `99b3b22d751b2ca75fb79685b740102b95612440`
+- Commit del lote: `docs: close F5.2B measurement setup`; su SHA se verifica fuera del propio commit
 - Estado F1: **CERRADO**
 - Estado F2: **CERRADO**
-- Estado F3.1: **CERRADO** por revisión independiente de ChatGPT y validación visual de Seba en Preview automático
-- Estado F3.2: **CERRADO** por revisión independiente de ChatGPT y validación de Seba
-- Estado F3.3: **CERRADO** por revisión independiente de ChatGPT y validación de Seba en Preview automático
 - Estado F3: **CERRADA**
-- Estado F4.1: **CERRADO** por revisión independiente de ChatGPT y validación runtime por teclado de Seba en Preview
-- Estado F4.2A: **CERRADO** por revisión independiente de ChatGPT
-- Estado F4.2B: **CERRADO** por revisión independiente de ChatGPT
 - Estado F4: **CERRADA**
 - Estado F5: **EN CURSO**
-- Estado F5.1: **CERRADO** por revisión independiente de ChatGPT
-- Estado F5.2A: **COMPLETADO PARA REVISIÓN DE CHATGPT**
-- Estado F2.5B: **CERRADO** por revisión de ChatGPT
-- Estado F2.5A: **CERRADO** por revisión de ChatGPT
-- Estado F2.3: **CERRADO** por revisión de ChatGPT
-- Estado F2.4D: **CERRADO** por revisión de ChatGPT
-- Estado F2.4C: **CERRADO** por revisión de ChatGPT
-- Estado F2.4B: **CERRADO** por revisión de ChatGPT; su resultado `MISMATCH` descartó “CRM Seba Ogalde”
-- Estado F2.4A: **BLOQUEADO / UNAVAILABLE (histórico)**; no constituye un pendiente activo
-- Main / Production: INTACTA en `880610411ecb4d66f652e8bfaf89e5794231409d`
-- Cloudflare / Google / Notion / recursos funcionales reales: sin acciones ni escrituras en F5.2A-CORR; no se instalaron IDs ni se configuraron cuentas reales; Production, D1, Queue, Worker, CRM real y recursos externos intactos
-- Resultado: GA4 conserva una única fuente frontend y ahora recibe `page_location` y `page_referrer` saneados a nivel config para todos sus eventos; `page_view` manual, atribución aprobada, preferencias, Consent Mode v2 básico, eventos y host gate preservados
-- Siguiente paso: revisión independiente de ChatGPT; F5.2B y F5.2C permanecen pendientes y no iniciados
+- Estado F5.1: **CERRADO**
+- Estado F5.2A: **CERRADO** por revisión independiente de ChatGPT
+- Estado F5.2B: **COMPLETADO PARA REVISIÓN DE CHATGPT**
+- Estado F5.2C: **NO INICIADO**
+- Main / Production: el código de Production permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`; no hubo merge ni nuevo deployment de Production en F5.2B
+- Cloudflare Production: variables de medición preparadas manualmente, sin deployment posterior: `MEASUREMENT_ENABLED=true` y `GA_MEASUREMENT_ID=G-T0Q3S2NR2R`, ambas como texto plano y solo para Production; Preview no recibió estas variables reales
+- Resultado: GA4 y Google Ads de Solaz quedaron vinculados y las conversiones comerciales quedaron jerarquizadas; Production aún no ejecuta esta configuración porque no se ha publicado `develop`
+- Siguiente paso: revisión independiente de ChatGPT; si F5.2B queda CERRADO, preparar por separado el lote de release `develop → main` / Production con autorización expresa; F5.2C queda pendiente para validación real posterior al deployment
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -1215,6 +1204,83 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 - Smoke HTTP SETUP-0.3: 24/24 rutas públicas y assets críticos con 200; ruta inexistente con 404. QA visual/manual de Home, navegación, Portafolio, proyecto, Contacto, ambos modos y móvil, sin envíos.
 - Production, `main`, DNS, Ads, D1/Queue de Production, secretos y Turnstile real permanecieron intactos. Corrección documental posterior: `d584494c809765e61f301af23618ef7212734653`.
 
+## F5.2B — Configuración real GA4, Google Ads y variables Production
+
+Estado: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+
+### Google Analytics 4
+
+- Propiedad: `Solaz Studio`.
+- Flujo web: `Solaz Studio — Web`.
+- URL: `https://solazstudio.cl`.
+- ID de flujo: `15763611985`.
+- ID de medición: `G-T0Q3S2NR2R`.
+- Medición mejorada: DESACTIVADA.
+- Eventos clave preparados: `generate_lead`, `contact_email`, `contact_whatsapp` y `contact_phone`.
+- Los eventos comerciales no tienen valor monetario predeterminado.
+- Recuento configurado para leads/contactos: una conversión.
+- La arquitectura continúa usando Google tag directo; no GTM.
+
+### Vinculación Google Ads
+
+- Cuenta Google Ads vinculada: `Solaz Studio — 222-701-3511`.
+- No se vinculó la MCC como destino de medición.
+- Auto-tagging: ACTIVADO.
+- Publicidad personalizada en la vinculación: DESACTIVADA.
+- Enhanced conversions: no implementado.
+- No existe etiqueta Google Ads directa ni `GOOGLE_ADS_ID`.
+
+### Conversiones Google Ads
+
+Configuración final:
+
+- `generate_lead`
+  - categoría: Enviar formulario para clientes potenciales
+  - optimización: Principal
+  - recuento: Una
+  - incluida en objetivo de cuenta: Sí
+
+- `contact_email`
+  - categoría: Contacto
+  - optimización: Principal
+  - recuento: Una
+  - incluida en objetivo de cuenta: Sí
+
+- `contact_whatsapp`
+  - categoría: Contacto
+  - optimización: Principal
+  - recuento: Una
+  - incluida en objetivo de cuenta: Sí
+
+- `contact_phone`
+  - categoría: Contacto
+  - optimización: Secundaria
+  - recuento: Una
+  - no utilizada como acción principal del objetivo de cuenta
+
+- Objetivos predeterminados de cuenta:
+  - Enviar formulario de clientes potenciales: 1 acción principal (`generate_lead`)
+  - Contacto: 2 acciones principales (`contact_email`, `contact_whatsapp`)
+- No se creó ni activó ninguna campaña, anuncio, presupuesto o gasto.
+
+### Cloudflare Production
+
+- Variables añadidas manualmente al entorno Production:
+  - `MEASUREMENT_ENABLED=true`
+  - `GA_MEASUREMENT_ID=G-T0Q3S2NR2R`
+- Tipo: texto plano.
+- Preview conserva el aislamiento y no recibe estos valores reales.
+- Guardar estas variables no publicó código nuevo; el deployment Production continúa asociado a `main`.
+- No hubo cambios de DNS.
+
+### Alcance del lote
+
+- La configuración externa precedente fue realizada manualmente y validada antes de este lote.
+- Codex no debe volver a consultar Google ni Cloudflare.
+- Este lote solo registra durablemente esos hechos.
+- No cambia código, configuración versionada, formularios, backend, Worker, D1, Queue, Notion, media, legales ni medición frontend.
+- F5.2C no se inicia en este lote.
+
 ## INFORME CODEX — F2.1
 
 - Lote: F2.1 — Inventario real del circuito post-D1.
@@ -1348,7 +1414,7 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 - Rollback: no hay rollback de plataforma; no hubo escrituras externas. Solo puede revertirse el commit documental si fuera necesario.
 - Estado: F2 **ABIERTO**, F2.5A **BLOQUEADO**, F2.5B **NO INICIADO**.
 
-## INFORME CODEX — ÚLTIMO LOTE
+## INFORME CODEX — F5.2A-CORR
 
 - Lote: F5.2A-CORR — Corrección de privacidad: contexto GA4 saneado para todos los eventos.
 - Fecha: 2026-09-11.
@@ -1365,4 +1431,19 @@ F2.1 no modifica infraestructura ni código funcional. Su rollback es revertir �
 - Commit y push: un único commit `fix: sanitize GA4 context for all events`, exclusivamente a `origin/develop`, después de superar el worktree limpio.
 - Rollback: revertir únicamente el commit correctivo para regresar a `453ed3c313d0c60df5dfb6313e4ab454b12b9b6e`; conservar F5.2A original, F5.1 y `main`.
 - Estado: F5.1 **CERRADO**; F5 **EN CURSO**; F5.2A **COMPLETADO PARA REVISIÓN DE CHATGPT**; F5.2B y F5.2C **NO INICIADOS**.
+- Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+
+## INFORME CODEX — ÚLTIMO LOTE
+
+- Lote: F5.2B — cierre documental de configuración real GA4 + Google Ads + variables Production.
+- Fecha: 2026-10-08.
+- Base exacta: `99b3b22d751b2ca75fb79685b740102b95612440`.
+- Alcance: únicamente `docs/IMPLEMENTATION_STATE.md`; cero cambios ejecutables.
+- Hechos registrados: propiedad GA4 `Solaz Studio`, medición `G-T0Q3S2NR2R`, vinculación con Ads `222-701-3511`, jerarquía de cuatro conversiones, objetivos de cuenta y dos variables de medición Production.
+- Recursos externos: cero accesos y cero escrituras realizadas por Codex; la configuración externa fue completada manualmente antes del lote.
+- QA del lote: únicamente controles documentales/Git proporcionales al cambio; no se ejecutaron npm, build ni suites funcionales porque no cambió código ni configuración ejecutable.
+- Main / Production: sin merge, deploy ni escritura a `main`; `origin/main` permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- F5.2C: NO INICIADO.
+- Rollback: revertir únicamente el commit documental `docs: close F5.2B measurement setup`.
+- Siguiente paso: revisión independiente de ChatGPT antes de cualquier release.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
