@@ -1549,3 +1549,17 @@ Estado: **CERRADO por revisión independiente de ChatGPT (2026-10-09)**.
 - F5.2C conserva el estado **BLOQUEADO PARA VALIDACIÓN REAL** con dependencias de Worker, D1, Notion y GA4 documentadas. F8 permanece **PENDIENTE**.
 - El cierre documental se registra mediante archivos locales sincronizados con Dropbox y GitHub Desktop; el SHA del eventual commit documental se comprobará externamente, no se anticipa en este texto.
 - Sin aprobación de merge a `main`, deploy, Preview, Production, migraciones, DNS, Ads ni operaciones sobre servicios reales.
+
+
+## F5.2C.1 — Preparación del CRM real Notion (2026-10-09)
+
+- **Estado:** propiedad técnica creada y verificada; documentación registrada. Este sublote NO cierra F5.2C ni F8.
+- **Autorización expresa de Seba:** comprobar estructura del CRM real, agregar solo `ID envío web`, verificar la propiedad y registrar el resultado en documentos de `develop` con commit/push. Sin autorización para modificar fichas existentes, D1, Queue, Worker, Pages, GA4, Ads o Production web.
+- **Destino comprobado:** database `CRM Solaz Studio` ID `37b7abcb-cbb1-8050-a745-d5edcab17eb8`, fuente `37b7abcb-cbb1-805c-93ce-000b6ea904b6`.
+- **Precheck solo estructura:** diez propiedades existentes, sin `ID envío web`. No se consultaron filas, leads ni datos personales.
+- **Acción Notion:** agregado exactamente `ID envío web` como propiedad de texto enriquecido (`RICH_TEXT`; tipo `text` en respuesta del conector).
+- **Posverificación independiente:** lectura de estructura posterior confirmó once propiedades, `ID envío web` de tipo `text` y conservación de las diez propiedades previas con sus tipos. No se alteraron registros existentes deliberadamente; no se leyeron ni compararon valores de filas.
+- **Pruebas:** precheck/poscheck del schema PASS. Sin QA de código, porque no hubo modificación funcional del repositorio; ninguna prueba de envío o sincronización real.
+- **Riesgo y recuperación:** no borrar el campo automáticamente. Si hay incidente, detener uso e investigar antes de cualquier eliminación, especialmente si pudiera contener valores. Reversión documental mediante revert del commit correspondiente; cambios Notion requieren autorización separada.
+- **Pendiente:** D1 Production necesita migraciones 0002, 0003 y 0004; Worker endurecido no desplegado; Function/Pages, Queue, Notion y GA4 E2E Production todavía no validados. F5 global EN CURSO; F5.2C BLOQUEADO PARA VALIDACIÓN REAL; F8 PENDIENTE.
+- **No ejecutado:** cambios en main, Preview, Production web, D1, Queue, Worker, contactos Notion, email, analítica, DNS o Ads. El stash local histórico de siete cambios debe conservarse intacto.
