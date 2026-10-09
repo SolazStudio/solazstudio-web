@@ -1,8 +1,8 @@
 # Estado de implementación
 
-- Fecha: 2026-10-08
-- Fase/lote: F5.2B — Configuración real GA4 + Google Ads + variables Production
-- Estado: **F5.2B COMPLETADO PARA REVISIÓN DE CHATGPT**
+- Fecha: 2026-10-09
+- Fase/lote: PRE-F8 — registro documental de auditoría previa al cierre
+- Estado: **PRE-F8 COMPLETADO PARA REVISIÓN DE CHATGPT**
 - Rama: `develop`
 - Commit base: `99b3b22d751b2ca75fb79685b740102b95612440`
 - Commit del lote: `docs: close F5.2B measurement setup`; su SHA se verifica fuera del propio commit
@@ -13,12 +13,12 @@
 - Estado F5: **EN CURSO**
 - Estado F5.1: **CERRADO**
 - Estado F5.2A: **CERRADO** por revisión independiente de ChatGPT
-- Estado F5.2B: **COMPLETADO PARA REVISIÓN DE CHATGPT**
+- Estado F5.2B: **CERRADO** por revisión independiente de ChatGPT
 - Estado F5.2C: **NO INICIADO**
 - Main / Production: el código de Production permanece en `880610411ecb4d66f652e8bfaf89e5794231409d`; no hubo merge ni nuevo deployment de Production en F5.2B
 - Cloudflare Production: variables de medición preparadas manualmente, sin deployment posterior: `MEASUREMENT_ENABLED=true` y `GA_MEASUREMENT_ID=G-T0Q3S2NR2R`, ambas como texto plano y solo para Production; Preview no recibió estas variables reales
 - Resultado: GA4 y Google Ads de Solaz quedaron vinculados y las conversiones comerciales quedaron jerarquizadas; Production aún no ejecuta esta configuración porque no se ha publicado `develop`
-- Siguiente paso: revisión independiente de ChatGPT; si F5.2B queda CERRADO, preparar por separado el lote de release `develop → main` / Production con autorización expresa; F5.2C queda pendiente para validación real posterior al deployment
+- Siguiente paso: revisión independiente de ChatGPT del registro PRE-F8; después continuar F5.2, resolver atribución y secuencia F5.2C/F6/F8. No hay autorización de release a main ni Production
 
 ## Cierre de F1 por revisión de ChatGPT
 
@@ -1433,7 +1433,18 @@ Configuración final:
 - Estado: F5.1 **CERRADO**; F5 **EN CURSO**; F5.2A **COMPLETADO PARA REVISIÓN DE CHATGPT**; F5.2B y F5.2C **NO INICIADOS**.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
 
-## INFORME CODEX — ÚLTIMO LOTE
+## PRE-F8 — Registro acumulativo de auditoría
+
+- Estado: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+- Registro: `docs/PRE_F8_AUDIT_REGISTER.md`; documento derivado, no fuente permanente.
+- Base auditada: develop `74f2b9abe542925b15f7fab2215c33dcc72dd7b0`; main `880610411ecb4d66f652e8bfaf89e5794231409d`.
+- 53 apartados originales preservados íntegramente, más anexo de precedencia; incluye mapas F-01–F-20 y C-01–C-15, hallazgos, evidencia y pendientes.
+- F5 en curso; F5.2C no iniciado; F6 y F8 pendientes; F7 opcional. F5.2B cerrado.
+- La propuesta histórica de release inmediato queda retirada. Todo despliegue requiere aprobación específica; Ads no autorizado.
+- No borrar hallazgos corregidos: conservar historial y reauditar en F8.
+- Sin cambios funcionales. Rollback: revertir exclusivamente el commit documental PRE-F8.
+
+## INFORME CODEX — F5.2B
 
 - Lote: F5.2B — cierre documental de configuración real GA4 + Google Ads + variables Production.
 - Fecha: 2026-10-08.
@@ -1447,3 +1458,12 @@ Configuración final:
 - Rollback: revertir únicamente el commit documental `docs: close F5.2B measurement setup`.
 - Siguiente paso: revisión independiente de ChatGPT antes de cualquier release.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
+
+## INFORME CODEX — ÚLTIMO LOTE
+
+- Lote: PRE-F8 — registro documental íntegro.
+- Archivos: `docs/PRE_F8_AUDIT_REGISTER.md` creado; `docs/IMPLEMENTATION_STATE.md` actualizado.
+- Alcance: documentación solamente; ninguna operación funcional ni sobre Production.
+- Control: solo dos archivos; `git diff --check` PASS (o registrar fallo y detenerse).
+- Commit: `docs: preserve complete pre-F8 audit register`.
+- Cierre: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
