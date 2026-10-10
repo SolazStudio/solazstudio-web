@@ -1617,3 +1617,10 @@ Este anexo es una precisión posterior y no altera ni elimina el texto históric
 - Añadidas las columnas `sync_started_at`, `next_attempt_at`, `notion_reconcile_started_at` y `attribution_context`; la estructura previa confirmada tenía 23 columnas y la resultante prevista tiene 27.
 - El circuito completo D1 → Queue → Notion todavía requiere despliegue del Worker endurecido y validación operativa autorizada.
 - F5.2C continúa pendiente de validación real y F8 permanece pendiente. No se realizó despliegue web ni del Worker en este lote.
+
+## Seguimiento F5.2C.3 — Worker preparado (2026-10-09)
+
+- Se subió la nueva versión `6959fdf9-155c-4e06-a45f-488c0aa0ce2d` del Worker `solaz-contact-worker` mediante `wrangler versions upload`, sin activarla.
+- La versión anterior `c1224de0-a9be-4aac-8143-aa2a5bd12ab7` permanece activa con 100 % del tráfico.
+- La puesta en funcionamiento de la versión nueva requiere otro lote con autorización expresa, seguido de validación operativa del circuito D1 → Queue → Notion.
+- F5.2C y F8 permanecen pendientes. No se realizó despliegue web ni activación del Worker.

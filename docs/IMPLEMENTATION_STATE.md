@@ -1513,13 +1513,14 @@ Estado: **CERRADO por revisión independiente de ChatGPT (2026-10-09)**.
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F5.2C.2 — migraciones D1 real.
+- Lote: F5.2C.3 — Worker preparado sin activación.
 - Fecha: 2026-10-09.
-- Operación: aplicación autorizada y secuencial de `0002_add_sync_started_at.sql`, `0003_add_retry_reconciliation_state.sql` y `0004_add_contact_attribution.sql` sobre `solaz-contactos` (`cc1a1efa-7e4a-4e12-a9d9-d65b5cd56380`).
-- Resultado: los tres comandos Wrangler terminaron correctamente; 0002 procesó 1 consulta, 0003 procesó 2 consultas y 0004 procesó 1 consulta. Se añadieron `sync_started_at`, `next_attempt_at`, `notion_reconcile_started_at` y `attribution_context`; estructura inicial confirmada de 23 columnas y estructura resultante prevista de 27.
-- Archivos modificados: `docs/IMPLEMENTATION_STATE.md` y `docs/PRE_F8_AUDIT_REGISTER.md`.
+- Archivos afectados: `workers/contact-sync/wrangler.production.jsonc`, `docs/IMPLEMENTATION_STATE.md` y `docs/PRE_F8_AUDIT_REGISTER.md`.
+- Operación: subida autorizada de una nueva versión del Worker `solaz-contact-worker` mediante `wrangler versions upload`, sin despliegue ni activación.
+- Resultado: versión `6959fdf9-155c-4e06-a45f-488c0aa0ce2d` subida correctamente; la versión anterior `c1224de0-a9be-4aac-8143-aa2a5bd12ab7` permanece activa con 100 % del tráfico.
 - Errores: ninguno.
-- Commit/push: `[CF-Pages-Skip] [skip ci] docs: registrar migraciones D1 F5.2C.2`, exclusivamente a `origin/develop`; SHA verificable externamente tras el push.
+- Commit/push: `[CF-Pages-Skip] [skip ci] chore: stage production contact worker version`, exclusivamente a `origin/develop`; SHA verificable externamente tras el push.
+- Pendientes: F5.2C requiere otro lote con autorización expresa para activación y validación real; F8 permanece pendiente.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
 
 ## RECUPERACIÓN F6 — INTEGRACIÓN DIRECTA AUTORIZADA
@@ -1581,3 +1582,16 @@ Estado: **CERRADO por revisión independiente de ChatGPT (2026-10-09)**.
 - Resultado 0004: correcto; 1 consulta ejecutada, bookmark final informado `00002d4f-00000014-000050ff-a5e6888bcea4f48d1c6da8dd58711d53`.
 - No se realizó despliegue web ni del Worker.
 - F5.2C sigue pendiente de validación real y F8 permanece pendiente.
+
+## F5.2C.3 — Worker preparado sin activación (2026-10-09)
+
+- Ejecución realizada con autorización expresa para subir una nueva versión sin activarla.
+- Archivo de configuración creado: `workers/contact-sync/wrangler.production.jsonc`.
+- Worker: `solaz-contact-worker`; código fuente utilizado: `workers/contact-sync/src/index.js`.
+- Versión nueva subida: `6959fdf9-155c-4e06-a45f-488c0aa0ce2d`.
+- Versión anterior conservada activa al 100 %: `c1224de0-a9be-4aac-8143-aa2a5bd12ab7`.
+- Comando ejecutado: `npx.cmd --no-install wrangler versions upload --config workers/contact-sync/wrangler.production.jsonc --name solaz-contact-worker --strict --keep-vars --tag "F5.2C.3-staged" --message "F5.2C.3 - hardened contact worker - not activated"`.
+- Resultado: subida correcta mediante `wrangler versions upload`; no se ejecutó `wrangler deploy` ni `wrangler versions deploy`.
+- Conexiones D1, Queue, cron, correo y variable Notion quedaron declaradas por la configuración aprobada. Los valores existentes, incluido el secreto `NOTION_TOKEN`, se preservaron mediante `keep_vars`/`--keep-vars` sin leerlos, imprimirlos ni sustituirlos.
+- La consulta mínima de deployments confirmó que no hubo activación: la versión anterior continúa recibiendo 100 % del tráfico.
+- F5.2C sigue pendiente de activación y validación real mediante otro lote autorizado. F8 permanece pendiente.
