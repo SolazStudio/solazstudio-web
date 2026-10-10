@@ -1624,3 +1624,11 @@ Este anexo es una precisión posterior y no altera ni elimina el texto históric
 - La versión anterior `c1224de0-a9be-4aac-8143-aa2a5bd12ab7` permanece activa con 100 % del tráfico.
 - La puesta en funcionamiento de la versión nueva requiere otro lote con autorización expresa, seguido de validación operativa del circuito D1 → Queue → Notion.
 - F5.2C y F8 permanecen pendientes. No se realizó despliegue web ni activación del Worker.
+
+## Seguimiento F5.2C.4 — Activación del Worker (2026-10-10)
+
+- La versión `6959fdf9-155c-4e06-a45f-488c0aa0ce2d` fue activada como única versión de `solaz-contact-worker` con 100 % del tráfico.
+- Deployment confirmado: `5f59e6ce-979a-45cc-b089-b083b1de5578`, creado `2026-10-10T05:26:19.784077Z`.
+- Los prechecks confirmaron la versión anterior `c1224de0-a9be-4aac-8143-aa2a5bd12ab7` al 100 % y el schema D1 exacto de 27 columnas sin cambios de datos.
+- No hubo incidente ni recuperación. No se realizaron cambios deliberados en D1, Queue, Notion, Pages ni la web pública.
+- La validación E2E real del circuito permanece pendiente; F5.2C global y F8 continúan pendientes.

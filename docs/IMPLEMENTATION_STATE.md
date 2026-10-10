@@ -1513,14 +1513,15 @@ Estado: **CERRADO por revisión independiente de ChatGPT (2026-10-09)**.
 
 ## INFORME CODEX — ÚLTIMO LOTE
 
-- Lote: F5.2C.3 — Worker preparado sin activación.
-- Fecha: 2026-10-09.
-- Archivos afectados: `workers/contact-sync/wrangler.production.jsonc`, `docs/IMPLEMENTATION_STATE.md` y `docs/PRE_F8_AUDIT_REGISTER.md`.
-- Operación: subida autorizada de una nueva versión del Worker `solaz-contact-worker` mediante `wrangler versions upload`, sin despliegue ni activación.
-- Resultado: versión `6959fdf9-155c-4e06-a45f-488c0aa0ce2d` subida correctamente; la versión anterior `c1224de0-a9be-4aac-8143-aa2a5bd12ab7` permanece activa con 100 % del tráfico.
-- Errores: ninguno.
-- Commit/push: `[CF-Pages-Skip] [skip ci] chore: stage production contact worker version`, exclusivamente a `origin/develop`; SHA verificable externamente tras el push.
-- Pendientes: F5.2C requiere otro lote con autorización expresa para activación y validación real; F8 permanece pendiente.
+- Lote: F5.2C.4 — activación controlada del Worker.
+- Fecha: 2026-10-10.
+- Resultado: versión `6959fdf9-155c-4e06-a45f-488c0aa0ce2d` activada correctamente al 100 %; deployment `5f59e6ce-979a-45cc-b089-b083b1de5578`, creado `2026-10-10T05:26:19.784077Z`.
+- Pruebas mínimas: precheck de deployment anterior `c1224de0-a9be-4aac-8143-aa2a5bd12ab7` al 100 %; D1 `contacts` con 27 columnas exactas, `meta.changes=0` y `meta.changed_db=false`; postcheck con una única versión nueva al 100 %.
+- Operación: `wrangler versions deploy 6959fdf9-155c-4e06-a45f-488c0aa0ce2d@100% --name solaz-contact-worker --yes`; no se ejecutó recuperación.
+- Errores de activación: ninguno. Incidente documental: el primer git add falló por permisos al crear .git/index.lock; no hubo commit ni push en ese intento ni se realizó un reintento.
+- Archivos modificados: `docs/IMPLEMENTATION_STATE.md` y `docs/PRE_F8_AUDIT_REGISTER.md`; estado local inicial limpio en `develop` sobre `3f2a335353ef8cd7e21cc5053482fe27e4bd016b`.
+- Commit/push: primer intento bloqueado; recuperación documental autorizada con mensaje `[CF-Pages-Skip] [skip ci] docs: registrar activacion Worker F5.2C.4`, exclusivamente a `origin/develop`. Publicación y SHA pendientes de revisión independiente de ChatGPT.
+- Pendientes: no se realizaron pruebas E2E reales; F5.2C global y F8 permanecen pendientes.
 - Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.
 
 ## RECUPERACIÓN F6 — INTEGRACIÓN DIRECTA AUTORIZADA
@@ -1595,3 +1596,16 @@ Estado: **CERRADO por revisión independiente de ChatGPT (2026-10-09)**.
 - Conexiones D1, Queue, cron, correo y variable Notion quedaron declaradas por la configuración aprobada. Los valores existentes, incluido el secreto `NOTION_TOKEN`, se preservaron mediante `keep_vars`/`--keep-vars` sin leerlos, imprimirlos ni sustituirlos.
 - La consulta mínima de deployments confirmó que no hubo activación: la versión anterior continúa recibiendo 100 % del tráfico.
 - F5.2C sigue pendiente de activación y validación real mediante otro lote autorizado. F8 permanece pendiente.
+
+## F5.2C.4 — Activación controlada del Worker (2026-10-10)
+
+- Activación ejecutada bajo la autorización F5.2C.4 previamente otorgada.
+- Versión anterior: `c1224de0-a9be-4aac-8143-aa2a5bd12ab7`; versión nueva: `6959fdf9-155c-4e06-a45f-488c0aa0ce2d`.
+- Precheck Worker: el deployment más reciente anterior contenía exclusivamente la versión anterior al 100 %.
+- Precheck D1: `contacts` presentó exactamente las 27 columnas requeridas —las 23 originales más `sync_started_at`, `next_attempt_at`, `notion_reconcile_started_at` y `attribution_context`— con `meta.changes=0` y `meta.changed_db=false`.
+- Comando ejecutado: `npx.cmd --no-install wrangler versions deploy 6959fdf9-155c-4e06-a45f-488c0aa0ce2d@100% --name solaz-contact-worker --yes`.
+- Estado final confirmado: versión `6959fdf9-155c-4e06-a45f-488c0aa0ce2d` como única versión activa al 100 %.
+- Deployment final: `5f59e6ce-979a-45cc-b089-b083b1de5578`, fecha `2026-10-10T05:26:19.784077Z`.
+- No hubo incidente ni recuperación; la versión anterior no fue reactivada.
+- No se realizaron cambios deliberados en D1, Queue, Notion, Pages ni la web pública.
+- No se ejecutaron pruebas E2E reales. F5.2C global permanece pendiente y F8 permanece pendiente.
