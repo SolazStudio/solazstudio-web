@@ -1511,7 +1511,7 @@ Estado: **CERRADO por revisión independiente de ChatGPT (2026-10-09)**.
 - Riesgos: la compuerta CI todavía requiere su primera ejecución remota; una Queue vacía no prueba sincronización Notion; las precondiciones reales de F5.2C siguen sin resolver.
 - Rollback: revertir únicamente el commit F6 en `develop`; no tocar commits previos, `main`, Production ni recursos externos.
 
-## INFORME CODEX — ÚLTIMO LOTE
+## INFORME CODEX — HISTÓRICO F5.2C.4
 
 - Lote: F5.2C.4 — activación controlada del Worker.
 - Fecha: 2026-10-10.
@@ -1609,3 +1609,23 @@ Estado: **CERRADO por revisión independiente de ChatGPT (2026-10-09)**.
 - No hubo incidente ni recuperación; la versión anterior no fue reactivada.
 - No se realizaron cambios deliberados en D1, Queue, Notion, Pages ni la web pública.
 - No se ejecutaron pruebas E2E reales. F5.2C global permanece pendiente y F8 permanece pendiente.
+
+## F5.2C.5A — Corrección mínima Turnstile en Preview (2026-10-10)
+
+- La validación acepta el hostname `localhost` devuelto por la clave oficial de prueba de Cloudflare exclusivamente cuando la solicitud corresponde a un Preview HTTPS de `*.solazstudio-web.pages.dev`, el secreto coincide exactamente con la clave oficial de prueba y Siteverify devuelve `success === true`.
+- Production conserva la validación normal de hostname y no admite la excepción de prueba. Los controles existentes de origen y hostname permanecen intactos.
+- Seba aplicó previamente y confirmó satisfactoriamente la migración manual del campo `attribution_context` en D1 Preview.
+- Pruebas locales ejecutadas una vez: `node --check functions/api/contact.js` PASS; `node --test scripts/verify-turnstile-hostname.test.mjs` PASS con 36 tests y 0 fallos; `git diff --check` PASS.
+- Pendiente: confirmar el nuevo deployment Preview automático posterior al push y repetir manualmente ambos formularios.
+- F5.2C global y F8 permanecen abiertos.
+
+## INFORME CODEX — ÚLTIMO LOTE
+
+- Lote: F5.2C.5A — corrección mínima Turnstile en Preview.
+- Fecha: 2026-10-10.
+- Archivos: `functions/api/contact.js`, `scripts/verify-turnstile-hostname.test.mjs` y `docs/IMPLEMENTATION_STATE.md`.
+- Pruebas: sintaxis PASS; 36 tests PASS, 0 fallos; `git diff --check` PASS. No se ejecutaron QA general, build, Wrangler ni pruebas funcionales remotas.
+- Commit/push: `fix: accept official Turnstile test hostname in Preview`, exclusivamente a `origin/develop`; SHA verificable externamente tras el push.
+- Incidencias: ninguna.
+- Pendientes: validación del deployment Preview automático y repetición manual de ambos formularios; F5.2C global y F8 continúan abiertos.
+- Estado final: **COMPLETADO PARA REVISIÓN DE CHATGPT**.

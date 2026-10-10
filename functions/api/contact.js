@@ -10,6 +10,7 @@ const ORIGENES_PERMITIDOS = new Set([
   'https://www.solazstudio.cl',
 ]);
 const PAGES_PREVIEW_SUFFIX = '.solazstudio-web.pages.dev';
+const TURNSTILE_TEST_SECRET_KEY = '1x0000000000000000000000000000000AA';
 
 const SERVICE_CODES = new Set(services.map(({ code }) => code));
 
@@ -284,10 +285,21 @@ async function verificarTurnstile(token, secretKey, ip, hostnameEsperado) {
       }
     );
     const data = await res.json();
+    const hostnameValidado = normalizarHostnameTurnstile(data.hostname);
+    const esPreviewConTestOficial = (
+      secretKey === TURNSTILE_TEST_SECRET_KEY &&
+      typeof hostnameEsperado === 'string' &&
+      hostnameEsperado.endsWith(PAGES_PREVIEW_SUFFIX) &&
+      hostnameValidado === 'localhost'
+    );
+
     return (
       data.success === true &&
       Boolean(hostnameEsperado) &&
-      normalizarHostnameTurnstile(data.hostname) === hostnameEsperado
+      (
+        hostnameValidado === hostnameEsperado ||
+        esPreviewConTestOficial
+      )
     );
   } catch {
     return false;

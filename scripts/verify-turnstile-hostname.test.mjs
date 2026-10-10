@@ -53,6 +53,7 @@ async function invoke({
   requestUrl = DEFAULT_REQUEST_URL,
   form = {},
   siteverify,
+  turnstileSecret = "secret-sintetico",
   d1Changes = 1,
   queueError = null
 } = {}) {
@@ -70,7 +71,7 @@ async function invoke({
   };
 
   const env = {
-    TURNSTILE_SECRET_KEY: "secret-sintetico",
+      TURNSTILE_SECRET_KEY: turnstileSecret,
     DB: {
       prepare(sql) {
         db.prepares += 1;
@@ -141,6 +142,38 @@ test("03 legitimate Preview same-origin accepted", async () => {
   assert.equal(result.fetchCalls.length, 1);
   assert.equal(result.db.runs, 1);
   assert.equal(result.queue.sends, 1);
+});
+
+test("03a official dummy hostname accepted in Preview", async () => {
+  const preview = "https://f42a.solazstudio-web.pages.dev";
+  const result = await invoke({
+    origin: preview,
+    requestUrl: `${preview}/api/contact`,
+    turnstileSecret: "1x0000000000000000000000000000000AA",
+    siteverify: { success: true, hostname: "localhost" }
+  });
+  assert.equal(result.status, 200);
+  assert.equal(result.body.ok, true);
+  assert.equal(result.db.runs, 1);
+  assert.equal(result.queue.sends, 1);
+});
+
+test("03b dummy hostname rejected without test secret", async () => {
+  const preview = "https://f42a.solazstudio-web.pages.dev";
+  const result = await invoke({
+    origin: preview,
+    requestUrl: `${preview}/api/contact`,
+    siteverify: { success: true, hostname: "localhost" }
+  });
+  assertRejectedBeforePersistence(result, 400, "verificacion_fallida", 1);
+});
+
+test("03c dummy hostname rejected in Production", async () => {
+  const result = await invoke({
+    turnstileSecret: "1x0000000000000000000000000000000AA",
+    siteverify: { success: true, hostname: "localhost" }
+  });
+  assertRejectedBeforePersistence(result, 400, "verificacion_fallida", 1);
 });
 
 test("04 Preview A request against Preview B rejected", async () => {
